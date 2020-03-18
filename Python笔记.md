@@ -71,7 +71,7 @@ print(b_list)
 ['foo', 'red', 'peekaboo', 'baz', 'dwarf']
 ```
 与`append`相比，`insert`耗费的计算量大，因为对后续元素的引用必须在内部迁移，以便为新元素提供空间。如果要在序列的头部和尾部插入元素，使用`collections.deque`，一个双尾部队列。
-- `insert`的逆运算是`pop`，它移除并返回指定位置的元素,pop()默认删除最后一个元素：
+- `insert`的逆运算是`pop`，它移除并返回指定位置的元素,`pop()`默认删除最后一个元素：
 ```python
 print(b_list.pop(2))
 'peekaboo'
@@ -135,7 +135,7 @@ print(c)
 [1, 2, 2, 2, 3, 4, 6, 7]
 ```
 #### zip函数
-`zip`可以将多个列表、元组或其它序列成对组合成一个元组列表：
+- `zip`可以将多个列表、元组或其它序列成对组合成一个元组列表：
 ```python
 seq1 = ['foo', 'bar', 'baz']
 seq2 = ['one', 'two', 'three']
@@ -143,13 +143,13 @@ zipped = zip(seq1, seq2)
 print(list(zipped))
 [('foo', 'one'), ('bar', 'two'), ('baz', 'three')]
 ```
-`zip`可以处理任意多的序列，元素的个数取决于最短的序列：
+- `zip`可以处理任意多的序列，元素的个数取决于最短的序列：
 ```python
 seq3 = [False, True]
 print(list(zip(seq1, seq2, seq3)))
 [('foo', 'one', False), ('bar', 'two', True)]
 ```
-`zip`的常见用法之一是同时迭代多个序列，可能结合`enumerate`使用：
+- `zip`的常见用法之一是同时迭代多个序列，可能结合`enumerate`使用：
 ```python
 for i, (a, b) in enumerate(zip(seq1, seq2)):
     print('{0}: {1}, {2}'.format(i, a, b))
@@ -174,7 +174,7 @@ print(list(reversed(range(10))))
 ```
 ### 字典
 #### 删除值
-用`del`关键字或`pop`方法（返回值的同时删除键）删除值：
+- 用`del`关键字或`pop`方法（返回值的同时删除键）删除值：
 ```python
 d1={'a': 'some value', 'b': [1, 2, 3, 4], 7: 'an integer',5: 'some value','dummy': 'another value'}
 del d1[5]
@@ -246,7 +246,7 @@ for word in words:
     by_letter[word[0]].append(word)
 ```
 #### 有效的键类型
-字典的值可以是任意`Python`对象，而键通常是不可变的标量类型（整数、浮点型、字符串）或元组（元组中的对象必须是不可变的）。这被称为“可哈希性”。可以用`hash`函数检测一个对象是否是可哈希的（可被用作字典的键）：
+- 字典的值可以是任意`Python`对象，而键通常是不可变的标量类型（整数、浮点型、字符串）或元组（元组中的对象必须是不可变的）。这被称为“可哈希性”。可以用`hash`函数检测一个对象是否是可哈希的（可被用作字典的键）：
 ```python
 print(hash('string'))
 5023931463650008331
@@ -254,7 +254,8 @@ print(hash((1, 2, (2, 3))))
 1097636502276347782
 print(hash((1, 2, [2, 3]))) # fails because lists are mutable
 ---------------------------------------------------------------------------
-TypeError                                 Traceback (most recent call last)
+TypeError                                 
+Traceback (most recent call last)
 <ipython-input-129-800cd14ba8be> in <module>()
 ----> 1 hash((1, 2, [2, 3])) # fails because lists are mutable
 TypeError: unhashable type: 'list'
@@ -277,13 +278,17 @@ print(a.union(b))
 {1, 2, 3, 4, 5, 6, 7, 8}
 print(a | b)
 {1, 2, 3, 4, 5, 6, 7, 8}
+```
 - 交集的元素包含在两个集合中。可以用`intersection`或`&`运算符：
+```python
 print(a.intersection(b))
 {3, 4, 5}
 print(a & b)
 {3, 4, 5}
 ```
 - 常用集合方法
+
+
   ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200317202703.png)
 - 所有逻辑集合操作都有另外的原地实现方法，可以直接用结果替代集合的内容。对于大的集合，这么做效率更高：
 ```python
@@ -377,7 +382,7 @@ print([[x for x in tup] for tup in some_tuples])
 ```
 ### 函数
 #### 参数
-对象作为参数传递给函数时，新的局域变量创建了对原始对象的引用，而不是复制。如果在函数里绑定一个新对象到一个变量，这个变动不会反映到上一层。因此可以改变可变参数的内容:
+- 对象作为参数传递给函数时，新的局域变量创建了对原始对象的引用，而不是复制。如果在函数里绑定一个新对象到一个变量，这个变动不会反映到上一层。因此可以改变可变参数的内容:
 ```python
 def append_element(some_list, element):
     some_list.append(element)
@@ -386,7 +391,7 @@ append_element(data, 4)
 print(data)
 [1, 2, 3, 4]
 ```
-函数可以有一些位置参数(`positional`)和一些关键字参数(`keyword`)。关键字参数通常用于指定默认值或可选参数
+- 函数可以有一些位置参数(`positional`)和一些关键字参数(`keyword`)。关键字参数通常用于指定默认值或可选参数
 #### 默认参数
 ```python
 def add_end(L=[]):
@@ -397,9 +402,9 @@ print(add_end())
 print(add_end())
 ['END', 'END']
 ```
-Python函数在定义的时候，默认参数L的值就被计算出来了，即`[]`，因为默认参数L也是一个变量，它指向对象`[]`，每次调用该函数，如果改变了L的内容，则下次调用时，默认参数的内容就变了，不再是函数定义时的`[]`了。
+- Python函数在定义的时候，默认参数L的值就被计算出来了，即`[]`，因为默认参数L也是一个变量，它指向对象`[]`，每次调用该函数，如果改变了L的内容，则下次调用时，默认参数的内容就变了，不再是函数定义时的`[]`了。
 **定义默认参数要牢记一点：默认参数必须指向不变对象！**
-要修改上面的例子，我们可以用`None`这个不变对象来实现：
+- 要修改上面的例子，我们可以用`None`这个不变对象来实现：
 ```python
 def add_end(L=None):
     if L is None:
@@ -407,7 +412,7 @@ def add_end(L=None):
     L.append('END')
     return L
 ```
-为什么要设计`str`、`None`这样的不变对象呢？因为不变对象一旦创建，对象内部的数据就不能修改，这样就减少了由于修改数据导致的错误。此外，由于对象不变，多任务环境下同时读取对象不需要加锁，同时读一点问题都没有。我们在编写程序时，如果可以设计一个不变对象，那就尽量设计成不变对象。
+- 为什么要设计`str`、`None`这样的不变对象呢？因为不变对象一旦创建，对象内部的数据就不能修改，这样就减少了由于修改数据导致的错误。此外，由于对象不变，多任务环境下同时读取对象不需要加锁，同时读一点问题都没有。我们在编写程序时，如果可以设计一个不变对象，那就尽量设计成不变对象。
 #### 可变参数
 ```python
 def calc(*numbers):
@@ -417,24 +422,24 @@ def calc(*numbers):
     return sum
 ```
 定义可变参数和定义一个`list`或`tuple`参数相比，仅仅在参数前面加了一个`*`号。在函数内部，参数`numbers`接收到的是一个`tuple`，因此，函数代码完全不变。但是，调用该函数时，可以传入任意个参数，包括`0`个参数。
-如果已经有一个list或者tuple：
+如果已经有一个`list`或者`tuple`：
 ```python
 nums = [1, 2, 3]
 print(calc(*nums))
 14
 ```
 #### 关键字参数
-关键字参数允许你传入`0`个或任意个含参数名的参数，这些关键字参数在函数内部自动组装为一个`dict`。
+- 关键字参数允许你传入`0`个或任意个含参数名的参数，这些关键字参数在函数内部自动组装为一个`dict`。
 ```python
 def person(name, age, **kw):
     print('name:', name, 'age:', age, 'other:', kw)
 ```
-函数`person`除了必选参数`name`和`age`外，还接受关键字参数`kw`。在调用该函数时，可以只传入必选参数：
+- 函数`person`除了必选参数`name`和`age`外，还接受关键字参数`kw`。在调用该函数时，可以只传入必选参数：
 ```python
 person('Michael', 30)
 name: Michael age: 30 other: {}
 ```
-也可以传入任意个数的关键字参数：
+- 也可以传入任意个数的关键字参数：
 ```python
 person('Bob', 35, city='Beijing')
 name: Bob age: 35 other: {'city': 'Beijing'}
@@ -442,7 +447,7 @@ person('Adam', 45, gender='M', job='Engineer')
 name: Adam age: 45 other: {'gender': 'M', 'job': 'Engineer'}
 ```
 关键字参数可以扩展函数的功能。比如，在`person`函数里，我们保证能接收到`name`和`age`这两个参数，但是，如果调用者愿意提供更多的参数，我们也能收到。试想你正在做一个用户注册的功能，除了用户名和年龄是必填项外，其他都是可选项，利用关键字参数来定义这个函数就能满足注册的需求。
-和可变参数类似，也可以先组装出一个`dict`，然后，把该dict转换为关键字参数传进去：
+和可变参数类似，也可以先组装出一个`dict`，然后，把该`dict`转换为关键字参数传进去：
 ```python
 extra = {'city': 'Beijing', 'job': 'Engineer'}
 person('Jack', 24, city=extra['city'], job=extra['job'])
@@ -454,9 +459,9 @@ extra = {'city': 'Beijing', 'job': 'Engineer'}
 person('Jack', 24, **extra)
 name: Jack age: 24 other: {'city': 'Beijing', 'job': 'Engineer'}
 ```
-`**extra`表示把`extra`这个`dict`的所有`key-value`用关键字参数传入到函数的`**kw`参数，`kw`将获得一个`dict`，注意``kw获得的`dict`是`extra`的一份拷贝，对`kw`的改动不会影响到函数外的`extra`。
+`**extra`表示把`extra`这个`dict`的所有`key-value`用关键字参数传入到函数的`**kw`参数，`kw`将获得一个`dict`，注意``kw`获得的`dict`是`extra`的一份拷贝，对`kw`的改动不会影响到函数外的`extra`。
 #### 命名关键字参数
-对于关键字参数，函数的调用者可以传入任意不受限制的关键字参数。至于到底传入了哪些，就需要在函数内部通过`kw`检查。
+- 对于关键字参数，函数的调用者可以传入任意不受限制的关键字参数。至于到底传入了哪些，就需要在函数内部通过`kw`检查。
 仍以`person()`函数为例，我们希望检查是否有`city`和`job`参数：
 ```python
 def person(name, age, **kw):
@@ -468,48 +473,48 @@ def person(name, age, **kw):
         pass
     print('name:', name, 'age:', age, 'other:', kw)
 ```
-如果要限制关键字参数的名字，就可以用命名关键字参数，例如，只接收`city`和`job`作为关键字参数。这种方式定义的函数如下：
+- 如果要限制关键字参数的名字，就可以用命名关键字参数，例如，只接收`city`和`job`作为关键字参数。这种方式定义的函数如下：
 ```python
 def person(name, age, *, city, job):
     print(name, age, city, job)
 ```
-和关键字参数`**kw不同`，命名关键字参数需要一个特殊分隔符`*`，`*`后面的参数被视为命名关键字参数。
+- 和关键字参数`**kw不同`，命名关键字参数需要一个特殊分隔符`*`，`*`后面的参数被视为命名关键字参数。
 调用方式如下：
 ```python
 person('Jack', 24, city='Beijing', job='Engineer')
 Jack 24 Beijing Engineer
 ```
-如果函数定义中已经有了一个可变参数，后面跟着的命名关键字参数就不再需要一个特殊分隔符`*`了：
+- 如果函数定义中已经有了一个可变参数，后面跟着的命名关键字参数就不再需要一个特殊分隔符`*`了：
 ```python
 def person(name, age, *args, city, job):
     print(name, age, args, city, job)
 ```
-命名关键字参数必须传入参数名，这和位置参数不同。如果没有传入参数名，调用将报错：
+- 命名关键字参数必须传入参数名，这和位置参数不同。如果没有传入参数名，调用将报错：
 ```python
 person('Jack', 24, 'Beijing', 'Engineer')
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
 TypeError: person() takes 2 positional arguments but 4 were given
 ```
-由于调用时缺少参数名`city`和`job`，`Python`解释器把这4个参数均视为位置参数，但`person()`函数仅接受2个位置参数。
+- 由于调用时缺少参数名`city`和`job`，`Python`解释器把这4个参数均视为位置参数，但`person()`函数仅接受2个位置参数。
 命名关键字参数可以有缺省值，从而简化调用：
 ```python
 def person(name, age, *, city='Beijing', job):
     print(name, age, city, job)
 ```
-由于命名关键字参数`city`具有默认值，调用时，可不传入`city`参数：
+- 由于命名关键字参数`city`具有默认值，调用时，可不传入`city`参数：
 ```python
 person('Jack', 24, job='Engineer')
 Jack 24 Beijing Engineer
 ```
-使用命名关键字参数时，要特别注意，如果没有可变参数，就必须加一个`*`作为特殊分隔符。如果缺少`*`，`Python`解释器将无法识别位置参数和命名关键字参数：
+- 使用命名关键字参数时，要特别注意，如果没有可变参数，就必须加一个`*`作为特殊分隔符。如果缺少`*`，`Python`解释器将无法识别位置参数和命名关键字参数：
 ```python
 def person(name, age, city, job):
     # 缺少 *，city和job被视为位置参数
     pass
 ```
 #### 参数组合
-在`Python`中定义函数，可以用**必选参数**、**默认参数**、**可变参数**、**关键字参数**和**命名关键字参数**，这5种参数都可以组合使用。但是请注意，参数定义的顺序必须是：**必选参数**、**默认参数**、**可变参数**、**命名关键字参数**和**关键字参数**。
+- 在`Python`中定义函数，可以用**必选参数**、**默认参数**、**可变参数**、**关键字参数**和**命名关键字参数**，这5种参数都可以组合使用。但是请注意，参数定义的顺序必须是：**必选参数**、**默认参数**、**可变参数**、**命名关键字参数**和**关键字参数**。
 ```python
 def f1(a, b, c=0, *args, **kw):
     print('a =', a, 'b =', b, 'c =', c, 'args =', args, 'kw =', kw)
@@ -517,7 +522,7 @@ def f1(a, b, c=0, *args, **kw):
 def f2(a, b, c=0, *, d, **kw):
     print('a =', a, 'b =', b, 'c =', c, 'd =', d, 'kw =', kw)
 ```
-在函数调用的时候，`Python`解释器自动按照参数位置和参数名把对应的参数传进去。
+- 在函数调用的时候，`Python`解释器自动按照参数位置和参数名把对应的参数传进去。
 ```python
 f1(1, 2)
 a = 1 b = 2 c = 0 args = () kw = {}
@@ -530,7 +535,7 @@ a = 1 b = 2 c = 3 args = ('a', 'b') kw = {'x': 99}
 f2(1, 2, d=99, ext=None)
 a = 1 b = 2 c = 0 d = 99 kw = {'ext': None}
 ```
-通过一个`tuple`和`dict`，你也可以调用上述函数：
+- 通过一个`tuple`和`dict`，你也可以调用上述函数：
 ```python
 args = (1, 2, 3, 4)
 kw = {'d': 99, 'x': '#'}
@@ -541,7 +546,7 @@ kw = {'d': 88, 'x': '#'}
 f2(*args, **kw)
 a = 1 b = 2 c = 3 d = 88 kw = {'x': '#'}
 ```
-所以，对于任意函数，都可以通过类似`func(*args, **kw)`的形式调用它，无论它的参数是如何定义的。
+- 所以，对于任意函数，都可以通过类似`func(*args, **kw)`的形式调用它，无论它的参数是如何定义的。
 **虽然可以组合多达5种参数，但不要同时使用太多的组合，否则函数接口的可理解性很差。**
 #### 匿名(lambda)函数
 ```python
@@ -551,7 +556,7 @@ print(strings)
 ['aaaa', 'foo', 'abab', 'bar', 'card']
 ```
 #### 柯里化：部分参数应用
-柯里化（currying）是一个有趣的计算机科学术语，它指的是通过“部分参数应用”（partial argument application）从现有函数派生出新函数的技术。例如，假设我们有一个执行两数相加的简单函数:
+- 柯里化（currying）是一个有趣的计算机科学术语，它指的是通过“部分参数应用”（partial argument application）从现有函数派生出新函数的技术。例如，假设我们有一个执行两数相加的简单函数:
 ```python
 def add_numbers(x, y):
     return x + y
@@ -563,15 +568,15 @@ from functools import partial
 add_five = partial(add_numbers, 5)
 ```
 #### 生成器
-能以一种一致的方式对序列进行迭代（比如列表中的对象或文件中的行）是`Python`的一个重要特点。这是通过一种叫做迭代器协议(`iterator protocol`，它是一种使对象可迭代的通用方式)的方式实现的，一个原生的使对象可迭代的方法。
-生成器(`generator`)是构造新的可迭代对象的一种简单方式。一般的函数执行之后只会返回单个值，而生成器则是以延迟的方式返回一个值序列，即每返回一个值之后暂停，直到下一个值被请求时再继续。要创建一个生成器，只需将函数中的`return`替换为`yeild`即可：
+- 能以一种一致的方式对序列进行迭代（比如列表中的对象或文件中的行）是`Python`的一个重要特点。这是通过一种叫做迭代器协议(`iterator protocol`，它是一种使对象可迭代的通用方式)的方式实现的，一个原生的使对象可迭代的方法。
+- 生成器(`generator`)是构造新的可迭代对象的一种简单方式。一般的函数执行之后只会返回单个值，而生成器则是以延迟的方式返回一个值序列，即每返回一个值之后暂停，直到下一个值被请求时再继续。要创建一个生成器，只需将函数中的`return`替换为`yeild`即可：
 ```python
 def squares(n=10):
     print('Generating squares from 1 to {0}'.format(n ** 2))
     for i in range(1, n + 1):
         yield i ** 2
 ```
-调用该生成器时，没有任何代码会被立即执行：
+- 调用该生成器时，没有任何代码会被立即执行：
 ```python
 gen = squares()
 print(gen)
@@ -607,7 +612,7 @@ print(dict((i, i **2) for i in range(5)))
 {0: 0, 1: 1, 2: 4, 3: 9, 4: 16}
 ```
 #### 迭代器
-可以被`next()`函数调用并不断返回下一个值的对象称为迭代器：`Iterator`。
+- 可以被`next()`函数调用并不断返回下一个值的对象称为迭代器：`Iterator`。
 可以使用`isinstance()`判断一个对象是否是`Iterator`对象：
 ```python
 from collections.abc import Iterator
@@ -636,12 +641,12 @@ True
 #### 函数式编程
 ##### 高阶函数
 ###### `map`函数
-`map()` 会根据提供的函数对指定序列做映射。第一个参数 `function` 以参数序列中的每一个元素调用 `function` 函数，返回包含每次 `function` 函数返回值的新列表。
+- `map()` 会根据提供的函数对指定序列做映射。第一个参数 `function` 以参数序列中的每一个元素调用 `function` 函数，返回包含每次 `function` 函数返回值的新列表。
 ```python
 map(function, iterable, ...)
 ```
-- function:函数
-- iterable:一个或多个序列
+- `function`:函数
+- `iterable`:一个或多个序列
 ```python
 def square(x) :            # 计算平方数
     return x ** 2
@@ -654,7 +659,7 @@ print(map(lambda x, y: x + y, [1, 3, 5, 7, 9], [2, 4, 6, 8, 10]))
 [3, 7, 11, 15, 19]
 ```
 ###### `reduce`函数
-`reduce`把一个函数作用在一个序列`[x1, x2, x3, ...]`上，这个函数必须接收两个参数，`reduce`把结果继续和序列的下一个元素做累积计算，其效果就是:
+- `reduce`把一个函数作用在一个序列`[x1, x2, x3, ...]`上，这个函数必须接收两个参数，`reduce`把结果继续和序列的下一个元素做累积计算，其效果就是:
 ```python
 reduce(f, [x1, x2, x3, x4]) = f(f(f(x1, x2), x3), x4)
 ```
@@ -676,7 +681,7 @@ def str2int(s):
     return reduce(lambda x, y: x * 10 + y, map(char2num, s))
 ```
 ###### `filter`函数
-`Python`内建的`filter()`函数用于过滤序列。
+- `Python`内建的`filter()`函数用于过滤序列。
 和`map()`类似，`filter()`也接收一个函数和一个序列。和`map()`不同的是，`filter()`把传入的函数依次作用于每个元素，然后根据返回值是`True`还是`False`决定保留还是丢弃该元素。
 注意到`filter()`函数返回的是一个`Iterator`，也就是一个惰性序列，所以要强迫`filter()`完成计算结果，需要用`list()`函数获得所有结果并返回`list`。
 筛法求素数：
@@ -702,7 +707,7 @@ for n in primes():
         break
 ```
 ###### `sorted`函数
-`sorted`函数可以从任意序列的元素返回一个新的排好序的列表：
+- `sorted`函数可以从任意序列的元素返回一个新的排好序的列表：
 ```python
 print(sorted([7, 1, 2, 6, 0, 3, 2]))
 [0, 1, 2, 2, 3, 6, 7]
@@ -734,6 +739,7 @@ def lazy_sum(*args):
 f = lazy_sum(1, 3, 5, 7, 9)
 f
 <function lazy_sum.<locals>.sum at 0x101c6ed90>
+```
 调用函数`f`时，才真正计算求和的结果：
 ```python
 f()
@@ -741,7 +747,7 @@ f()
 ```
 函数`lazy_sum`中又定义了函数`sum`，并且，内部函数`sum`可以引用外部函数`lazy_sum`的参数和局部变量，当`lazy_sum`返回函数`sum`时，相关参数和变量都保存在返回的函数中，这种称为“闭包(Closure)”的程序结构拥有极大的威力。
 ###### 闭包
-返回的函数在其定义内部引用了局部变量`args`，所以，当一个函数返回了一个函数后，其内部的局部变量还被新函数引用，所以，闭包用起来简单，实现起来可不容易。
+- 返回的函数在其定义内部引用了局部变量`args`，所以，当一个函数返回了一个函数后，其内部的局部变量还被新函数引用，所以，闭包用起来简单，实现起来可不容易。
 ```python
 def count():
     fs = []
@@ -788,7 +794,7 @@ f3()
 9
 ```
 ##### 装饰器
-在代码运行期间动态增加功能的方式，称之为“装饰器”(`Decorator`)。
+- 在代码运行期间动态增加功能的方式，称之为“装饰器”(`Decorator`)。
 本质上，`decorator`就是一个返回函数的高阶函数。所以，我们要定义一个能打印日志的`decorator`，可以定义如下：
 ```python
 def log(func):
@@ -924,7 +930,7 @@ A.func2()               # 不需要实例化
 ###### `@staticmethod`
 将类中的方法装饰为静态方法，即类不需要创建实例的情况下，可以通过类名直接引用。到达将函数功能与实例解绑的效果。
 `@staticmethod`不需要表示自身对象的`self`和自身类的`cls`参数，就跟使用函数一样。
-如果在`@staticmethod`中要调用到这个类的一些属性方法，只能直接类名.属性名或类名.方法名。
+如果在`@staticmethod`中要调用到这个类的一些属性方法，只能直接`类名.属性名`或`类名.方法名`。
 ```python
 class TestClass:
     name = "test"
@@ -954,7 +960,7 @@ class Number:
     val:int = 0
 ```
 ##### 偏函数
-`int()`函数可以把字符串转换为整数，当仅传入字符串时，`int()`函数默认按十进制转换。
+- `int()`函数可以把字符串转换为整数，当仅传入字符串时，`int()`函数默认按十进制转换。
 但`int()`函数还提供额外的`base`参数，默认值为10。如果传入`base`参数，就可以做N进制的转换：
 `functools.partial`就是帮助我们创建一个偏函数的，不需要我们自己定义`int2()`，可以直接使用下面的代码创建一个新的函数`int2`：
 ```
@@ -965,25 +971,33 @@ int2('1000000')
 int2('1010101')
 85
 ```
-简单总结`functools.partial`的作用就是，把一个函数的某些参数给固定住（也就是设置默认值），返回一个新的函数，调用这个新函数会更简单。
+- 简单总结`functools.partial`的作用就是，把一个函数的某些参数给固定住（也就是设置默认值），返回一个新的函数，调用这个新函数会更简单。
 注意到上面的新的`int2`函数，仅仅是把`base`参数重新设定默认值为2，但也可以在函数调用时传入其他值：
 ```python
 int2('1000000', base=10)
 1000000
 ```
-最后，创建偏函数时，实际上可以接收函数对象、`*args`和`**kw`这3个参数，当传入：
+- 最后，创建偏函数时，实际上可以接收函数对象、`*args`和`**kw`这3个参数，当传入：
 ```python
 int2 = functools.partial(int, base=2)
 ```
 实际上固定了`int()`函数的关键字参数`base`，也就是：
-`int2('10010')`
+```
+int2('10010')
+```
 相当于：
-`kw = { 'base': 2 }`
-`int('10010', **kw)
+```
+kw = { 'base': 2 }
+int('10010', **kw)
+```
 当传入：
-`max2 = functools.partial(max, 10)`
+```python
+max2 = functools.partial(max, 10)
+```
 实际上会把10作为*args的一部分自动加到左边，也就是：
-`max2(5, 6, 7)`
+```python
+max2(5, 6, 7)
+```
 相当于：
 ```python
 args = (10, 5, 6, 7)
@@ -992,7 +1006,7 @@ max(*args)
 结果为10。
 当函数的参数个数太多，需要简化时，使用`functools.partial`可以创建一个新的函数，这个新函数可以固定住原函数的部分参数，从而在调用时更简单。
 #### `itertools`模块
-标准库`itertools`模块中有一组用于许多常见数据算法的生成器。例如，`groupby`可以接受任何序列和一个函数。它根据函数的返回值对序列中的连续元素进行分组。下面是一个例子：
+- 标准库`itertools`模块中有一组用于许多常见数据算法的生成器。例如，`groupby`可以接受任何序列和一个函数。它根据函数的返回值对序列中的连续元素进行分组。下面是一个例子：
 ```python
 import itertools
 first_letter = lambda x: x[0]
@@ -1041,12 +1055,12 @@ finally:
 path = 'examples/segismundo.txt'
 f = open(path)
 ```
-- 默认情况下，文件是以只读模式('r')打开的。然后，我们就可以像处理列表那样来处理这个文件句柄`f`了，比如对行进行迭代：
+- 默认情况下，文件是以只读模式`('r')`打开的。然后，我们就可以像处理列表那样来处理这个文件句柄`f`了，比如对行进行迭代：
 ```python
 for line in f:
     pass
 ```
-- 如果使用open创建文件对象，一定要用`close`关闭它。关闭文件可以返回操作系统资源：
+- 如果使用`open`创建文件对象，一定要用`close`关闭它。关闭文件可以返回操作系统资源：
 ```python
 f.close()
 ```
@@ -1057,7 +1071,7 @@ with open(path) as f:
 ```
 - 读写模式：
 ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200317211525.png)
-- 向文件写入，可以使用文件的write或writelines方法。例如，我们可以创建一个无空行版的prof_mod.py：
+- 向文件写入，可以使用文件的`write`或`writelines`方法。例如，我们可以创建一个无空行版的`prof_mod.py`：
 ```python
 with open('tmp.txt', 'w') as handle:
     handle.writelines(x for x in open(path) if len(x) > 1)
@@ -1070,9 +1084,9 @@ with open('tmp.txt') as f:
 ```python
  a= 'ABC'
 ```
-在内存中创建了一个'ABC'的字符串；
-在内存中创建了一个名为a的变量，并把它指向'ABC'。
-也可以把一个变量a赋值给另一个变量b，这个操作实际上是把变量b指向变量a所指向的数据，例如下面的代码：
+在内存中创建了一个`'ABC'`的字符串；
+在内存中创建了一个名为`a`的变量，并把它指向`'ABC'`。
+也可以把一个变量`a`赋值给另一个变量`b`，这个操作实际上是把变量`b`指向变量`a`所指向的数据，例如下面的代码：
 ```python
 a = 'ABC'
 b = a
@@ -1873,6 +1887,8 @@ datetime.strptime('20091031', '%Y%m%d')
 datetime.datetime(2009, 10, 31, 0, 0)
 ```
 - 格式化命令
+
+
 ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200317190745.png)
 ### `collections`
 #### `namedtuple`
