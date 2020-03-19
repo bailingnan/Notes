@@ -1,4 +1,8 @@
 # `Python`笔记
+## 编码规范
+
+
+![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200318181309.png)
 ## 对象
 ### 可变与不可变对象
 - `Python`中的大多数对象，比如列表、字典、`NumPy`数组，和用户定义的类型（类），都是可变的。意味着这些对象或包含的值可以被修改。
@@ -12,6 +16,10 @@ print(b)
 要始终牢记的是，`a`是变量，而`'abc'`才是字符串对象，有些时候，我们经常说，对象`a`的内容是`'abc'`，但其实是指，`a`本身是一个变量，它指向的对象的内容才是`'abc'`：
 当我们调用`a.replace('a', 'A')`时，实际上调用方法`replace`是作用在字符串对象`'abc'`上的，而这个方法虽然名字叫`replace`，但却没有改变字符串`'abc'`的内容。相反，`replace`方法创建了一个新字符串`'Abc'`并返回，如果我们用变量`b`指向该新字符串，就容易理解了，变量`a`仍指向原有的字符串`'abc'`，但变量`b`却指向新字符串`'Abc'`了。
 所以，对于不变对象来说，调用对象自身的任意方法，也不会改变该对象自身的内容。相反，这些方法会创建新的对象并返回，这样，就保证了不可变对象本身永远是不可变的。
+- 变量可以连续赋值:
+```python
+a=b=c=1
+```
 ### 元组
 - 如果要定义一个空的tuple，可以写成()：
 ```python
@@ -61,6 +69,10 @@ a = (1, 2, 2, 2, 3, 4, 2)
 print(a.count(2))
 4
 ```
+#### 常用函数
+- `len(tuple)`:计算元组元素个数。
+- `max(tuple)`:返回元组中元素最大值。
+- `min(tuple)`:返回元组中元素最小值。
 ### 列表
 #### 添加和删除元素
 - `insert`在特定的位置插入元素：
@@ -172,7 +184,44 @@ print(last_names)
 print(list(reversed(range(10))))
 [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 ```
+#### 常用函数
+- `max(list)`:返回列表元素最大值
+- `min(list)`:返回列表元素最小值
+- `list.count(obj)`:统计某个元素在列表中出现的次数
+- `list.extend(seq)`:在列表末尾一次性追加另一个序列中的多个值（用新列表扩展原来的列表）
+- `list.index(obj)`:从列表中找出某个值第一个匹配项的索引位置
+- `list.reverse()`:反向列表中元素
 ### 字典
+```python
+d = dict(name='Bob', age=20, score=88)
+```python
+`pickle.dumps()`方法把任意对象序列化成一个`bytes`，然后，就可以把这个`bytes`写入文件。或者用另一个方法`pickle.dump()`直接把对象序列化后写入一个`file-like Object`：
+```python
+f = open('dump.txt', 'wb')
+pickle.dump(d, f)
+f.close()
+```
+当我们要把对象从磁盘读到内存时，可以先把内容读到一个`bytes`，然后用`pickle.loads()`方法反序列化出对象，也可以直接用`pickle.load()`方法从一个`file-like Object`中直接反序列化出对象。我们打开另一个`Python`命令行来反序列化刚才保存的对象：
+```python
+f = open('dump.txt', 'rb')
+d = pickle.load(f)
+f.close()
+print(d)
+{'age': 20, 'score': 88, 'name': 'Bob'}
+```
+```python
+import json
+d = dict(name='Bob', age=20, score=88)
+json.dumps(d)
+'{"age": 20, "score": 88, "name": "Bob"}'
+```
+`dumps()`方法返回一个`str`，内容就是标准的`JSON`。类似的，`dump()`方法可以直接把`JSON`写入一个`file-like Object`。
+要把`JSON`反序列化为`Python`对象，用`loads()`或者对应的`load()`方法，前者把`JSON`的字符串反序列化，后者从`file-like Object`中读取字符串并反序列化：
+```python
+json_str = '{"age": 20, "score": 88, "name": "Bob"}'
+json.loads(json_str)
+{'age': 20, 'score': 88, 'name': 'Bob'}
+```
 #### 删除值
 - 用`del`关键字或`pop`方法（返回值的同时删除键）删除值：
 ```python
@@ -189,6 +238,7 @@ print(ret)
 print(d1)
 {'a': 'some value', 'b': [1, 2, 3, 4], 7: 'an integer'}
 ```
+- `popitem():返回并删除字典中的最后一对键和值。
 #### 更新字典
 - 用`update`方法可以将一个字典与另一个融合,`update`方法是原地改变字典，因此任何传递给`update`的键的旧的值都会被舍弃。
 ```python
@@ -259,6 +309,15 @@ Traceback (most recent call last)
 <ipython-input-129-800cd14ba8be> in <module>()
 ----> 1 hash((1, 2, [2, 3])) # fails because lists are mutable
 TypeError: unhashable type: 'list'
+```
+#### 按键值排序
+- 键：
+```python
+sorted(dict.keys())
+```
+- 值：
+```python
+sorted(dict.items(),key=lamda:item:item[1])
 ```
 ### 集合
 - 集合是无序的不可重复的元素的集合。你可以把它当做字典，但是只有键没有值。可以用两种方式创建集合：通过`set`函数或使用尖括号`set`语句：
@@ -513,6 +572,22 @@ def person(name, age, city, job):
     # 缺少 *，city和job被视为位置参数
     pass
 ```
+#### 强制位置参数
+`Python3.8` 新增了一个函数形参语法`/`用来指明函数形参必须使用指定位置参数，不能使用关键字参数的形式。
+在以下的例子中，形参 `a` 和 `b` 必须使用指定位置参数，`c` 或 `d` 可以是位置形参或关键字形参，而 `e` 或 `f` 要求为关键字形参:
+```python
+def f(a, b, /, c, d, *, e, f):
+    print(a, b, c, d, e, f)
+```
+以下使用方法是正确的:
+```python
+f(10, 20, 30, d=40, e=50, f=60)
+```
+以下使用方法会发生错误:
+```python
+f(10, b=20, c=30, d=40, e=50, f=60)   # b 不能使用关键字参数的形式
+f(10, 20, 30, 40, 50, f=60)           # e 必须使用关键字参数的形式
+```
 #### 参数组合
 - 在`Python`中定义函数，可以用**必选参数**、**默认参数**、**可变参数**、**关键字参数**和**命名关键字参数**，这5种参数都可以组合使用。但是请注意，参数定义的顺序必须是：**必选参数**、**默认参数**、**可变参数**、**命名关键字参数**和**关键字参数**。
 ```python
@@ -549,6 +624,8 @@ a = 1 b = 2 c = 3 d = 88 kw = {'x': '#'}
 - 所以，对于任意函数，都可以通过类似`func(*args, **kw)`的形式调用它，无论它的参数是如何定义的。
 **虽然可以组合多达5种参数，但不要同时使用太多的组合，否则函数接口的可理解性很差。**
 #### 匿名(lambda)函数
+- `lambda` 函数拥有自己的命名空间，且不能访问自己参数列表之外或全局命名空间里的参数。
+- 虽然`lambda`函数看起来只能写一行，却不等同于`C`或`C++`的内联函数，后者的目的是调用小函数时不占用栈内存从而增加运行效率。
 ```python
 strings = ['foo', 'card', 'bar', 'aaaa', 'abab']
 strings.sort(key=lambda x: len(set(list(x))))
@@ -638,6 +715,79 @@ True
 
 这是因为`Python`的`Iterator`对象表示的是一个数据流，`Iterator`对象可以被`next()`函数调用并不断返回下一个数据，直到没有数据时抛出`StopIteration`错误。可以把这个数据流看做是一个有序序列，但我们却不能提前知道序列的长度，只能不断通过`next()`函数实现按需计算下一个数据，所以`Iterator`的计算是惰性的，只有在需要返回下一个数据时它才会计算。
 `Iterator`甚至可以表示一个无限大的数据流，例如全体自然数。而使用`list`是永远不可能存储全体自然数的。
+##### 类作为迭代器
+把一个类作为一个迭代器使用需要在类中实现两个方法 `__iter__()` 与 `__next__()` 。
+如果你已经了解的面向对象编程，就知道类都有一个构造函数，`Python` 的构造函数为 `__init__()`, 它会在对象初始化的时候执行。
+`__iter__()` 方法返回一个特殊的迭代器对象， 这个迭代器对象实现了 `__next__()` 方法并通过 `StopIteration` 异常标识迭代的完成。
+`__next__()` 方法（Python 2 里是 `next()`）会返回下一个迭代器对象。
+创建一个返回数字的迭代器，初始值为 1，逐步递增 1：
+```python
+class MyNumbers:
+  def __iter__(self):
+    self.a = 1
+    return self
+ 
+  def __next__(self):
+    x = self.a
+    self.a += 1
+    return x
+ 
+myclass = MyNumbers()
+myiter = iter(myclass)
+ 
+print(next(myiter))
+print(next(myiter))
+print(next(myiter))
+print(next(myiter))
+print(next(myiter))
+1
+2
+3
+4
+5
+```
+`StopIteration` 异常用于标识迭代的完成，防止出现无限循环的情况，在 `__next__()` 方法中我们可以设置在完成指定循环次数后触发 `StopIteration` 异常来结束迭代。
+在 20 次迭代后停止执行：
+```
+class MyNumbers:
+  def __iter__(self):
+    self.a = 1
+    return self
+ 
+  def __next__(self):
+    if self.a <= 20:
+      x = self.a
+      self.a += 1
+      return x
+    else:
+      raise StopIteration
+ 
+myclass = MyNumbers()
+myiter = iter(myclass)
+for x in myiter:
+  print(x)
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+```
+
 #### 函数式编程
 ##### 高阶函数
 ###### `map`函数
@@ -671,7 +821,7 @@ def fn(x, y):
 print(reduce(fn, [1, 3, 5, 7, 9]))
 13579
 ```
-考虑到字符串str也是一个序列，对上面的例子稍加改动，配合`map()`，我们就可以写出把`str`转换为`int`的函数：
+考虑到字符串`str`也是一个序列，对上面的例子稍加改动，配合`map()`，我们就可以写出把`str`转换为`int`的函数：
 ```python
 from functools import reduce
 DIGITS = {'0': 0, '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9}
@@ -1020,66 +1170,6 @@ S ['Steven']
 ```
 - 常用`itertools`函数:
 ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/687474703a2f2f75706c6f61642d696d616765732e6a69616e7368752e696f2f75706c6f61645f696d616765732f373137383639312d313131383233643837363761313034642e706e673f696d6167654d6f6772322f6175746f2d6f7269656e742f7374726970253743696d61676556696577322f322f77.png)
-#### 错误和异常处理
-```python
-def attempt_float(x):
-    try:
-        return float(x)
-    except ValueError:
-        return x
-```
-某些情况下，你可能不想抑制异常，你想无论`try`部分的代码是否成功，都执行一段代码。可以使用`finally`：
-```python
-f = open(path, 'w')
-
-try:
-    write_to_file(f)
-finally:
-    f.close()
-```
-这里，文件处理`f`总会被关闭。相似的，你可以用`else`让只在`try`部分成功的情况下，才执行代码：
-```python
-f = open(path, 'w')
-try:
-    write_to_file(f)
-except:
-    print('Failed')
-else:
-    print('Succeeded')
-finally:
-    f.close()
-```
-### 文件和操作系统
-- 为了打开一个文件以便读写，可以使用内置的`open`函数以及一个相对或绝对的文件路径：
-```python
-path = 'examples/segismundo.txt'
-f = open(path)
-```
-- 默认情况下，文件是以只读模式`('r')`打开的。然后，我们就可以像处理列表那样来处理这个文件句柄`f`了，比如对行进行迭代：
-```python
-for line in f:
-    pass
-```
-- 如果使用`open`创建文件对象，一定要用`close`关闭它。关闭文件可以返回操作系统资源：
-```python
-f.close()
-```
-- 用`with`语句可以可以更容易地清理打开的文件,这样可以在退出代码块时，自动关闭文件：
-```
-with open(path) as f:
-    lines = [x.rstrip() for x in f]
-```
-- 读写模式：
-![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200317211525.png)
-- 向文件写入，可以使用文件的`write`或`writelines`方法。例如，我们可以创建一个无空行版的`prof_mod.py`：
-```python
-with open('tmp.txt', 'w') as handle:
-    handle.writelines(x for x in open(path) if len(x) > 1)
-with open('tmp.txt') as f:
-    lines = f.readlines()
-```
-- 常用文件方法
-![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200317211726.png)
 ### 字符串
 ```python
  a= 'ABC'
@@ -1107,6 +1197,51 @@ template = '{0:.2f} {1:s} are worth US${2:d}'
 - `{0:.2f}`表示格式化第一个参数为带有两位小数的浮点数。
 - `{1:s}`表示格式化第二个参数为字符串。
 - `{2:d}`表示格式化第三个参数为一个整数。
+在括号中的数字用于指向传入对象在 `format()` 中的位置，如下所示：
+```python
+print('{0} 和 {1}'.format('Google', 'Runoob'))
+Google 和 Runoob
+print('{1} 和 {0}'.format('Google', 'Runoob'))
+Runoob 和 Google
+```
+如果在` format()` 中使用了关键字参数, 那么它们的值会指向使用该名字的参数。
+```python
+print('{name}网址： {site}'.format(name='菜鸟教程', site='www.runoob.com'))
+菜鸟教程网址： www.runoob.com
+```
+位置及关键字参数可以任意的结合:
+```python
+print('站点列表 {0}, {1}, 和 {other}。'.format('Google', 'Runoob', other='Taobao'))
+站点列表 Google, Runoob, 和 Taobao。
+```
+可选项 : 和格式标识符可以跟着字段名。 这就允许对值进行更好的格式化。 下面的例子将 `Pi` 保留到小数点后三位：
+```python
+import math
+print('常量 PI 的值近似为 {0:.3f}。'.format(math.pi))
+常量 PI 的值近似为 3.142。
+```
+如果你有一个很长的格式化字符串, 而你不想将它们分开, 那么在格式化时通过变量名而非位置会是很好的事情。
+最简单的就是传入一个字典, 然后使用方括号 `[]` 来访问键值 :
+```python
+table = {'Google': 1, 'Runoob': 2, 'Taobao': 3}
+print('Runoob: {0[Runoob]:d}; Google: {0[Google]:d}; Taobao: {0[Taobao]:d}'.format(table))
+Runoob: 2; Google: 1; Taobao: 3
+```
+也可以通过在 `table` 变量前使用 `**` 来实现相同的功能：
+```python
+table = {'Google': 1, 'Runoob': 2, 'Taobao': 3}
+print('Runoob: {Runoob:d}; Google: {Google:d}; Taobao: {Taobao:d}'.format(**table))
+Runoob: 2; Google: 1; Taobao: 3
+```
+#### 常用操作
+- `eval(str)`:用来计算在字符串中的有效`Python`表达式,并返回一个对象
+- `count(str, beg= 0,end=len(string))`:返回 `str` 在 `string` 里面出现的次数，如果 `beg` 或者 `end `指定则返回指定范围内 `str` 出现的次数
+- `find(str, beg=0, end=len(string))`:检测 `str` 是否包含在字符串中，如果指定范围 `beg` 和 `end` ，则检查是否包含在指定范围内，如果包含返回开始的索引值，否则返回`-1`
+- `upper()`:转换字符串中的小写字母为大写
+- `lower()`:转换字符串中所有大写字符为小写
+- `replace(old, new [, max])`:将字符串中的 `str1` 替换成 `str2`,如果`max`指定，则替换不超过`max`次。
+- `split(str="", num=string.count(str))`:`num=string.count(str))` 以`str`为分隔符截取字符串，如果`num`有指定值，则仅截取`num+1`个子字符串
+- `strip([chars])`:截掉字符串两边的空格或指定字符。
 ### 运算符
 #### `==`和`is`
 - 要判断两个引用是否指向同一个对象，可以使用`is`方法:
@@ -1123,7 +1258,88 @@ print(a == c)
 True
 ```
 ## 模块
-每一个包目录下面都会有一个`__init__.py`的文件，这个文件是必须存在的，否则，`Python`就把这个目录当成普通目录，而不是一个包。
+- 每一个包目录下面都会有一个`__init__.py`的文件，这个文件是必须存在的，否则，`Python`就把这个目录当成普通目录，而不是一个包。
+- 每个模块有各自独立的符号表，在模块内部为所有的函数当作全局符号表来使用。所以，模块的作者可以放心大胆的在模块内部使用这些全局变量，而不用担心把其他用户的全局变量搞混。在当前目录下存在与要引入模块同名的文件，就会把要引入的模块屏蔽掉。
+- 导入`sys`模块后，我们就有了变量`sys`指向该模块，利用`sys`这个变量，就可以访问`sys`模块的所有功能。
+`sys`模块有一个`argv`变量，用`list`存储了命令行的所有参数。`argv`至少有一个元素，因为第一个参数永远是该``.py文件的名称，例如：
+运行`python3 hello.py`获得的`sys.argv`就是`['hello.py']`；
+运行`python3 hello.py Michael`获得的`sys.argv`就是`['hello.py', 'Michael]`。
+注意当使用 `from package import item` 这种形式的时候，对应的 `item` 既可以是包里面的子模块（子包），或者包里面定义的其他名称，比如函数，类或者变量。
+`import` 语法会首先把 `item` 当作一个包定义的名称，如果没找到，再试图按照一个模块去导入。如果还没找到，抛出一个 `:exc:ImportError` 异常。
+反之，如果使用形如 `import item.subitem.subsubitem` 这种导入形式，除了最后一项，都必须是包，而最后一项则可以是模块或者是包，但是不可以是类，函数或者变量的名字。
+- 内置的函数 `dir()` 可以找到模块内定义的所有名称。以一个字符串列表的形式返回。
+- `sys.argv` 是一个包含命令行参数的列表。`sys.path` 包含了一个 `Python` 解释器自动查找所需模块的路径的列表。
+- 搜索路径是由一系列目录名组成的，`Python`解释器就依次从这些目录中去寻找所引入的模块。
+搜索路径是在`Python`编译或安装的时候确定的，安装新的库应该也会修改。搜索路径被存储在`sys`模块中的`path`变量，做一个简单的实验，在交互式解释器中，输入以下代码：
+```python
+import sys
+sys.path
+['', '/usr/lib/python3.4', '/usr/lib/python3.4/plat-x86_64-linux-gnu', '/usr/lib/python3.4/lib-dynload', '/usr/local/lib/python3.4/dist-packages', '/usr/lib/python3/dist-packages']
+```
+`sys.path` 输出是一个列表，其中第一项是空串`''`，代表当前目录（若是从一个脚本中打印出来的话，可以更清楚地看出是哪个目录），亦即我们执行`python`解释器的目录（对于脚本的话就是运行的脚本所在的目录）。
+因此若在当前目录下存在与要引入模块同名的文件，就会把要引入的模块屏蔽掉。
+了解了搜索路径的概念，就可以在脚本中修改`sys.path`来引入一些不在搜索路径中的模块。
+如果我们要添加自己的搜索目录，有两种方法：
+一是直接修改`sys.path`，添加要搜索的目录：
+```python
+import sys
+sys.path.append('/Users/michael/my_py_scripts')
+```
+这种方法是在运行时修改，运行结束后失效。
+第二种方法是设置环境变量`PYTHONPATH`，该环境变量的内容会被自动添加到模块搜索路径中。设置方式与设置`Path`环境变量类似。注意只需要添加你自己的搜索路径，`Python`自己本身的搜索路径不受影响。
+现在，在解释器的当前目录或者 `sys.path `中的一个目录里面来创建一个`fibo.py`的文件，代码如下：
+```python
+# 斐波那契(fibonacci)数列模块
+def fib(n):    # 定义到 n 的斐波那契数列
+    a, b = 0, 1
+    while b < n:
+        print(b, end=' ')
+        a, b = b, a+b
+    print()
+ 
+def fib2(n): # 返回到 n 的斐波那契数列
+    result = []
+    a, b = 0, 1
+    while b < n:
+        result.append(b)
+        a, b = b, a+b
+    return result
+```
+然后进入`Python`解释器，使用下面的命令导入这个模块：
+```python
+import fibo
+```
+这样做并没有把直接定义在`fibo`中的函数名称写入到当前符号表里，只是把模块`fibo`的名字写到了那里。
+### `name`属性
+一个模块被另一个程序第一次引入时，其主程序将运行。如果我们想在模块被引入时，模块中的某一程序块不执行，我们可以用`__name__`属性来使该程序块仅在该模块自身运行时执行。
+```python3
+# Filename: using_name.py
+if __name__ == '__main__':
+   print('程序自身在运行')
+else:
+   print('我来自另一模块')
+```
+```shell
+$ python using_name.py
+程序自身在运行
+$ python
+>>> import using_name
+我来自另一模块
+```
+说明： 每个模块都有一个`__name_`_属性，当其值是`'__main__'`时，表明该模块自身在运行，否则是被引入。
+#### 包
+- 如果包定义文件 `__init__.py` 存在一个叫做 `__all__` 的列表变量，那么在使用 `from package import *` 的时候就把这个列表中的所有名字作为包内容导入。
+```python
+__all__ = ["echo", "surround", "reverse"]
+```
+如果 `__all__`真的没有定义，那么使用`from sound.effects import *`这种语法的时候，就不会导入包 `sound.effects` 里的任何子模块。他只是把包`sound.effects`和它里面定义的所有内容导入进来（可能运行`__init__.py`里定义的初始化代码）。
+这会把 `__init__.py` 里面定义的所有名字导入进来。并且他不会破坏掉我们在这句话之前导入的所有明确指定的模块。看下这部分代码:
+```python
+import sound.effects.echo
+import sound.effects.surround
+from sound.effects import *
+```
+这个例子中，在执行 `from...import` 前，包 `sound.effects` 中的 `echo` 和 `surround` 模块都被导入到当前的命名空间中了。（当然如果定义了 `__all__` 就更没问题了）
 ## OOP
 ### 访问限制
 如果要让内部属性不被外部访问，可以把属性的名称前加上两个下划线`__`，在`Python`中，实例的变量名如果以`__`开头，就变成了一个私有变量(`private`)，只有内部可以访问，外部不能访问:
@@ -1195,6 +1411,33 @@ bart.get_name() # get_name()内部返回self.__name
 'Bart Simpson'
 ```
 ### 继承和多态
+```python
+#类定义
+class people:
+    #定义基本属性
+    name = ''
+    age = 0
+    #定义私有属性,私有属性在类外部无法直接进行访问
+    __weight = 0
+    #定义构造方法
+    def __init__(self,n,a,w):
+        self.name = n
+        self.age = a
+        self.__weight = w
+    def speak(self):
+        print("%s 说: 我 %d 岁。" %(self.name,self.age))
+ 
+#单继承示例
+class student(people):
+    grade = ''
+    def __init__(self,n,a,w,g):
+        #调用父类的构函
+        people.__init__(self,n,a,w)
+        self.grade = g
+    #覆写父类的方法
+    def speak(self):
+        print("%s 说: 我 %d 岁了，我在读 %d 年级"%(self.name,self.age,self.grade))
+```
 ```python
 class Animal(object):
     def run(self):
@@ -1523,6 +1766,76 @@ class MyTCPServer(TCPServer, CoroutineMixIn):
 这样一来，我们不需要复杂而庞大的继承链，只要选择组合不同的类的功能，就可以快速构造出所需的子类。
 由于`Python`允许使用多重继承，因此，`MixIn`就是一种常见的设计。
 只允许单一继承的语言（如`Java`）不能使用`MixIn`的设计。
+- 若是父类中有相同的方法名，而在子类使用时未指定，`python`从左至右搜索 即方法在子类中未找到时，从左到右查找父类中是否包含方法。
+```python
+#类定义
+class people:
+    #定义基本属性
+    name = ''
+    age = 0
+    #定义私有属性,私有属性在类外部无法直接进行访问
+    __weight = 0
+    #定义构造方法
+    def __init__(self,n,a,w):
+        self.name = n
+        self.age = a
+        self.__weight = w
+    def speak(self):
+        print("%s 说: 我 %d 岁。" %(self.name,self.age))
+ 
+#单继承示例
+class student(people):
+    grade = ''
+    def __init__(self,n,a,w,g):
+        #调用父类的构函
+        people.__init__(self,n,a,w)
+        self.grade = g
+    #覆写父类的方法
+    def speak(self):
+        print("%s 说: 我 %d 岁了，我在读 %d 年级"%(self.name,self.age,self.grade))
+ 
+#另一个类，多重继承之前的准备
+class speaker():
+    topic = ''
+    name = ''
+    def __init__(self,n,t):
+        self.name = n
+        self.topic = t
+    def speak(self):
+        print("我叫 %s，我是一个演说家，我演讲的主题是 %s"%(self.name,self.topic))
+ 
+#多重继承
+class sample(speaker,student):
+    a =''
+    def __init__(self,n,a,w,g,t):
+        student.__init__(self,n,a,w,g)
+        speaker.__init__(self,n,t)
+ 
+test = sample("Tim",25,80,4,"Python")
+test.speak()   #方法名同，默认调用的是在括号中排前地父类的方法
+我叫 Tim，我是一个演说家，我演讲的主题是 Python
+```
+- `super()`
+如果你的父类方法的功能不能满足你的需求，你可以在子类重写你父类的方法，实例如下：
+```python
+class Parent:        # 定义父类
+   def myMethod(self):
+      print ('调用父类方法')
+ 
+class Child(Parent): # 定义子类
+   def myMethod(self):
+      print ('调用子类方法')
+ 
+c = Child()          # 子类实例
+c.myMethod()         # 子类调用重写方法
+super(Child,c).myMethod() #用子类对象调用父类已被覆盖的方法
+调用子类方法
+调用父类方法
+```
+如果重写了`__init__`时，要继承父类的构造方法，可以使用 `super` 关键字：
+```python
+super(子类，self).__init__(参数1，参数2，....)
+```
 #### 定制类
 ##### `__str__`
 我们先定义一个`Student`类，打印一个实例：
@@ -1859,37 +2172,412 @@ Traceback (most recent call last):
 AttributeError: 'list' object has no attribute 'add'
 ```
 动态修改有什么意义？直接在`MyList`定义中写上`add()`方法不是更简单吗？正常情况下，确实应该直接写，通过`metaclass`修改纯属变态。
+## 命名空间和作用域
+### 三种命名空间：
+- 内置名称(`built-in names`)， `Python` 语言内置的名称，比如函数名 `abs`、`char` 和异常名称 `BaseException`、`Exception` 等等。
+- 全局名称(`global names`)，模块中定义的名称，记录了模块的变量，包括函数、类、其它导入的模块、模块级的变量和常量。
+- 局部名称(`local names`)，函数中定义的名称，记录了函数的变量，包括函数的参数和局部定义的变量。（类中定义的也是）
+`Python` 的查找顺序为：**局部的命名空间** -> **全局命名空间** -> **内置命名空间**。
+#### 四种作用域：
+- L(Local)：最内层，包含局部变量，比如一个函数/方法内部。
+- E(Enclosing)：包含了非局部(`non-local`)也非全局(`non-global`)的变量。比如两个嵌套函数，一个函数（或类） `A` 里面又包含了一个函数 `B` ，那么对于`B` 中的名称来说 `A` 中的作用域就为 `nonlocal`。
+- G(`Global`)：当前脚本的最外层，比如当前模块的全局变量。
+- B(`Built-in`)： 包含了内建的变量/关键字等。最后被搜索。
+![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200320015425.png)
+`Python` 中只有模块(`module`)，类(`class`)以及函数(`def`、`lambda`)才会引入新的作用域，其它的代码块(如 `if`/`elif`/`else`/、`try`/`except`、`for`/`while`等）是不会引入新的作用域的，也就是说这些语句内定义的变量，外部也可以访问，如下代码：
+```python
+if True:
+    msg = 'I am from Runoob'
+msg
+'I am from Runoob'
+``` 
+实例中 `msg` 变量定义在 `if` 语句块中，但外部还是可以访问的。
+如果将 msg 定义在函数中，则它就是局部变量，外部不能访问：
+```python
+def test():
+    msg_inner = 'I am from Runoob'
+msg_inner
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+NameError: name 'msg_inner' is not defined
+``` 
+从报错的信息上看，说明了 `msg_inner` 未定义，无法使用，因为它是局部变量，只有在函数内可以使用。
+#### `global` 和 `nonlocal`关键字
+```python
+num = 1
+def fun1():
+    global num  # 需要使用 global 关键字声明
+    print(num) 
+    num = 123
+    print(num)
+fun1()
+print(num)
+1
+123
+123
+```
+如果要修改嵌套作用域(`enclosing` 作用域，外层非全局作用域)中的变量则需要 `nonlocal` 关键字了，如下实例：
+```python
+def outer():
+    num = 10
+    def inner():
+        nonlocal num   # nonlocal关键字声明
+        num = 100
+        print(num)
+    inner()
+    print(num)
+outer()
+100
+100
+```
+另外有一种特殊情况，假设下面这段代码被运行：
+```python
+a = 10
+def test():
+    a = a + 1
+    print(a)
+test()
+Traceback (most recent call last):
+  File "test.py", line 7, in <module>
+    test()
+  File "test.py", line 5, in test
+    a = a + 1
+UnboundLocalError: local variable 'a' referenced before assignment
+```
+错误信息为局部作用域引用错误，因为 `test` 函数中的 `a` 使用的是局部，未定义，无法修改。
+修改 `a` 为全局变量，通过函数参数传递，可以正常执行输出结果为：
+```python
+a = 10
+def test(a):
+    a = a + 1
+    print(a)
+test(a)
+11
+```
+
+## 错误和异常处理
+```python
+def attempt_float(x):
+    try:
+        return float(x)
+    except ValueError:
+        return x
+```
+某些情况下，你可能不想抑制异常，你想无论`try`部分的代码是否成功，都执行一段代码。可以使用`finally`：
+```python
+f = open(path, 'w')
+
+try:
+    write_to_file(f)
+finally:
+    f.close()
+```
+这里，文件处理`f`总会被关闭。相似的，你可以用`else`让只在`try`部分成功的情况下，才执行代码：
+```python
+f = open(path, 'w')
+try:
+    write_to_file(f)
+except:
+    print('Failed')
+else:
+    print('Succeeded')
+finally:
+    f.close()
+```
+- 可以有多个`except`来捕获不同类型的错误：
+```python
+try:
+    print('try...')
+    r = 10 / int('a')
+    print('result:', r)
+except ValueError as e:
+    print('ValueError:', e)
+except ZeroDivisionError as e:
+    print('ZeroDivisionError:', e)
+finally:
+    print('finally...')
+print('END')
+```
+- Python的错误其实也是`class`，所有的错误类型都继承自`BaseException`，所以在使用`except`时需要注意的是，它不但捕获该类型的错误，还把其子类也“一网打尽”。比如：
+```python
+try:
+    foo()
+except ValueError as e:
+    print('ValueError')
+except UnicodeError as e:
+    print('UnicodeError')
+第二个`except`永远也捕获不到`UnicodeError`，因为`UnicodeError`是`ValueError`的子类，如果有，也被第一个`except`给捕获了。
+```
+使用`try...except`捕获错误还有一个巨大的好处，就是可以跨越多层调用，比如函数`main()`调用`foo()`，`foo()`调用`bar()`，结果`bar()`出错了，这时，只要`main()`捕获到了，就可以处理：
+```python
+def foo(s):
+    return 10 / int(s)
+
+def bar(s):
+    return foo(s) * 2
+
+def main():
+    try:
+        bar('0')
+    except Exception as e:
+        print('Error:', e)
+    finally:
+        print('finally...')
+```
+也就是说，不需要在每个可能出错的地方去捕获错误，只要在合适的层次去捕获错误就可以了。这样一来，就大大减少了写`try...except...finally`的麻烦。
+```python
+def foo(s):
+    n = int(s)
+    if n==0:
+        raise ValueError('invalid value: %s' % s)
+    return 10 / n
+
+def bar():
+    try:
+        foo('0')
+    except ValueError as e:
+        print('ValueError!')
+        raise
+bar()
+```
+在`bar()`函数中，我们明明已经捕获了错误，但是，打印一个`ValueError!`后，又把错误通过`raise`语句抛出去。
+这种错误处理方式相当常见。捕获错误目的只是记录一下，便于后续追踪。但是，由于当前函数不知道应该怎么处理该错误，所以，最恰当的方式是继续往上抛，让顶层调用者去处理。
+
+`raise`语句如果不带参数，就会把当前错误原样抛出。此外，在`except`中`raise`一个`Error`，还可以把一种类型的错误转化成另一种类型：
+```python
+try:
+    10 / 0
+except ZeroDivisionError:
+    raise ValueError('input error!')
+```
+只要是合理的转换逻辑就可以，但是，决不应该把一个`IOError`转换成毫不相干的`ValueError`。
+- `Python` 使用 `raise` 语句抛出一个指定的异常。
+`raise`语法格式如下：
+```python
+raise [Exception [, args [, traceback]]]
+```
+以下实例如果 x 大于 5 就触发异常:
+```
+x = 10
+if x > 5:
+    raise Exception('x 不能大于 5。x 的值为: {}'.format(x))
+```
+执行以上代码会触发异常：
+```python
+Traceback (most recent call last):
+  File "test.py", line 3, in <module>
+    raise Exception('x 不能大于 5。x 的值为: {}'.format(x))
+Exception: x 不能大于 5。x 的值为: 10
+```
+`raise` 唯一的一个参数指定了要被抛出的异常。它必须是一个异常的实例或者是异常的类（也就是 `Exception` 的子类）。
+如果你只想知道这是否抛出了一个异常，并不想去处理它，那么一个简单的 `raise` 语句就可以再次把它抛出。
+```python
+try:
+    raise NameError('HiThere')
+except NameError:
+    print('An exception flew by!')
+    raise
+An exception flew by!
+Traceback (most recent call last):
+  File "<stdin>", line 2, in ?
+NameError: HiThere
+```
+### 调试
+- 凡是用`print()`来辅助查看的地方，都可以用断言`(assert)`来替代：
+```python
+def foo(s):
+    n = int(s)
+    assert n != 0, 'n is zero!'
+    return 10 / n
+def main():
+    foo('0')
+```
+`assert`的意思是，表达式`n != 0`应该是`True`，否则，根据程序运行的逻辑，后面的代码肯定会出错。
+如果断言失败，`assert`语句本身就会抛出`AssertionError`：
+```shell
+$ python err.py
+Traceback (most recent call last):
+  ...
+AssertionError: n is zero!
+```
+- `logging`
+把`print()`替换为`logging`是第3种方式，和`assert`比，`logging`不会抛出错误，而且可以输出到文件：
+```python
+import logging
+logging.basicConfig(level=logging.INFO)
+s = '0'
+n = int(s)
+logging.info('n = %d' % n)
+print(10 / n)
+```
+```shell
+$ python err.py
+INFO:root:n = 0
+Traceback (most recent call last):
+  File "err.py", line 8, in <module>
+    print(10 / n)
+ZeroDivisionError: division by zero
+```
+这就是`logging`的好处，它允许你指定记录信息的级别，有`debug`，`info`，`warning`，`error`等几个级别，当我们指定`level=INFO`时，`logging.debug`就不起作用了。同理，指定`level=WARNING`后，`debug`和`info`就不起作用了。这样一来，你可以放心地输出不同级别的信息，也不用删除，最后统一控制输出哪个级别的信息。
+`logging`的另一个好处是通过简单的配置，一条语句可以同时输出到不同的地方，比如`console`和文件。
+## 文件和操作系统
+- 为了打开一个文件以便读写，可以使用内置的`open`函数以及一个相对或绝对的文件路径：
+```python
+path = 'examples/segismundo.txt'
+f = open(path)
+```
+- 默认情况下，文件是以只读模式`('r')`打开的。然后，我们就可以像处理列表那样来处理这个文件句柄`f`了，比如对行进行迭代：
+```python
+for line in f:
+    pass
+```
+- 如果使用`open`创建文件对象，一定要用`close`关闭它。关闭文件可以返回操作系统资源：
+```python
+f.close()
+```
+- 用`with`语句可以可以更容易地清理打开的文件,这样可以在退出代码块时，自动关闭文件：
+```
+with open(path) as f:
+    lines = [x.rstrip() for x in f]
+```
+- 读写模式：
+![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200317211525.png)
+- 向文件写入，可以使用文件的`write`或`writelines`方法。例如，我们可以创建一个无空行版的`prof_mod.py`：
+```python
+with open('tmp.txt', 'w') as handle:
+    handle.writelines(x for x in open(path) if len(x) > 1)
+with open('tmp.txt') as f:
+    lines = f.readlines()
+```
+```python
+with open('/Users/michael/test.txt', 'w') as f:
+    f.write('Hello, world!')
+```
+要写入特定编码的文本文件，请给`open()`函数传入`encoding`参数，将字符串自动转换成指定编码。
+以`'w'`模式写入文件时，如果文件已存在，会直接覆盖（相当于删掉后新写入一个文件）。如果我们希望追加到文件末尾怎么办？可以传入`'a'`以追加`(append)`模式写入。
+- 调用`readline()`可以每次读取一行内容，调用`readlines()`一次读取所有内容并按行返回list。
+- 常用文件方法
+![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200317211726.png)
+### 操作文件和目录
+操作文件和目录的函数一部分放在`os`模块中，一部分放在`os.path`模块中，这一点要注意一下。查看、创建和删除目录可以这么调用：
+- 查看当前目录的绝对路径:
+```python
+os.path.abspath('.')
+'/Users/michael'
+- 在某个目录下创建一个新目录，首先把新目录的完整路径表示出来:
+````python
+os.path.join('/Users/michael', 'testdir')
+'/Users/michael/testdir'
+```
+- 创建一个目录:
+``` python
+os.mkdir('/Users/michael/testdir')
+```
+- 删掉一个目录:
+>>> os.rmdir('/Users/michael/testdir')
+把两个路径合成一个时，不要直接拼字符串，而要通过`os.path.join()`函数，这样可以正确处理不同操作系统的路径分隔符.
+同样的道理，要拆分路径时，也不要直接去拆字符串，而要通过`os.path.split()`函数，这样可以把一个路径拆分为两部分，后一部分总是最后级别的目录或文件名：
+```python
+os.path.split('/Users/michael/testdir/file.txt')
+
+('/Users/michael/testdir', 'file.txt')
+```
+`os.path.splitext()`可以直接让你得到文件扩展名，很多时候非常方便：
+```python
+os.path.splitext('/path/to/file.txt')
+('/path/to/file', '.txt')
+```
+这些合并、拆分路径的函数并不要求目录和文件要真实存在，它们只对字符串进行操作。
+文件操作使用下面的函数。假定当前目录下有一个`test.txt`文件：
+- 对文件重命名:
+```
+os.rename('test.txt', 'test.py')
+```
+- 删掉文件:
+```python
+os.remove('test.py')
+```
+`shutil`模块提供了`copyfile()`的函数，你还可以在`shutil`模块中找到很多实用函数，它们可以看做是`os`模块的补充。
+### 序列化
+`pickle.dumps()`方法把任意对象序列化成一个`bytes`，然后，就可以把这个`bytes`写入文件。或者用另一个方法`pickle.dump()`直接把对象序列化后写入一个`file-like Object`：
+```python
+f = open('dump.txt', 'wb')
+pickle.dump(d, f)
+f.close()
+```
+当我们要把对象从磁盘读到内存时，可以先把内容读到一个`bytes`，然后用`pickle.loads()`方法反序列化出对象，也可以直接用`pickle.load()`方法从一个`file-like Object`中直接反序列化出对象。我们打开另一个Python命令行来反序列化刚才保存的对象：
+```python
+f = open('dump.txt', 'rb')
+d = pickle.load(f)
+f.close()
+d
+{'age': 20, 'score': 88, 'name': 'Bob'}
+```
+```python
+import json
+d = dict(name='Bob', age=20, score=88)
+json.dumps(d)
+'{"age": 20, "score": 88, "name": "Bob"}'
+```
+`dumps()`方法返回一个`str`，内容就是标准的`JSON`。类似的，`dump()`方法可以直接把`JSON`写入一个`file-like Object`。
+
+要把`JSON`反序列化为`Python`对象，用`loads()`或者对应的`load()`方法，前者把`JSON`的字符串反序列化，后者从`file-like Object`中读取字符串并反序列化：
+```python
+ json_str = '{"age": 20, "score": 88, "name": "Bob"}'
+>>> json.loads(json_str)
+{'age': 20, 'score': 88, 'name': 'Bob'}
+```
+`Python`的`dict`对象可以直接序列化为`JSON`的`{}`，不过，很多时候，我们更喜欢用`class`表示对象，比如定义`Student`类，然后序列化：
+```python
+import json
+class Student(object):
+    def __init__(self, name, age, score):
+        self.name = name
+        self.age = age
+        self.score = score
+s = Student('Bob', 20, 88)
+print(json.dumps(s))
+```
+运行代码，毫不留情地得到一个`TypeError`：
+```python
+Traceback (most recent call last):
+  ...
+TypeError: <__main__.Student object at 0x10603cc50> is not JSON serializable
+```
+错误的原因是`Student`对象不是一个可序列化为`JSON`的对象。
+前面的代码之所以无法把`Student`类实例序列化为`JSON`，是因为默认情况下，`dumps()`方法不知道如何将`Student`实例变为一个`JSON`的`{}`对象。
+可选参数`default`就是把任意一个对象变成一个可序列为`JSON`的对象，我们只需要为`Student`专门写一个转换函数，再把函数传进去即可：
+```python
+def student2dict(std):
+    return {
+        'name': std.name,
+        'age': std.age,
+        'score': std.score
+    }
+```
+这样，`Student`实例首先被`student2dict()`函数转换成`dict`，然后再被顺利序列化为`JSON`：
+```python
+print(json.dumps(s, default=student2dict))
+{"age": 20, "name": "Bob", "score": 88}
+```
+不过，下次如果遇到一个`Teacher`类的实例，照样无法序列化为`JSON`。我们可以偷个懒，把任意`class`的实例变为`dict`：
+```python
+print(json.dumps(s, default=lambda obj: obj.__dict__))
+```
+因为通常`class`的实例都有一个`__dict__`属性，它就是一个`dict`，用来存储实例变量。也有少数例外，比如定义了`__slots__`的`class`。
+同样的道理，如果我们要把`JSON`反序列化为一个`Student`对象实例，`loads()`方法首先转换出一个`dict`对象，然后，我们传入的`object_hook`函数负责把`dict`转换为`Student`实例：
+```python
+def dict2student(d):
+    return Student(d['name'], d['age'], d['score'])
+```
+运行结果如下：
+```python
+json_str = '{"age": 20, "score": 88, "name": "Bob"}'
+print(json.loads(json_str, object_hook=dict2student))
+<__main__.Student object at 0x10cd3c190>
+```
+打印出的是反序列化的`Student`实例对象。
 ## 标准库
-### `datetime`
-```python
-from datetime import datetime, date, time
-dt = datetime(2011, 10, 29, 20, 30, 21)
-dt.day
-29
-dt.minute
-30
-```
-- 根据`datetime`实例，你可以用`date`和`time`提取出各自的对象：
-```python
-dt.date()
-datetime.date(2011, 10, 29)
-dt.time()
-datetime.time(20, 30, 21)
-```
-- `strftime`方法可以将`datetime`格式化为字符串：
-```python
-dt.strftime('%m/%d/%Y %H:%M')
-'10/29/2011 20:30'
-```
-- `strptime`可以将字符串转换成`datetime`对象：
-```python
-datetime.strptime('20091031', '%Y%m%d')
-datetime.datetime(2009, 10, 31, 0, 0)
-```
-- 格式化命令
-
-
-![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200317190745.png)
 ### `collections`
 #### `namedtuple`
 ```python
@@ -1912,7 +2600,14 @@ q.append('x')
 q.appendleft('y')
 q
 deque(['y', 'a', 'b', 'c', 'x'])
-```
+# 清除所有元素
+q.clear()
+# 计算x的个数
+q.count(x)
+#移除找到的第一个 value。
+q.remove(value)
+#逆序排列
+q.reverse()
 `deque`除了实现`list`的`append()`和`pop()`外，还支持`appendleft()`和`popleft()`，这样就可以非常高效地往头部添加或删除元素。
 #### `defaultdict`
 使用`dict`时，如果引用的`Key`不存在，就会抛出`KeyError`。如果希望`key`不存在时，返回一个默认值，就可以用`defaultdict`：
@@ -2022,5 +2717,86 @@ c
 Counter({'r': 2, 'o': 2, 'g': 2, 'm': 2, 'l': 2, 'p': 1, 'a': 1, 'i': 1, 'n': 1, 'h': 1, 'e': 1})
 ```
 `Counter`实际上也是`dict`的一个子类，上面的结果可以看出每个字符出现的次数。
+- `elements()`:返回一个迭代器，其中每个元素将重复出现计数值所指定次。 元素会按首次出现的顺序返回。 如果一个元素的计数值小于一，`elements()` 将会忽略它。
+```python
+c = Counter(a=4, b=2, c=0, d=-2)
+sorted(c.elements())
+['a', 'a', 'a', 'a', 'b', 'b']
+```
+- `most_common([n])`:返回一个列表，其中包含`n` 个最常见的元素及出现次数，按常见程度由高到低排序。 如果 `n` 被省略或为 `None`，`most_common()` 将返回计数器中的 所有 元素。 计数值相等的元素按首次出现的顺序排序：
+```python
+Counter('abracadabra').most_common(3)
+[('a', 5), ('b', 2), ('r', 2)]
+```
+```python
+c = Counter(a=3, b=1)
+d = Counter(a=1, b=2)
+c + d                       # add two counters together:  c[x] + d[x]
+Counter({'a': 4, 'b': 3})
+c - d                       # subtract (keeping only positive counts)
+Counter({'a': 2})
+c & d                       # intersection:  min(c[x], d[x]) 
+Counter({'a': 1, 'b': 1})
+c | d                       # union:  max(c[x], d[x])
+Counter({'a': 3, 'b': 2})
+``
+### `datetime`
+```python
+from datetime import datetime, date, time
+dt = datetime(2011, 10, 29, 20, 30, 21)
+dt.day
+29
+dt.minute
+30
+```
+- 根据`datetime`实例，你可以用`date`和`time`提取出各自的对象：
+```python
+dt.date()
+datetime.date(2011, 10, 29)
+dt.time()
+datetime.time(20, 30, 21)
+```
+- `strftime`方法可以将`datetime`格式化为字符串：
+```python
+dt.strftime('%m/%d/%Y %H:%M')
+'10/29/2011 20:30'
+```
+- `strptime`可以将字符串转换成`datetime`对象：
+```python
+datetime.strptime('20091031', '%Y%m%d')
+datetime.datetime(2009, 10, 31, 0, 0)
+```
+- 计算差值
+```python
+now = date.today()
+birthday = date(1964, 7, 31)
+age = now - birthday
+age.days
+14368
+```
+- 格式化命令
+
+
+![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200317190745.png)
+## `os`
+- `os.path.exists(path)`:路径存在则返回`True`,路径损坏返回`False`
+- `os.path.join(path1[, path2[, ...]])`:把目录和文件名合成一个路径
+- `os.system('mkdir today')`:命令行命令
+- `os.environ`:`os.environ["CUDA_VISIBLE_DEVICES"] = "7"`
+## 第三方库
+### `h5py`
+h5py文件是存放两类对象的容器，数据集(`dataset`)和组(`group`)，`dataset`类似数组类的数据集合，和`numpy`的数组差不多。`group`是像文件夹一样的容器，它好比`python`中的字典，有键(`key`)和值(`value`)。`group`中可以存放`dataset`或者其他的`group`。”键”就是组成员的名称，”值”就是组成员对象本身(组或者数据集)
+```python
+import h5py
+```
+- 创建
+```python
+with h5py.File('test.h5','w') as f:
+```
+- 读取
+```python
+with h5py.File('test.h5','r') as f:
+```
+- 
 
 
