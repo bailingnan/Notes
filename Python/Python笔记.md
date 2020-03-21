@@ -1234,14 +1234,16 @@ print('Runoob: {Runoob:d}; Google: {Google:d}; Taobao: {Taobao:d}'.format(**tabl
 Runoob: 2; Google: 1; Taobao: 3
 ```
 #### 常用操作
+- `str.join(iterable)`:返回一个由 `iterable` 中的字符串拼接而成的字符串。比`+`效率要高。
 - `eval(str)`:用来计算在字符串中的有效`Python`表达式,并返回一个对象
-- `count(str, beg= 0,end=len(string))`:返回 `str` 在 `string` 里面出现的次数，如果 `beg` 或者 `end `指定则返回指定范围内 `str` 出现的次数
-- `find(str, beg=0, end=len(string))`:检测 `str` 是否包含在字符串中，如果指定范围 `beg` 和 `end` ，则检查是否包含在指定范围内，如果包含返回开始的索引值，否则返回`-1`
-- `upper()`:转换字符串中的小写字母为大写
-- `lower()`:转换字符串中所有大写字符为小写
-- `replace(old, new [, max])`:将字符串中的 `str1` 替换成 `str2`,如果`max`指定，则替换不超过`max`次。
-- `split(str="", num=string.count(str))`:`num=string.count(str))` 以`str`为分隔符截取字符串，如果`num`有指定值，则仅截取`num+1`个子字符串
-- `strip([chars])`:截掉字符串两边的空格或指定字符。
+- `str.center(width[, fillchar])`:返回长度为 `width` 的字符串，原字符串在其正中。 使用指定的 `fillchar` 填充两边的空位（默认使用 `ASCII` 空格符）。 如果 `width` 小于等于 `len(s)` 则返回原字符串的副本。
+- `str.count(str, beg= 0,end=len(string))`:返回 `str` 在 `string` 里面出现的次数，如果 `beg` 或者 `end `指定则返回指定范围内 `str` 出现的次数
+- `str.find(str, beg=0, end=len(string))`:检测 `str` 是否包含在字符串中，如果指定范围 `beg` 和 `end` ，则检查是否包含在指定范围内，如果包含返回开始的索引值，否则返回`-1`
+- `str.upper()`:转换字符串中的小写字母为大写
+- `str.lower()`:转换字符串中所有大写字符为小写
+- `str.replace(old, new [, max])`:将字符串中的 `str1` 替换成 `str2`,如果`max`指定，则替换不超过`max`次。
+- `str.split(str="", num=string.count(str))`:`num=string.count(str))` 以`str`为分隔符截取字符串，如果`num`有指定值，则仅截取`num+1`个子字符串
+- `str.strip([chars])`:截掉字符串两边的空格或指定字符。
 ### 运算符
 #### `==`和`is`
 - 要判断两个引用是否指向同一个对象，可以使用`is`方法:
@@ -1257,6 +1259,8 @@ True
 print(a == c)
 True
 ```
+#### `any()`和`all()`
+`any()`, `all()`很好理解，就是字面意思，即参数中任何一个为 `true` 或者全部为 `true` 则返回 `true`。
 ## 模块
 - 每一个包目录下面都会有一个`__init__.py`的文件，这个文件是必须存在的，否则，`Python`就把这个目录当成普通目录，而不是一个包。
 - 每个模块有各自独立的符号表，在模块内部为所有的函数当作全局符号表来使用。所以，模块的作者可以放心大胆的在模块内部使用这些全局变量，而不用担心把其他用户的全局变量搞混。在当前目录下存在与要引入模块同名的文件，就会把要引入的模块屏蔽掉。
@@ -2739,7 +2743,262 @@ c & d                       # intersection:  min(c[x], d[x])
 Counter({'a': 1, 'b': 1})
 c | d                       # union:  max(c[x], d[x])
 Counter({'a': 3, 'b': 2})
-``
+```
+- `heap`
+这个模块提供了堆队列算法的实现，也称为优先队列算法。
+堆是一个二叉树，它的每个父节点的值都只会小于或大于所有孩子节点（的值）。它使用了数组来实现：从零开始计数，对于所有的 `k` ，都有 `heap[k]` <= `heap[2*k+1]` 和 `heap[k] <= heap[2*k+2]`。 为了便于比较，不存在的元素被认为是无限大。 堆最有趣的特性在于最小的元素总是在根结点：`heap[0]`。
+这个`API`与教材的堆算法实现有所不同，具体区别有两方面：（a）我们使用了从零开始的索引。这使得节点和其孩子节点索引之间的关系不太直观但更加适合，因为 `Python` 使用从零开始的索引。 （b）我们的 `pop` 方法返回最小的项而不是最大的项（这在教材中称为“最小堆”；而“最大堆”在教材中更为常见，因为它更适用于原地排序）。但是可以通过取反来实现最大堆。
+要创建一个堆，可以使用`list`来初始化为 `[]` ，或者你可以通过一个函数 `heapify()` ，来把一个`list`转换成堆。
+- `heapq.heappush(heap, item)`:将 `item` 的值加入 `heap` 中，保持堆的不变性。
+- `heapq.heappop(heap)`:弹出并返回 `heap` 的最小的元素，保持堆的不变性。如果堆为空，抛出 `IndexError` 。使用 `heap[0]` ，可以只访问最小的元素而不弹出它。
+- `heapq.heappushpop(heap, item)`:将 `item` 放入堆中，然后弹出并返回 `heap` 的最小元素。该组合操作比先调用  `heappush()` 再调用 `heappop()` 运行起来更有效率。
+- `heapq.heapify(x)`:将`list x` 转换成堆，原地，线性时间内。
+- `heapq.heapreplace(heap, item)`:弹出并返回 `heap` 中最小的一项，同时推入新的 `item`。 堆的大小不变。 如果堆为空则引发 `IndexError`。
+这个单步骤操作比 `heappop()` 加 `heappush()` 更高效，并且在使用固定大小的堆时更为适宜。 `pop/push` 组合总是会从堆中返回一个元素并将其替换为 `item`。
+返回的值可能会比添加的 `item` 更大。 如果不希望如此，可考虑改用 `heappushpop()`。 它的 `push/pop` 组合会返回两个值中较小的一个，将较大的值留在堆中。
+-`heapq.merge(*iterables, key=None, reverse=False)`
+将多个已排序的输入合并为一个已排序的输出。返回已排序值的`iterator`。
+类似于 `sorted(itertools.chain(*iterables))` 但返回一个可迭代对象，不会一次性地将数据全部放入内存，并假定每个输入流都是已排序的（从小到大）。
+- `heapq.nlargest(n, iterable, key=None)`:从 `iterable` 所定义的数据集中返回前 `n`个最大元素组成的列表。 如果提供了 `key` 则其应指定一个单参数的函数，用于从 `iterable` 的每个元素中提取比较键 (例如 `key=str.lower`)。 等价于: `sorted(iterable, key=key, reverse=True)[:n]`。
+- `heapq.nsmallest(n, iterable, key=None)`:从 `iterable` 所定义的数据集中返回前 `n` 个最小元素组成的列表。 如果提供了 `key` 则其应指定一个单参数的函数，用于从 `iterable` 的每个元素中提取比较键 (例如 `key=str.lower`)。 等价于: `sorted(iterable, key=key)[:n]`。
+两个函数在 `n` 值较小时性能最好。 对于更大的值，使用 `sorted()` 函数会更有效率。 此外，当 `n==1` 时，使用内置的 `min()` 和 `max()` 函数会更有效率。 如果需要重复使用这些函数，请考虑将可迭代对象转为真正的堆。
+堆排序:
+堆排序 可以通过将所有值推入堆中然后每次弹出一个最小值项来实现。
+```python
+def heapsort(iterable):
+    h = []
+    for value in iterable:
+        heappush(h, value)
+    return [heappop(h) for i in range(len(h))]
+heapsort([1, 3, 5, 7, 9, 2, 4, 6, 8, 0])
+[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+```
+如果我们想要`heapq`排序的是一个对象。那么heapq并不知道应该依据对象当中的哪个参数来作为排序的衡量标准，所以这个时候，需要我们自己定义一个获取关键字的函数，传递给`heapq`，这样才可以完成排序。
+比如说，我们现在有一批电脑，我们希望`heapq`能够根据电脑的价格排序：
+```python
+laptops = [
+    {'name': 'ThinkPad', 'amount': 100, 'price': 91.1},
+    {'name': 'Mac', 'amount': 50, 'price': 543.22},
+    {'name': 'Surface', 'amount': 200, 'price': 21.09},
+    {'name': 'Alienware', 'amount': 35, 'price': 31.75},
+    {'name': 'Lenovo', 'amount': 45, 'price': 16.35},
+    {'name': 'Huawei', 'amount': 75, 'price': 115.65}
+]
+cheap = heapq.nsmallest(3, portfolio, key=lambda s: s['price'])
+expensive = heapq.nlargest(3, portfolio, key=lambda s: s['price'])
+```
+在调用`nlargest`和`nsmallest`的时候，我们额外传递了一个参数`key`，我们传入的是一个匿名函数，它返回的结果是这个对象的`price`，也就是说我们希望`heapq`根据对象的`price`来进行排序。
+这类似于 `sorted(iterable)`，但与 `sorted()` 不同的是这个实现是不稳定的。
+### `bisect`
+- `bisect.bisect_left(a, x, lo=0, hi=len(a))`
+在 `a` 中找到 `x` 合适的插入点以维持有序。参数 `lo` 和 `hi` 可以被用于确定需要考虑的子集；默认情况下整个列表都会被使用。如果 `x` 已经在 `a` 里存在，那么插入点会在已存在元素之前（也就是左边）。如果 `a` 是列表（`list`）的话，返回值是可以被放在 `list.insert()` 的第一个参数的。
+返回的插入点 `i` 可以将数组 `a` 分成两部分。左侧是 `all(val < x for val in a[lo:i]) `，右侧是 `all(val >= x for val in a[i:hi])` 。
+- `bisect.bisect_right(a, x, lo=0, hi=len(a))`
+`bisect.bisect(a, x, lo=0, hi=len(a))`
+类似于 `bisect_left()`，但是返回的插入点是 `a` 中已存在元素 `x` 的右侧。
+返回的插入点 `i` 可以将数组 `a` 分成两部分。左侧是 `all(val <= x for val in a[lo:i])`，右侧是 `all(val > x for val in a[i:hi]) for the right side`。
+- `bisect.insort_left(a, x, lo=0, hi=len(a))`
+将 `x` 插入到一个有序序列 `a` 里，并维持其有序。如果 `a` 有序的话，这相当于 `a.insert(bisect.bisect_left(a, x, lo, hi), x)`。要注意搜索是 `O(log n)` 的，插入却是 `O(n)` 的。
+- `bisect.insort_right(a, x, lo=0, hi=len(a))`
+`bisect.insort(a, x, lo=0, hi=len(a))`
+类似于 `insort_left()`，但是把 `x` 插入到 `a` 中已存在元素 `x `的右侧。
+函数 `bisect()` 还可以用于数字表查询。这个例子是使用 `bisect()` 从一个给定的考试成绩集合里，通过一个有序数字表，查出其对应的字母等级：`90` 分及以上是 `'A'`，`80` 到 `89` 是 `'B'`，以此类推
+```python
+def grade(score, breakpoints=[60, 70, 80, 90], grades='FDCBA'):
+    i = bisect(breakpoints, score)
+    return grades[i]
+[grade(score) for score in [33, 99, 77, 70, 89, 90, 100]]
+['F', 'A', 'C', 'C', 'B', 'A', 'A']
+```
+### `itertools`
+- `itertools.count(start=0,step=1)`:创建一个迭代器，生成从 `n` 开始的连续整数，如果忽略 `n`，则从 `0` 开始计算。
+```python
+for n in itertools.count():
+    if 100000 < n < 100010:
+        print n
+    if n > 1000000:
+        break
+100001
+100002
+100003
+100004
+100005
+100006
+100007
+100008
+100009
+```
+- `itertools.cycle(iterable)`:把传入的一个序列无限重复下去。
+```python
+for c in itertools.cycle("AB"):
+    if count > 4:
+        break
+    print c
+   count += 1     
+A
+B
+A
+B
+A
+```
+- `itertools.repeat(object [,times])`:创建一个迭代器，重复生成 `object`，`times`（如果已提供）指定重复计数，如果未提供 `times`，将无止尽返回该对象。
+```python
+for x in itertools.repeat("hello world", 5):
+    print x    
+hello world
+hello world
+hello world
+hello world
+hello world
+```
+- `itertools.chain(*iterables)`:把一组迭代对象串联起来，形成一个更大的迭代器。
+```python
+for c in itertools.chain('ABC', 'XYZ'):
+    print c    
+A
+B
+C
+X
+Y
+Z
+```
+- `itertools.permutations(iterable[, r])：返回 `iterable` 中任意取 `r` 个元素做排列的元组的迭代器，如果不指定 `r`，那么序列的长度与 `iterable` 中的项目数量相同。
+```python
+for elem in itertools.permutations('abc', 2):
+    print elem
+('a', 'b')
+('a', 'c')
+('b', 'a')
+('b', 'c')
+('c', 'a')
+('c', 'b')
+for elem in itertools.permutations('abc'):
+    print elem
+('a', 'b', 'c')
+('a', 'c', 'b')
+('b', 'a', 'c')
+('b', 'c', 'a')
+('c', 'a', 'b')
+('c', 'b', 'a')
+```
+- `itertools.combinations(iterable, r)`:组合，如果 `iterable` 为 `"abc"`，`r` 为 2 时，`ab` 和 `ba` 则视为重复，此时只放回 `ab`. 示例：
+```python
+for elem in itertools.combinations('abc', 2):
+    print elem   
+('a', 'b')
+('a', 'c')
+('b', 'c')
+```
+- `itertools.combinations_with_replacement(iterable, r)`:与 `combinations` 类似，但允许重复值，即如果 `iterable` 为 `"abc"`，`r` 为 2 时，会多出 `aa`, `bb`, `cc`。
+- `itertools.compress(data, selectors)`:
+相当于 `bool` 选取，只有当 `selectors` 对应位置的元素为 `true` 时，才保留 `data` 中相应位置的元素，否则去除。
+```python
+list(itertools.compress('abcdef', [1, 1, 0, 1, 0, 1]))
+['a', 'b', 'd', 'f']
+list(itertools.compress('abcdef', [True, False, True]))
+['a', 'c']
+```
+- `itertools.groupby(iterable[, keyfunc])`:对`iterable`中的元素进行分组。`keyfunc` 是分组函数，用于对 `iterable` 的连续项进行分组，如果不指定，则默认对 `iterable` 中的连续相同项进行分组，返回一个 `(key, sub-iterator)` 的迭代器。
+```python
+for key, value_iter in itertools.groupby('aaabbbaaccd'):
+    print key, list(value_iter)  
+a ['a', 'a', 'a']
+b ['b', 'b', 'b']
+a ['a', 'a']
+c ['c', 'c']
+d ['d']
+data = ['a', 'bb', 'cc', 'ddd', 'eee', 'f']
+for key, value_iter in itertools.groupby(data, len):
+    print key, list(value_iter)   
+1 ['a']
+2 ['bb', 'cc']
+3 ['ddd', 'eee']
+1 ['f']
+```
+注意，注意，注意：必须先排序后才能分组，因为`groupby`是通过比较相邻元素来分组的。可以看第二个例子，因为 `a` 和`f` 没有排在一起，所以最后没有分组到同一个列表中。
+- `itertools.islice(iterable, [start,] stop [, step])`:切片选择，`start` 是开始索引，`stop` 是结束索引，`step` 是步长，`start`和 `step` 可选。
+```python
+list(itertools.islice([10, 6, 2, 8, 1, 3, 9], 5))
+[10, 6, 2, 8, 1]
+list(itertools.islice(itertools.count(), 6))
+[0, 1, 2, 3, 4, 5]
+list(itertools.islice(itertools.count(), 3, 10))
+[3, 4, 5, 6, 7, 8, 9]
+list(itertools.islice(itertools.count(), 3, 10, 2))
+[3, 5, 7, 9]
+```
+- `itertools.tee(iterable, n=2)`:从 `iterable` 创建 `n` 个独立的迭代器，以元组的形式返回。
+```python
+itertools.tee("abcedf")
+(<itertools.tee at 0x7fed7b8f59e0>, <itertools.tee at 0x7fed7b8f56c8>)
+iter1, iter2 = itertools.tee("abcedf")
+list(iter1)
+['a', 'b', 'c', 'e', 'd', 'f']
+list(iter2)
+['a', 'b', 'c', 'e', 'd', 'f']
+```
+- `itertools.product(*iterables, repeat=1)`:
+大致相当于生成器表达式中的嵌套循环。例如， `product(A, B)` 和 `((x,y) for x in A for y in B)` 返回结果一样。
+嵌套循环像里程表那样循环变动，每次迭代时将最右侧的元素向后迭代。这种模式形成了一种字典序，因此如果输入的可迭代对象是已排序的，笛卡尔积元组依次序发出。
+要计算可迭代对象自身的笛卡尔积，将可选参数 `repeat` 设定为要重复的次数。例如，`product(A, repeat=4)` 和 `product(A, A, A, A)` 是一样的。
+- `itertools.dropwhile`
+```python
+ x = itertools.dropwhile(lambda e: e < 5, range(10))
+print(list(x))
+[5, 6, 7, 8, 9]
+```
+- `itertools.filterfalse`:
+保留对应真值为`False`的元素
+```python
+x = itertools.filterfalse(lambda e: e < 5, (1, 5, 3, 6, 9, 4))
+print(list(x))
+[5, 6, 9]
+```
+### `math`
+- `math.ceil(x)`:返回 `x` 的上限，即大于或者等于 `x` 的最小整数。
+- `math.comb(n, k)`:返回不重复且无顺序地从 `n` 项中选择 `k` 项的方式总数。
+- `math.fabs(x)`:返回 `x` 的绝对值。
+- `math.floor(x)`:返回 `x` 的向下取整，小于或等于 `x` 的最大整数。
+- `math.gcd(a, b)`:最大公约数
+- `math.exp(x)`:返回 `e` 次 `x` 幂
+- `math.pow(x, y)`:将返回 `x` 的 `y` 次幂。
+- `math.sqrt(x)`:返回 `x` 的平方根。
+- `math.pi`:数学常数 π = 3.141592...，精确到可用精度。
+- `math.e`:数学常数 e = 2.718281...，精确到可用精度。
+- `math.inf`:浮点正无穷大。 
+### `time`
+在 `Python` 中，用三种方式来表示时间，分别是时间戳、格式化时间字符串和结构化时间
+- 时间戳（`timestamp`）：也就是 1970 年 1 月 1 日之后的秒，例如 1506388236.216345，可以通过`time.time()`获得。时间戳是一个浮点数，可以进行加减运算，但请注意不要让结果超出取值范围。
+- 格式化的时间字符串（`string_time`）：也就是年月日时分秒这样的我们常见的时间字符串，例如2017-09-26 09:12:48，可以通过`time.strftime('%Y-%m-%d')`获得;
+结构化时间（`struct_time`）：一个包含了年月日时分秒的多元元组，例如`time.struct_time(tm_year=2017, tm_mon=9, tm_mday=26, tm_hour=9, tm_min=14, tm_sec=50, tm_wday=1, tm_yday=269, tm_isdst=0)`，可以通过`time.localtime()`获得。
+- 利用`time.strftime('%Y-%m-%d %H:%M:%S')`等方法可以获得一个格式化时间字符串。
+```python
+time.strftime('%Y-%m-%d %H:%M:%S')
+'2017-09-26 10:04:28'
+```
+`time.strptime(string[,format])`
+将格式化时间字符串转化成结构化时间。该方法是`time.strftime()`方法的逆操作。`time.strptime()`方法根据指定的格式把一个时间字符串解析为时间元组。要注意的是，你提供的字符串要和 `format` 参数的格式一一对应，如果 `string` 中日期间使用`“-”`分隔，`format` 中也必须使用`“-”`分隔，时间中使用冒号`“:”`分隔，后面也必须使用冒号分隔，否则会报格式不匹配的错误。并且值也要在合法的区间范围内。
+```python
+stime = "2017-09-26 12:11:30"
+st = time.strptime(stime,"%Y-%m-%d %H:%M:%S")
+```
+![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200321211914.png)
+- `time.time()`:返回当前系统时间戳。时间戳可以做算术运算。
+```python
+time.time()
+1506391907.020303
+该方法经常用于计算程序运行时间：
+```python
+import time
+def func():
+    time.sleep(1.14)
+    pass
+
+t1 = time.time()
+func()
+t2 = time.time()
+print(t2 - t1)
+```
 ### `datetime`
 ```python
 from datetime import datetime, date, time
@@ -2783,20 +3042,327 @@ age.days
 - `os.path.join(path1[, path2[, ...]])`:把目录和文件名合成一个路径
 - `os.system('mkdir today')`:命令行命令
 - `os.environ`:`os.environ["CUDA_VISIBLE_DEVICES"] = "7"`
+## `Path`
+在过去，文件的路径是纯字符串，现在它会是一个`pathlib.Path`对象:
+```python
+from pathlib import Path
+p = Path('/home/ubuntu')
+PosixPath('/home/ubuntu')
+str(p)
+'/home/ubuntu'
+```
+过去路径拼接最正确的方法是用`os.path.join`:
+```python
+os.path.join('/', 'home', 'dongwm/code')
+'/home/dongwm/code'
+os.path.join('/home', 'dongwm/code')
+'/home/dongwm/code'
+现在可以用`pathlib.Path`提供的`joinpath`来拼接:
+```python
+Path('/').joinpath('home', 'dongwm/code')
+PosixPath('/home/dongwm/code')
+但是更简单和方便的方法是用`/`运算符:
+```python
+Path('/') / 'home' / 'dongwm/code'
+PosixPath('/home/dongwm/code')
+Path('/') / Path('home') / 'dongwm/code'
+PosixPath('/home/dongwm/code')
+'/' / Path('home') / 'dongwm/code'
+PosixPath('/home/dongwm/code')
+```
+使用`Path`对象的`parents`属性可以拿到各级目录列表(索引值越大越接近`root`)，而`parent`就表示父级目录:
+```python
+p = Path('/Users/dongweiming/test')
+p.parents[0]
+PosixPath('/Users/dongweiming')
+p.parents[1]
+PosixPath('/Users')
+p.parents[2]
+PosixPath('/')
+p.parent
+PosixPath('/Users/dongweiming')
+p.parent.parent
+PosixPath('/Users')
+```
+获得文件后缀名:
+```python
+p = Path('/usr/local/etc/my.cnf')
+p.suffix, p.stem
+('.cnf', 'my')
+```
+当文件有多个后缀，可以用`suffixes`返回文件所有后缀列表:
+```python
+Path('my.tar.bz2').suffixes
+['.tar', '.bz2']
+Path('my.tar').suffixes
+['.tar']
+Path('my').suffixes
+[]
+```
+Python语言没有内置创建文件的方法(`linux`下的`touch`命令)，过去这么做:
+```python
+with open('new.txt', 'a') as f:
+```
+现在可以直接用`Path`的`touch`方法:
+```python
+Path('new.txt').touch()
+```
+`touch`接受`mode`参数，能够在创建时确认文件权限，还能通过`exist_ok`参数方式确认是否可以重复`touch`(默认可以重复创建，会更新文件的`mtime`)
+- `filename.exists()`；路径是否存在
+- 打开文件：
+```python
+data_folder = Path("source_data/text_files/")
+file_to_open = data_folder / "raw_data.txt"
+print(file_to_open.read_text())
+```
+- 与`os`模块对比
+![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200321202526.png)
 ## 第三方库
 ### `h5py`
 h5py文件是存放两类对象的容器，数据集(`dataset`)和组(`group`)，`dataset`类似数组类的数据集合，和`numpy`的数组差不多。`group`是像文件夹一样的容器，它好比`python`中的字典，有键(`key`)和值(`value`)。`group`中可以存放`dataset`或者其他的`group`。”键”就是组成员的名称，”值”就是组成员对象本身(组或者数据集)
 ```python
 import h5py
 ```
-- 创建
+#### 创建
 ```python
 with h5py.File('test.h5','w') as f:
 ```
-- 读取
+#### 读取
 ```python
 with h5py.File('test.h5','r') as f:
 ```
-- 
+`h5py`文件就像一个 `Python` 字典，因此我们可以检查`key`,
+```python
+list(f.keys())
+['mydataset']
+```
+文件中有一个数据集，即`mydataset`:
+```python
+dset = f['mydataset']
+dset.shape
+(100,)
+dset.dtype
+dtype('int32')
+dset[...] = np.arange(100)
+dset[0]
+0
+dset[10]
+10
+dset[0:100:10]
+array([ 0, 10, 20, 30, 40, 50, 60, 70, 80, 90])
+data = f['mydataset'][:]
+```
+#### 创建数据集：
+```python
+d1=f.create_dataset("dset1", (20,), 'i')
+for key in f.keys():
+    print(key)
+    print(f[key].name)
+    print(f[key].shape)
+    print(f[key].value)
+dset1
+/dset1
+(20,)
+[0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+```
+```python
+dset3 = f.create_dataset('subgroup2/dataset_three', (10,), dtype='i')
+```
+#### 赋值
+```python
+d1=f.create_dataset("dset1",(20,),'i')
+d1[...]=np.arange(20)
+#或者我们可以直接按照下面的方式创建数据集并赋值
+f["dset2"]=np.arange(15)
+for key in f.keys():
+    print(f[key].name)
+    print(f[key].value)
+/dset1
+[ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19]
+/dset2
+[ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14]
+```
+如果我们有现成的`numpy`数组，那么可以在创建数据集的时候就赋值，这个时候就不必指定数据的类型和形状了，只需要把数组名传给参数`data`。
+```python
+a=np.arange(20)
+d1=f.create_dataset("dset1",data=a)
+for key in f.keys():
+    print(f[key].name)
+    print(f[key].value)
+/dset1
+[ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19]
+```
+#### 综合示例1
+```python
+#分别创建dset1,dset2,dset3这三个数据集
+a=np.arange(20)
+d1=f.create_dataset("dset1",data=a)
+
+d2=f.create_dataset("dset2",(3,4),'i')
+d2[...]=np.arange(12).reshape((3,4))
+
+f["dset3"]=np.arange(15)
+
+for key in f.keys():
+    print(f[key].name)
+    print(f[key].value)
+/dset1
+[ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19]
+/dset2
+[[ 0  1  2  3]
+ [ 4  5  6  7]
+ [ 8  9 10 11]]
+/dset3
+[ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14]
+```
+#### 创建`group`,需要首先以`append`模式打开文件
+```python
+f = h5py.File('mydataset.hdf5', 'a')
+grp = f.create_group("subgroup")
+```
+```python
+g1=f.create_group("bar")
+#在bar这个组里面分别创建name为dset1,dset2的数据集并赋值。
+g1["dset1"]=np.arange(10)
+g1["dset2"]=np.arange(12).reshape((3,4))
+
+for key in g1.keys():
+    print(g1[key].name)
+    print(g1[key].value)
+/bar/dset1
+[0 1 2 3 4 5 6 7 8 9]
+/bar/dset2
+[[ 0  1  2  3]
+ [ 4  5  6  7]
+ [ 8  9 10 11]]
+```
+注意观察数据集`dset1`和`dset2`的名字是不是有点和前面的不一样，如果是直接创建的数据集，不在任何组里面，那么它的名字就是`/+名字`，现在这两个数据集都在`bar`这个`group`(组)里面，名字就变成了`/bar+/`名字，是不是有点文件夹的感觉！继续看下面的代码，你会对`group`和`dataset`的关系进一步了解。
+```python
+#创建组bar1,组bar2，数据集dset
+g1=f.create_group("bar1")
+g2=f.create_group("bar2")
+d=f.create_dataset("dset",data=np.arange(10))
+
+#在bar1组里面创建一个组car1和一个数据集dset1。
+c1=g1.create_group("car1")
+d1=g1.create_dataset("dset1",data=np.arange(10))
+
+#在bar2组里面创建一个组car2和一个数据集dset2
+c2=g2.create_group("car2")
+d2=g2.create_dataset("dset2",data=np.arange(10))
+
+#根目录下的组和数据集
+for key in f.keys():
+    print(f[key].name)
+/bar1
+/bar2
+/dset
+
+#bar1这个组下面的组和数据集
+for key in g1.keys():
+    print(g1[key].name)
+/bar1/car1
+/bar1/dset1
+#bar2这个组下面的组和数据集
+for key in g2.keys():
+    print(g2[key].name)
+/bar2/car2
+/bar2/dset2
+#顺便看下car1组和car2组下面都有什么，估计你都猜到了为空。
+print(c1.keys())
+print(c2.keys())
+[]
+[]
+```
+- 综合示例2
+```python
+#遍历文件中的一级组
+for group in f.keys():
+    print (group)
+    #根据一级组名获得其下面的组
+    group_read = f[group]
+    #遍历该一级组下面的子组
+    for subgroup in group_read.keys():
+        print subgroup     
+        #根据一级组和二级组名获取其下面的dataset          
+        dset_read = f[group+'/'+subgroup]                           
+        #遍历该子组下所有的dataset
+        for dset in dset_read.keys():
+            #获取dataset数据
+            dset1 = f[group+'/'+subgroup+'/'+dset]
+            print dset1.name
+            data = np.array(dset1)
+            print data.shape
+            x = data[...,0]
+            y = data[...,1]        
+```
+#### `Pandas`对`h5py`的操作
+##### 写出
+- `path`：字符型输入，用于指定`h5`文件的名称（不在当前工作目录时需要带上完整路径信息）
+- `mode`：用于指定`IO`操作的模式，与`Python`内建的`open()`中的参数一致，默认为`'a'`，即当指定文件已存在时不影响原有数据写入，指定文件不存在时则新建文件；`'r'`，只读模式；`'w'`，创建新文件（会覆盖同名旧文件）；`'r+'`，与`'a'`作用相似，但要求文件必须已经存在；
+- `complevel`：`int`型，用于控制`h5`文件的压缩水平，取值范围在0-9之间，越大则文件的压缩程度越大，占用的空间越小，但相对应的在读取文件时需要付出更多解压缩的时间成本，默认为`0`，代表不压缩
+创建一个`HDF5 IO`对象`store`：
+```python
+store = pd.HDFStore('demo.h5')
+s = pd.Series(np.random.randn(5), index=['a', 'b', 'c', 'd', 'e'])
+df = pd.DataFrame(np.random.randn(8, 3),
+                 columns=['A', 'B', 'C'])
+store['s'],store['df'] = s,df
+```
+从`pandas`中的数据结构直接导出到本地`h5`文件中：
+```python
+#创建新的数据框
+df_ = pd.DataFrame(np.random.randn(5,5))
+#导出到已存在的h5文件中，这里需要指定key
+df_.to_hdf(path_or_buf='demo.h5',key='df_')
+#创建于本地demo.h5进行IO连接的store对象
+store = pd.HDFStore('demo.h5')
+#查看指定h5对象中的所有键
+print(store.keys())
+```
+利用store对象的`put()`方法，其主要参数如下：
+- `key`：指定`h5`文件中待写入数据的`key`
+- `value`：指定与`key`对应的待写入的数据
+- `format`：字符型输入，用于指定写出的模式，`'fixed'`对应的模式速度快，但是不支持追加也不支持检索；`'table'`对应的模式以表格的模式写出，速度稍慢，但是支持直接通过`store`对象进行追加和表格查询操作
+使用`put()`方法将数据存入`store`对象中：
+```python
+store.put(key='s',value=s);store.put(key='df',value=df)
+```
+既然是键值对的格式，那么可以查看`store`的`items`属性（注意这里`store`对象只有`items`和`keys`属性，没有`values`属性）：
+```python
+store.items
+```
+调用`store`对象中的数据直接用对应的键名来索引即可：
+```python
+store['df']
+```
+删除`store`对象中指定数据的方法有两种，一是使用`remove()`方法，传入要删除数据对应的键：
+```python
+store.remove('s')
+print(store.keys())
+```
+二是使用`Python`中的关键词`del`来删除指定数据：
+```python
+del store['s']
+```
+##### 读取
+```python
+store = pd.HDFStore('demo.h5')
+'''方式1'''
+df1 = store['df']
+'''方式2'''
+df2 = store.get('df')
+```
+```python
+df = pd.read_hdf('demo.h5',key='df')
+```
+- 删除对象
+```python
+del subgroup["MyDataset"]
+```
+
+
+
+
 
 
