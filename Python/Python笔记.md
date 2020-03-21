@@ -73,6 +73,15 @@ print(a.count(2))
 - `len(tuple)`:计算元组元素个数。
 - `max(tuple)`:返回元组中元素最大值。
 - `min(tuple)`:返回元组中元素最小值。
+#### 代码段
+- 取元组元素
+```python
+a,b,c = ('cat','dog','tiger')
+# 提取首、尾两个元素：
+first,*_,end = (1,2,3,4,5,6)
+# 提取首、中、尾三部分：
+first,*middle,end = (1,2,3,4,5,6)
+```
 ### 列表
 #### 添加和删除元素
 - `insert`在特定的位置插入元素：
@@ -118,6 +127,37 @@ everything = []
 for chunk in list_of_lists:
     everything = everything + chunk
 ```
+考虑下列代码片段：
+```python
+list = [ [ ] ] * 5
+list  # output?
+list[0].append(10)
+list  # output?
+list[1].append(20)
+list  # output?
+list.append(30)
+list  # output?
+```
+2,4,6,8行将输出什么结果？试解释。
+输出的结果如下：
+```python
+[[], [], [], [], []]
+[[10], [10], [10], [10], [10]]
+[[10, 20], [10, 20], [10, 20], [10, 20], [10, 20]]
+[[10, 20], [10, 20], [10, 20], [10, 20], [10, 20], 30]
+```
+解释如下：
+第一行的输出结果直觉上很容易理解，例如 `list = [ [ ] ] * 5` 就是简单的创造了5个空列表。然而，理解表达式`list=[ [ ] ] * 5`的关键一点是它不是创造一个包含五个独立列表的列表，而是它是一个创建了包含对同一个列表五次引用的列表。只有了解了这一点，我们才能更好的理解接下来的输出结果。
+`list[0].append(10)` 将10附加在第一个列表上。
+但由于所有5个列表是引用的同一个列表，所以这个结果将是：
+```python
+[[10], [10], [10], [10], [10]]
+```
+同理，`list[1].append(20)`将20附加在第二个列表上。但同样由于5个列表是引用的同一个列表，所以输出结果现在是：
+```python
+[[10, 20], [10, 20], [10, 20], [10, 20], [10, 20]]
+```
+作为对比， `list.append(30)`是将整个新的元素附加在外列表上，因此产生的结果是： `[[10, 20], [10, 20], [10, 20], [10, 20], [10, 20], 30]`。
 #### 排序
 - `sort`函数将一个列表原地排序（不创建新的对象）
 ```python
@@ -191,6 +231,116 @@ print(list(reversed(range(10))))
 - `list.extend(seq)`:在列表末尾一次性追加另一个序列中的多个值（用新列表扩展原来的列表）
 - `list.index(obj)`:从列表中找出某个值第一个匹配项的索引位置
 - `list.reverse()`:反向列表中元素
+#### 代码段
+- 重复元素判定
+以下方法可以检查给定列表是不是存在重复元素，它会使用 `set()` 函数来移除所有重复元素。
+```python
+def all_unique(lst):
+    return len(lst) == len(set(lst))
+x = [1,1,2,2,3,2,3,4,5,6]
+y = [1,2,3,4,5]
+all_unique(x) # False
+all_unique(y) # True
+```
+- 取两个列表交集：
+```python
+def common_elements(list1, list2):
+    common = set(list1).intersection(set(list2))
+    return list(common)
+```
+- 压缩
+这个方法可以将布尔型的值去掉，例如`(False，None，0，“”)`，它使用 `filter()` 函数。
+```python
+def compact(lst):
+    return list(filter(bool, lst))
+compact([0, 1, False, 2, '', 3, 'a', 's', 34])
+# [ 1, 2, 3, 'a', 's', 34 ]
+```
+- 解包
+如下代码段可以将打包好的成对列表解开成两组不同的元组。
+```python
+array = [['a', 'b'], ['c', 'd'], ['e', 'f']]
+transposed = zip(*array)
+print(transposed)
+# [('a', 'c', 'e'), ('b', 'd', 'f')]
+```
+- 逗号连接
+下面的代码可以将列表连接成单个字符串，且每一个元素间的分隔方式设置为了逗号。
+```python
+hobbies = ["basketball", "football", "swimming"]
+print("My hobbies are: " + ", ".join(hobbies))
+# My hobbies are: basketball, football, swimming
+```
+- 展开列表
+该方法将通过递归的方式将列表的嵌套展开为单个列表。
+```python
+def spread(arg):
+    ret = []
+    for i in arg:
+        if isinstance(i, list):
+            ret.extend(i)
+        else:
+            ret.append(i)
+    return ret
+
+def deep_flatten(lst):
+    result = []
+    result.extend(
+        spread(list(map(lambda x: deep_flatten(x) if type(x) == list else x, lst))))
+    return result
+deep_flatten([1, [2], [[3], 4], 5]) # [1,2,3,4,5]
+```
+非递归：
+```python
+def spread(arg):
+    ret = []
+    for i in arg:
+        if isinstance(i, list):
+            ret.extend(i)
+        else:
+            ret.append(i)
+    return ret
+spread([1,2,3,[4,5,6],[7],8,9]) # [1,2,3,4,5,6,7,8,9]
+```
+- 列表的差
+该方法将返回第一个列表的元素，其不在第二个列表内。如果同时要反馈第二个列表独有的元素，还需要加一句 `set_b.difference(set_a)`。
+```python
+def difference(a, b):
+    set_a = set(a)
+    set_b = set(b)
+    comparison = set_a.difference(set_b)
+    return list(comparison)
+difference([1,2,3], [1,2,4]) # [3]
+```
+- 通过函数取差
+如下方法首先会应用一个给定的函数，然后再返回应用函数后结果有差别的列表元素。
+```python
+def difference_by(a, b, fn):
+    b = set(map(fn, b))
+    return [item for item in a if fn(item) not in b]
+from math import floor
+difference_by([2.1, 1.2], [2.3, 3.4],floor) # [1.2]
+difference_by([{ 'x': 2 }, { 'x': 1 }], [{ 'x': 1 }], lambda v : v['x'])
+# [ { x: 2 } ]
+```
+- Given a list of N numbers。
+给定一个含有`N`个数字的列表。
+使用单一的列表生成式来产生一个新的列表，该列表只包含满足以下条件的值：
+(a)偶数值
+(b)元素为原始列表中偶数切片。
+例如，如果`list[2]`包含的值是偶数。那么这个值应该被包含在新的列表当中。因为这个数字同时在原始列表的偶数序列（2为偶数）上。然而，如果`list[3]`包含一个偶数，
+那个数字不应该被包含在新的列表当中，因为它在原始列表的奇数序列上。
+对此问题的简单解决方法如下：
+```python
+[x for x in list[::2] if x%2 == 0]
+```
+例如，给定列表如下：
+```python
+list = [ 1 , 3 , 5 , 8 , 10 , 13 , 18 , 36 , 78 ]
+```
+列表生成式`[x for x in list[::2] if x%2 == 0]` 的结果是，`[10, 18, 78]`
+这个表达式工作的步骤是，第一步取出偶数切片的数字，
+第二步剔除其中所有奇数。
 ### 字典
 ```python
 d = dict(name='Bob', age=20, score=88)
@@ -295,6 +445,16 @@ by_letter = defaultdict(list)
 for word in words:
     by_letter[word[0]].append(word)
 ```
+给定以下字典的子类，下面的代码能够运行么？为什么？
+```python
+class DefaultDict(dict):
+  def __missing__(self, key):
+    return []
+d = DefaultDict()
+d['florp'] = 127
+```
+能够运行。
+当`key`缺失时，执行`DefaultDict`类，字典的实例将自动实例化这个数列。
 #### 有效的键类型
 - 字典的值可以是任意`Python`对象，而键通常是不可变的标量类型（整数、浮点型、字符串）或元组（元组中的对象必须是不可变的）。这被称为“可哈希性”。可以用`hash`函数检测一个对象是否是可哈希的（可被用作字典的键）：
 ```python
@@ -318,6 +478,37 @@ sorted(dict.keys())
 - 值：
 ```python
 sorted(dict.items(),key=lamda:item:item[1])
+```
+#### 代码段
+- 合并字典
+```python
+def merge_two_dicts(a, b):
+    c = a.copy()   # make a copy of a 
+    c.update(b)    # modify keys and values of a with the ones from b
+    return c
+a = { 'x': 1, 'y': 2}
+b = { 'y': 3, 'z': 4}
+print(merge_two_dicts(a, b))
+# {'y': 3, 'x': 1, 'z': 4}
+```
+在 Python 3.5 或更高版本中，我们也可以用以下方式合并字典：
+```python
+def merge_dictionaries(a, b)
+   return {**a, **b}
+a = { 'x': 1, 'y': 2}
+b = { 'y': 3, 'z': 4}
+print(merge_dictionaries(a, b))
+# {'y': 3, 'x': 1, 'z': 4}
+```
+- 将两个列表转化为字典
+如下方法将会把两个列表转化为单个字典。
+```python
+def to_dictionary(keys, values):
+    return dict(zip(keys, values))
+keys = ["a", "b", "c"]    
+values = [2, 3, 4]
+print(to_dictionary(keys, values))
+# {'a': 2, 'c': 4, 'b': 3}
 ```
 ### 集合
 - 集合是无序的不可重复的元素的集合。你可以把它当做字典，但是只有键没有值。可以用两种方式创建集合：通过`set`函数或使用尖括号`set`语句：
@@ -439,6 +630,15 @@ SyntaxError: invalid syntax
 print([[x for x in tup] for tup in some_tuples])
 [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 ```
+#### 代码段
+- 元素频率
+下面的方法会根据元素频率取列表中最常见的元素。
+```python
+def most_frequent(list):
+    return max(set(list), key = list.count)
+list = [1,2,1,2,3,2,1,4,2]
+most_frequent(list)
+```
 ### 函数
 #### 参数
 - 对象作为参数传递给函数时，新的局域变量创建了对原始对象的引用，而不是复制。如果在函数里绑定一个新对象到一个变量，这个变动不会反映到上一层。因此可以改变可变参数的内容:
@@ -470,6 +670,42 @@ def add_end(L=None):
         L = []
     L.append('END')
     return L
+```
+举例：
+```python
+def extendList(val, list=[]):
+    list.append(val)
+    return list
+
+list1 = extendList(10)
+list2 = extendList(123,[])
+list3 = extendList('a')
+
+print "list1 = %s" % list1
+print "list2 = %s" % list2
+print "list3 = %s" % list3
+
+list1 = [10, 'a']
+list2 = [123]
+list3 = [10, 'a']
+```
+很多人都会误认为`list1=[10]`，`list3=[‘a’]`,因为他们以为每次`extendList`被调用时，列表参数的默认值都将被设置为`[]`.但实际上的情况是，新的默认列表只在函数被定义的那一刻创建一次。
+当`extendList`被没有指定特定参数`list`调用时，这组`list`的值随后将被使用。这是因为带有默认参数的表达式在函数被定义的时候被计算，不是在调用的时候被计算。因此`list1`和`list3`是在同一个默认列表上进行操作（计算）的。而`list2`是在一个分离的列表上进行操作（计算）的。（通过传递一个自有的空列表作为列表参数的数值）。
+`extendList`的定义可以作如下修改。
+尽管，创建一个新的列表，没有特定的列表参数。
+下面这段代码可能能够产生想要的结果。
+```python
+def extendList(val, list=None):
+  if list is None:
+    list = []
+  list.append(val)
+  return list
+```
+通过上面的修改，输出结果将变成：
+```python
+list1 = [10]
+list2 = [123]
+list3 = ['a']
 ```
 - 为什么要设计`str`、`None`这样的不变对象呢？因为不变对象一旦创建，对象内部的数据就不能修改，这样就减少了由于修改数据导致的错误。此外，由于对象不变，多任务环境下同时读取对象不需要加锁，同时读一点问题都没有。我们在编写程序时，如果可以设计一个不变对象，那就尽量设计成不变对象。
 #### 可变参数
@@ -943,6 +1179,35 @@ f2()
 f3()
 9
 ```
+```python
+下面这段代码的输出结果将是什么？请解释。
+```python
+def multipliers():
+  return [lambda x : i * x for i in range(4)]
+print [m(2) for m in multipliers()]
+```
+你如何修改上面的`multipliers`的定义产生想要的结果？
+上面代码输出的结果是`[6, 6, 6, 6]`(不是我们想的`[0, 2, 4, 6]`)。
+上述问题产生的原因是`Python`闭包的延迟绑定。这意味着内部函数被调用时，参数的值在闭包内进行查找。因此，当任何由`multipliers()`返回的函数被调用时，`i`的值将在附近的范围进行查找。那时，不管返回的函数是否被调用，for循环已经完成，`i`被赋予了最终的值3。
+因此，每次返回的函数乘以传递过来的值3，因为上段代码传过来的值是2，它们最终返回的都是6(3*2)。碰巧的是，《The Hitchhiker’s Guide to Python》也指出，在与`lambdas`函数相关也有一个被广泛被误解的知识点，不过跟这个`case`不一样。由`lambda`表达式创造的函数没有什么特殊的地方，它其实是和def创造的函数式一样的。
+下面是解决这一问题的一些方法。
+一种解决方法就是用`Python`生成器。
+```python
+def multipliers():
+  for i in range(4): yield lambda x : i * x
+```
+另外一个解决方案就是创造一个闭包，利用默认函数立即绑定。
+```python
+def multipliers():
+  return [lambda x, i=i : i * x for i in range(4)]
+```
+还有种替代的方案是，使用偏函数：
+```python
+from functools import partial
+from operator import mul
+def multipliers():
+  return [partial(mul, i) for i in range(4)]
+```
 ##### 装饰器
 - 在代码运行期间动态增加功能的方式，称之为“装饰器”(`Decorator`)。
 本质上，`decorator`就是一个返回函数的高阶函数。所以，我们要定义一个能打印日志的`decorator`，可以定义如下：
@@ -1170,6 +1435,17 @@ S ['Steven']
 ```
 - 常用`itertools`函数:
 ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/687474703a2f2f75706c6f61642d696d616765732e6a69616e7368752e696f2f75706c6f61645f696d616765732f373137383639312d313131383233643837363761313034642e706e673f696d6167654d6f6772322f6175746f2d6f7269656e742f7374726970253743696d61676556696577322f322f77.png)
+#### 代码段
+- 链式函数调用
+你可以在一行代码内调用多个函数。
+```python
+def add(a, b):
+    return a + b
+def subtract(a, b):
+    return a - b
+a, b = 4, 5
+print((subtract if a > b else add)(a, b)) # 9 
+```
 ### 字符串
 ```python
  a= 'ABC'
@@ -1261,6 +1537,13 @@ True
 ```
 #### `any()`和`all()`
 `any()`, `all()`很好理解，就是字面意思，即参数中任何一个为 `true` 或者全部为 `true` 则返回 `true`。
+#### 代码段
+- 链式对比,我们可以在一行代码中使用不同的运算符对比多个不同的元素。
+```python
+a = 3
+print( 2 < a < 8) # True
+print(1 == a < 2) # False
+```
 ## 模块
 - 每一个包目录下面都会有一个`__init__.py`的文件，这个文件是必须存在的，否则，`Python`就把这个目录当成普通目录，而不是一个包。
 - 每个模块有各自独立的符号表，在模块内部为所有的函数当作全局符号表来使用。所以，模块的作者可以放心大胆的在模块内部使用这些全局变量，而不用担心把其他用户的全局变量搞混。在当前目录下存在与要引入模块同名的文件，就会把要引入的模块屏蔽掉。
@@ -1494,6 +1777,31 @@ class Timer(object):
 ```
 这就是动态语言的“鸭子类型”，它并不要求严格的继承体系，一个对象只要“看起来像鸭子，走起路来像鸭子”，那它就可以被看做是鸭子。
 `Python`的`“file-like object“`就是一种鸭子类型。对真正的文件对象，它有一个`read()`方法，返回其内容。但是，许多对象，只要有`read()`方法，都被视为`“file-like object“`。许多函数接收的参数就是`“file-like object“`，你不一定要传入真正的文件对象，完全可以传入任何实现了`read()`方法的对象。
+下面这段代码的输出结果将是什么？请解释。
+```python
+class Parent(object):
+    x = 1
+
+class Child1(Parent):
+    pass
+
+class Child2(Parent):
+    pass
+print Parent.x, Child1.x, Child2.x
+Child1.x = 2
+print Parent.x, Child1.x, Child2.x
+Parent.x = 3
+print Parent.x, Child1.x, Child2.x
+1 1 1
+1 2 1
+3 2 3
+```
+让很多人困惑或惊讶的是最后一行输出为什么是3 2 3 而不是 3 2 1.为什么在改变`parent.x`的同时也改变了`child2.x`的值？但与此同时没有改变`Child1.x`的值？
+此答案的关键是，在`Python`中，类变量在内部是以字典的形式进行传递。
+如果一个变量名没有在当前类下的字典中发现。则在更高级的类（如它的父类）中尽心搜索直到引用的变量名被找到。（如果引用变量名在自身类和更高级类中没有找到，将会引发一个属性错误。）
+因此,在父类中设定`x = 1`,让变量`x`类(带有值1)能够在其类和其子类中被引用到。这就是为什么第一个打印语句输出结果是1 1 1
+因此，如果它的任何一个子类被覆写了值（例如说，当我们执行语句`Child1.x = 2`）,这个值只在子类中进行了修改。这就是为什么第二个打印语句输出结果是1 2 1
+最终，如果这个值在父类中进行了修改，（例如说，当我们执行语句`Parent.x = 3`）,这个改变将会影响那些还没有覆写子类的值（在这个例子中就是`Child2`）这就是为什么第三打印语句输出结果是3 2 3
 ### 获取对象信息
 #### 使用`type()`
 判断对象类型，使用`type()`函数：
