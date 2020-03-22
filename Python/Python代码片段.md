@@ -166,12 +166,23 @@ s ="Programming"
 print(s * n)
 # ProgrammingProgramming  
 ```
+- 列表转字符串 `list -> str`
+```python
+name_list = ['Zarten_1', 'Zarten_2', 'Zarten_3']
+name_str = '&'.join(name_list) # &为列表元素之间分隔符
+print(type(name_str), name_str)
+```
 ## 运算符
-链式对比,我们可以在一行代码中使用不同的运算符对比多个不同的元素。
+- 链式对比,我们可以在一行代码中使用不同的运算符对比多个不同的元素。
 ```python
 a = 3
 print( 2 < a < 8) # True
 print(1 == a < 2) # False
+```
+- 反向迭代
+```python
+for i in reversed(range(1, 10)):
+    print(i, end=',')
 ```
 ## 函数
 - 链式函数调用

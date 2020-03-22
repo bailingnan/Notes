@@ -20,6 +20,423 @@ print(b)
 ```python
 a=b=c=1
 ```
+### 拷贝
+- 简单的赋值只是将引用传给新对象，新旧对象除变量名外毫无区别
+- 由于 `Python` 内部引用计数的特性，对于不可变对象，浅拷贝和深拷贝的作用是一致的，就相当于复制了一份副本，原对象内部的不可变对象的改变，不会影响到复制对象
+- 浅拷贝的拷贝。其实是拷贝了原始元素的引用（内存地址），所以当拷贝可变对象时，原对象内可变对象的对应元素的改变，会在复制对象的对应元素上，有所体现
+- 深拷贝在遇到可变对象时，又在内部做了新建了一个副本。所以，不管它内部的元素如何变化，都不会影响到原来副本的可变对象
+- 如果对子对象修改，则浅拷贝后的结果也会跟着发生变化，而深拷贝则不会。他们的子对象还是指向统一对象（是引用）。`list`的`a=b[:]`相当于`copy()`
+- 如果对父对象修改，则不管是浅拷贝还是深拷贝的结果，都不会跟着发生变化。
+- 不管对什么对象修改，指针引用后的结果都会跟着发生相同变化。
+标准库中的`copy`模块提供了两个方法来实现拷贝.一个方法是`copy`,它返回和参数包含内容一样的对象.
+```python
+import copy
+new_list = copy.copy(existing_list)
+```
+有些时候,你希望对象中的属性也被复制,可以使用`deepcopy`方法:
+```python
+import copy
+new_list_of_dicts = copy.deepcopy(existing_list_of_dicts)
+```
+当你对一个对象赋值的时候(做为参数传递,或者做为返回值),`Python`和`Java`一样,总是传递原始对象的引用,而不是一个副本.其它一些语言当赋值的时候总是传递副本,`Python`从不猜测用户的需求 ,如果你想要一个副本,你必须显式的要求.
+`Python`的行为很简单,迅速,而且一致.然而,如果你需要一个对象拷贝而并没有显式的写出来,会出现问题的,比如:
+```python
+a = [1, 2, 3]
+b = a
+print(id(a)==id(b))
+True
+b.append(5)
+print(a,b) 
+[1, 2, 3, 5] [1, 2, 3, 5]
+```
+在这里,变量`a`和`b`都指向同一个对象(一个列表),所以,一旦你修改了二者之一,另外一个也会受到影响.无论怎样,都会修改原来的对象。
+```python
+import copy
+c=copy.copy(a)
+print(id(c)==id(a))
+False
+c[1]=222
+print(c)
+[1,222,3,5]
+print(a)
+[1,2,3,5]
+a=[1,2,[3,4]]
+d=copy.copy(a)
+print(id(a)==id(d))
+False
+print(id(a[2])==id(d[2]))
+True
+a[0]=11
+print(a)
+[11,2,[3,4]]
+print(d)
+[1,2,[3,4]]
+# 只会复制值的第一层，而不会复制往下的几层数据。
+# 复杂的 object， 如 list 中套着 list 的情况，shallow copy 中的 子list，并未从原 object 真的「独立」出来。也就是说，如果你改变原 object 的子 list 中的一个元素，你的 copy 就会跟着一起变。这跟我们直觉上对「复制」的理解不同。
+a[2][0]=333
+print(d)
+[1,2,[333,4]]
+e=copy.deepcopy(a)
+print(e[2]==a[2])
+False
+```
+这种情况就不一样了，这是对`a`重新指向新的值那么其`id`就会变而此时`b`就不会变。
+```python
+a = [1,2,3]
+b = a
+print(id(b))
+a = {1:2}
+print(id(a))
+print(id(b))
+print(b)
+输出：
+1998591409928
+1998589307016
+1998591409928
+[1, 2, 3]
+```
+再举一个例子：
+```python
+import copy
+a=[1,[1,2],3]
+b=a
+b
+[1, [1, 2], 3]
+id(a)
+4549388120
+id(b)
+4549388120
+b[0]=3
+a
+[3, [1, 2], 3]
+c=copy.copy(a)
+id(c)
+4549389992
+id(a)
+4549388120
+c[0]=4
+a
+[3, [1, 2], 3]
+c
+[4, [1, 2], 3]
+c[1].append(3)
+a
+[3, [1, 2, 3], 3]
+c
+[4, [1, 2, 3], 3]
+id(a[2])
+140345184649736
+id(c[2])
+140345184649736
+id(c[1])
+4549388192
+id(a[1])
+4549388192
+d=copy.deepcopy(a)
+id(d)
+4549389632
+id(a)
+4549388120
+d[1].append(4)
+a
+[3, [1, 2, 3], 3]
+d
+[3, [1, 2, 3, 4], 3]
+```
+`Python` 存储变量的方法跟其他 `OOP` 语言不同。它与其说是把值赋给变量，不如说是给变量建立了一个到具体值的 `reference`。
+当在 `Python` 中 `a = something` 应该理解为给 `something` 贴上了一个标签 `a`。当再赋值给 `a` 的时候，就好像把 `a` 这个标签从原来的 `something` 上拿下来，贴到其他对象上，建立新的 `reference`。 这就解释了一些 `Python` 中可能遇到的诡异情况：
+```python
+a = [1, 2, 3]
+b = a
+a = [4, 5, 6] //赋新的值给 a
+a
+[4, 5, 6]
+b
+[1, 2, 3]
+# a 的值改变后，b 并没有随着 a 变
+a = [1, 2, 3]
+b = a
+a[0], a[1], a[2] = 4, 5, 6 //改变原来 list 中的元素
+a
+[4, 5, 6]
+b
+[4, 5, 6]
+# a 的值改变后，b 随着 a 变了
+```
+上面两段代码中，`a` 的值都发生了变化。区别在于，第一段代码中是直接赋给了 `a` 新的值(从 `[1, 2, 3]` 变为 `[4, 5, 6]`)；而第二段则是把 `list` 中每个元素分别改变。
+首次把 `[1, 2, 3]` 看成一个物品。`a = [1, 2, 3]` 就相当于给这个物品上贴上 `a` 这个标签。而 `b = a` 就是给这个物品又贴上了一个 `b` 的标签。
+`a = [4, 5, 6]` 就相当于把 `a` 标签从 `[1 ,2, 3]` 上撕下来，贴到了 `[4, 5, 6]` 上。
+在这个过程中，`[1, 2, 3]` 这个物品并没有消失。 `b`自始至终都好好的贴在 `[1, 2, 3]` 上，既然这个 `reference` 也没有改变过。 `b` 的值自然不变。
+第二种情况：
+`a[0], a[1], a[2] = 4, 5, 6`则是直接改变了 `[1, 2, 3]` 这个物品本身。把它内部的每一部分都重新改装了一下。内部改装完毕后，`[1, 2, 3]` 本身变成了 `[4, 5, 6]`。
+而在此过程当中，`a` 和 `b` 都没有动，他们还贴在那个物品上。因此自然 `a`,`b` 的值都变成了 `[4, 5, 6]`。
+搞明白这个之后就要问了，对于一个复杂对象的浅`copy`，在`copy`的时候到底发生了什么？
+再看一段代码：
+```python
+import copy
+origin = [1, 2, [3, 4]]
+#origin 里边有三个元素：1， 2，[3, 4]
+cop1 = copy.copy(origin)
+cop2 = copy.deepcopy(origin)
+cop1 == cop2
+True
+cop1 is cop2
+False 
+#cop1 和 cop2 看上去相同，但已不再是同一个object
+origin[2][0] = "hey!" 
+origin
+[1, 2, ['hey!', 4]]
+cop1
+[1, 2, ['hey!', 4]]
+cop2
+[1, 2, [3, 4]]
+#把origin内的子list [3, 4] 改掉了一个元素，观察 cop1 和 cop2
+```
+`copy`对于一个复杂对象的子对象并不会完全复制，什么是复杂对象的子对象呢？就比如序列里的嵌套序列，字典里的嵌套序列等都是复杂对象的子对象。对于子对象，`python`会把它当作一个公共镜像存储起来，所有对他的复制都被当成一个引用，所以说当其中一个引用将镜像改变了之后另一个引用使用镜像的时候镜像已经被改变了。
+所以说看这里的`origin[2]`，也就是 `[3, 4]` 这个 `list`。根据 `shallow copy` 的定义，在 `cop1[2]` 指向的是同一个 `list [3, 4]`。那么，如果这里我们改变了这个 `list`，就会导致 `origin` 和 `cop1` 同时改变。这就是为什么上边 `origin[2][0] = “hey!” `之后，cop1 也随之变成了 `[1, 2, [‘hey!’, 4]]`。
+`deepcopy`的时候会将复杂对象的每一层复制一个单独的个体出来。
+这时候的 `origin[2]` 和 `cop2[2]` 虽然值都等于 `[3, 4]`，但已经不是同一个 `list了`。即我们寻常意义上的复制。
+总结：
+```python
+lst = [10, ['A']]
+
+# 指针引用: 不拷贝
+a = lst
+assert a is lst
+
+# 浅拷贝: 只拷贝 父对象，不会拷贝 子对象
+import copy
+b = copy.copy(lst)
+assert b is not lst and b == lst
+
+# 深拷贝: 拷贝 父对象 及 子对象
+c = copy.deepcopy(lst)
+assert c is not lst and c == lst
+
+# 修改 list 对象
+lst.append(5)
+lst[1].append('B')
+
+print("原始的list对象:  lst =  [10, ['A']]")
+print('修改后list对象:  lst = ', a, '\n')
+print('指针引用:  a = ', a)
+print('浅拷贝  :  b = ', b)
+print('深拷贝  :  c = ', c)
+原始的list对象:  lst =  [10, ['A']]
+修改后list对象:  lst =  [10, ['A', 'B'], 5] 
+
+指针引用:  a =  [10, ['A', 'B'], 5]
+浅拷贝  :  b =  [10, ['A', 'B']]
+深拷贝  :  c =  [10, ['A']]
+```
+即:
+- 如果对子对象修改，则浅拷贝后的结果也会跟着发生变化，而深拷贝则不会。`list`的`a=b[:]`相当于`copy()`
+- 如果对父对象修改，则不管是浅拷贝还是深拷贝的结果，都不会跟着发生变化。
+- 不管对什么对象修改，指针引用后的结果都会跟着发生相同变化。
+举例：
+```python
+import copy
+base = ['a', 'b', 'c', 'd', 'e']
+# 切片
+bak1 = base[:]
+print("bak1: ", bak1)
+# list工厂函数
+bak2 = list(base)
+print("bak2: ", bak2)
+# python list对象的copy方法
+bak3 = base.copy()
+print("bak3: ", bak3)
+# copy模块的copy方法
+bak4 = copy.copy(base)
+print("bak4: ", bak4)
+```
+运行结果：
+```python
+bak1:  ['a', 'b', 'c', 'd', 'e']
+bak2:  ['a', 'b', 'c', 'd', 'e']
+bak3:  ['a', 'b', 'c', 'd', 'e']
+bak4:  ['a', 'b', 'c', 'd', 'e']
+```
+上面的代码使用了四种方式来对数据进行拷贝，这些方法都可以用来拷贝数据，结果都一样。
+- 切片
+需要拷贝的数据进行切片处理，返回的结果相当于拷贝了一份数据。
+- 工厂方法
+使用 `python` 的工厂函数 `list` 来拷贝数据。(`python`的工厂函数是比较特殊的，即是类也是函数，关于工厂函数的理解可以另行扩展一下)
+拷贝列表时使用 `list`，如果拷贝字符串则将上面的 `list` 换成 `str` ，以此类推。
+- list对象的copy方法
+`python` 中的 `list` 实现了 `copy` 方法，在拷贝列表时可以直接使用。这里需要注意，比如 `str` 没有实现 `copy` 方法，拷贝字符串时使用其他方法拷贝。
+- `copy`模块的`copy`方法
+在 `Python` 标准库中有一个 `copy` 模块，可以使用 `copy` 模块的 `copy()` 方法来拷贝数据，`copy` 模块可以拷贝所有类型的数据。
+```python
+import copy
+son = ['python', 'copy']
+base = ['a', 'b', 'c', 'd', 'e', son]
+bak1 = base[:]
+print("bak1: ", bak1)
+bak2 = list(base)
+print("bak2: ", bak2)
+bak3 = base.copy()
+print("bak3: ", bak3)
+bak4 = copy.copy(base)
+print("bak4: ", bak4)
+print('-' * 20, '分割线', '-' * 20)
+son[0] = 'PYTHON'
+son[1] = 'COPY'
+print('base: ', base)
+print("bak1: ", bak1)
+print("bak2: ", bak2)
+print("bak3: ", bak3)
+print("bak4: ", bak4)
+```
+运行结果：
+```python
+bak1:  ['a', 'b', 'c', 'd', 'e', ['python', 'copy']]
+bak2:  ['a', 'b', 'c', 'd', 'e', ['python', 'copy']]
+bak3:  ['a', 'b', 'c', 'd', 'e', ['python', 'copy']]
+bak4:  ['a', 'b', 'c', 'd', 'e', ['python', 'copy']]
+-------------------- 分割线 --------------------
+base:  ['a', 'b', 'c', 'd', 'e', ['PYTHON', 'COPY']]
+bak1:  ['a', 'b', 'c', 'd', 'e', ['PYTHON', 'COPY']]
+bak2:  ['a', 'b', 'c', 'd', 'e', ['PYTHON', 'COPY']]
+bak3:  ['a', 'b', 'c', 'd', 'e', ['PYTHON', 'COPY']]
+bak4:  ['a', 'b', 'c', 'd', 'e', ['PYTHON', 'COPY']]
+```
+在实际工作中，数据的嵌套层数是很多的，通常会嵌套好几层。上面就在 `base` 列表中嵌套了一个 `son` 子列表。
+用上面的四种拷贝方法拷贝 `base` 列表，然后修改 `base` 列表中的子列表 `son` 。重新打印这几个列表，发现不仅 `base` 列表被修改了，拷贝的列表也全部被修改了。
+现在的需求是拷贝一份数据，修改一份保留一份，如果两份数据都被修改，是不符合需求的。
+上面的四种拷贝方法都被称为浅拷贝（相对深拷贝而言），浅拷贝 `Python` 中的可变对象，如果数据中嵌套了可变对象，修改嵌套的可变对象，所有拷贝的数据都会一起被修改。
+在 `Python` 中，所有的数据都是对象，无论是数字，字符串，元组，列表，字典，还是函数，类，甚至是模块。
+不可变对象：
+`int`, `str`, `tuple` 等类型的数据是不可变对象，不可变对象的特性是数据不可被修改。
+```python
+a = 'a'
+print(id(a))
+a = 'b'
+print(id(a))
+```
+运行结果：
+```
+1543912659912
+1543912658232
+```
+如果对不可变对象修改，其实不是修改变量对象，而是重新创建一个同名的变量对象。可以通过 `id` 函数来判断，`id` 不一样就证明已经不是同一个变量了。
+可变对象：
+`list`， `set`，`dict` 等类型的数据是可变对象，相对于不可变对象而言，可变对象的数据可以被修改，修改之后还是同一个`id`。
+```python
+base = [1, 2, 3]
+print(id(base))
+base[0] = 100
+print(base)
+print(id(base))
+```
+运行结果：
+```python
+2182371173000
+[100, 2, 3]
+2182371173000
+```
+对可变对象进行修改，修改后还是同一个对象，只是可变对象里面的元素指向了不同的数据，这种指向是通过引用的方式来实现的。
+上面的代码是对列表进行修改，如果对元组这样修改，代码会报错，就是因为可变对象和不可变对象的区别。
+在 `Python` 程序中，每个对象都会在内存中开辟一块空间来保存该对象，该对象在内存中所在位置的地址被称为引用。
+在编写代码时，定义的变量名实际是定义指向对象的地址引用名。
+我们定义一个列表时，变量名是列表的名字，这个名字指向内存中的一块空间。这个列表里有多个元素，表示这块内存空间中，保存着多个元素的引用。
+1. 修改引用
+当修改列表的元素时，其实是修改列表中的引用。
+```python
+list_a = [1, 2, 3]
+list_a[2] = 30
+print('list_a: ', list_a)
+```
+运行结果：
+```python
+list_a:  [1, 2, 30]
+```
+修改 `list_a` 中的第三个元素，其实是修改第三个元素的引用（这块内存指向的对象）。
+![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200323023647.png)
+2. 引用传递（拷贝）
+当拷贝列表时，其实是拷贝列表中的引用。
+```python
+list_b = [1, 2, 3]
+list_c = list_b.copy()
+print('list_c: ', list_c)
+```
+运行结果：
+```python
+list_c:  [1, 2, 3]
+```
+拷贝 `list_b` 到 `list_c`，其实是给 `list_c` 新开辟一块内存，然后拷贝一份 `list_b` 的引用给 `list_c` ，并不是将 `list_b`指向的对象拷贝一份。
+![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200323023828.png)
+这里不是将 `list_b` 赋值给 `list_c`，那样的结果是 `list_b` 指向 `[1, 2, 3]` ，`list_c` 指向 `list_b`，是引用关系，而不是拷贝关系。上面列举拷贝的方法时，没有将赋值列为拷贝方法，因为赋值是引用的传递，而不是拷贝。
+1. 拷贝后修改引用（数据无嵌套）
+```python
+import copy
+list_b = [1, 2, 3]
+list_c = copy.copy(list_b)
+list_b[2] = 30
+print('list_b: ', list_b)
+print('list_c: ', list_c)
+```
+运行结果：
+```python
+list_b:  [1, 2, 30]
+list_c:  [1, 2, 3]
+```
+使用 `copy.copy()` 方法拷贝 `list_b` 到 `list_c`，然后修改 `list_b` 中的引用关系，这样， `list_c` 不会被修改。
+![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200323024031.png)
+2. 嵌套列表的拷贝
+```python
+import copy
+sub = [2, 3]
+list_d = [1, sub]
+list_e = copy.copy(list_d)
+print('list_d: ', list_d)
+print('list_e: ', list_e)
+```
+运行结果：
+```python
+list_d:  [1, [2, 3]]
+list_e:  [1, [2, 3]]
+```
+对于嵌套的列表，拷贝 `list_d` 到 `list_e`，也是拷贝一份 `list_d` 的引用给 `list_e` ，与不嵌套的相同。
+这里需要特别注意，在浅拷贝嵌套的列表时，只会拷贝最上层的引用，对于子列表的引用，不会拷贝。
+![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200323024211.png)
+3. 拷贝的列表随原列表一起被修改
+```python
+import copy
+sub = [2, 3]
+list_d = [1, sub]
+list_e = copy.copy(list_d)
+list_d[1][1] = 30
+print('list_d: ', list_d)
+print('list_e: ', list_e)
+```
+运行结果：
+```python
+list_d:  [1, [2, 30]]
+list_e:  [1, [2, 30]]
+```
+拷贝 `list_d` 到 `list_e`，由于没有拷贝子列表的引用 ，当修改子列时， `list_d` 和 `list_e` 都引用了子列表 `sub`，所以 `list_d` 和 `list_e`都会被修改。如下图：
+![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200323024334.png)
+拷贝数据后，修改其中一个，另一个也跟着被修改，原因就是浅拷贝中，只拷贝了最外层的引用。当修改内层的引用时，所有外层的引用不变，都会指向修改后的结果。
+两份数据都被修改，这就是浅拷贝中存在的问题，需要使用深拷贝来解决。
+4. 深拷贝保证数据不会被修改
+```python
+import copy
+sub = [2, 3]
+list_d = [1, sub]
+list_f = copy.deepcopy(list_d)
+list_d[1][1] = 30
+print('list_d: ', list_d)
+print('list_e: ', list_f)
+```
+运行结果：
+```python
+list_d:  [1, [2, 30]]
+list_e:  [1, [2, 3]]
+```
+使用 `copy` 模块的 `deepcopy()` 方法，在拷贝数据时，会递归地拷贝数据中所有嵌套的引用。
+使用 `deepcopy()` 拷贝 `list_d` 到 `list_f` ，然后修改 `list_d` 中子列表的引用，不会对 `list_f` 产生影响，所以 `list_f` 不会被修改。
+![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200323024515.png)
 ### 元组
 - 如果要定义一个空的tuple，可以写成()：
 ```python
@@ -209,12 +626,18 @@ print(first_names)
 print(last_names)
 ('Ryan', 'Clemens', 'Curt')
 ```
-#### reversed函数
+#### `reversed`函数
 `reversed`是一个生成器（后面详细介绍），只有实体化（即列表或`for`循环）之后才能创建翻转的序列。
 ```python
 print(list(reversed(range(10))))
 [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
 ```
+#### 列表拷贝
+- `b=a[:]`。
+- `b=list(a)`。
+- 使用`copy.copy()`函数，或`b=a.copy()`直接复制`list`，类似`a[:]`。
+- 使用`copy.deepcopy()`。
+使用`b=a`是完全引用，除了名字没区别
 #### 常用函数
 - `max(list)`:返回列表元素最大值
 - `min(list)`:返回列表元素最小值
@@ -1450,6 +1873,10 @@ True
 print(a == c)
 True
 ```
+`is` 用于判断两个变量引用对象是否为同一个， `==` 用于判断引用变量的值是否相等。
+`a is b` 相当于 `id(a)==id(b)`.
+如果 `a=10;b=a;` 则此时 `a` 和 `b` 的内存地址一样的;
+但当 `a=[1,2,3]`; 另 `b=a[:]` 时，虽然 `a` 和 `b` 的值一样，但内存地址不一样。
 #### `any()`和`all()`
 `any()`, `all()`很好理解，就是字面意思，即参数中任何一个为 `true` 或者全部为 `true` 则返回 `true`。
 #### 十进制转二进制
@@ -3025,6 +3452,71 @@ print(m.parents) # m 的父亲
 print(m.parents.parents)
 # 输出 ： ChainMap({'name': 'woodname', 'codeID': '00002'})
 ```
+```python
+a = {'a': 'A', 'c': 'C'}
+b = {'b': 'B', 'c': 'D'}
+m = collections.ChainMap(a, b)
+print('c = {}'.format(m['c']))
+c = C
+```
+可以通过 `maps` 属性将结果以列表形式返回。由于列表是可变的，所以可以对这个列表重新排序，或者添加新的值。
+```python
+a = {'a': 'A', 'c': 'C'}
+b = {'b': 'B', 'c': 'D'}
+m = collections.ChainMap(a, b)
+print(m.maps)    # [{'a': 'A', 'c': 'C'}, {'b': 'B', 'c': 'D'}]
+print('c = {}\n'.format(m['c']))    # c = C
+# reverse the list
+m.maps = list(reversed(m.maps))
+print(m.maps)    # [{'b': 'B', 'c': 'D'}, {'a': 'A', 'c': 'C'}]
+print('c = {}'.format(m['c']))    # c = D
+```
+`ChainMap` 不会给子映射创建一个单独的空间，所以对子映射修改时，结果也会反馈到 `ChainMap` 上。
+```python
+a = {'a': 'A', 'c': 'C'}
+b = {'b': 'B', 'c': 'D'}
+m = collections.ChainMap(a, b)
+print('Before: {}'.format(m['c']))    # Before: C
+a['c'] = 'E'
+print('After : {}'.format(m['c']))    # After : E
+```
+也可以通过 `ChainMap` 直接设置值，实际上只修改了第一个字典中的值。
+```python
+a = {'a': 'A', 'c': 'C'}
+b = {'b': 'B', 'c': 'D'}
+m = collections.ChainMap(a, b)
+print('Before:', m)    # Before: ChainMap({'a': 'A', 'c': 'C'}, {'b': 'B', 'c': 'D'})
+m['c'] = 'E'
+print('After :', m)    # After : ChainMap({'a': 'A', 'c': 'E'}, {'b': 'B', 'c': 'D'})
+print('a:', a)    # a: {'a': 'A', 'c': 'E'}
+```
+`ChainMap`提供了一个简单的方法，用于在`maps`列表的前面创建一个新实例，这样做的好处是可以避免修改现有的底层数据结构。
+```python
+a = {'a': 'A', 'c': 'C'}
+b = {'b': 'B', 'c': 'D'}
+m1 = collections.ChainMap(a, b)
+m2 = m1.new_child()
+print(m1)    # ChainMap({'a': 'A', 'c': 'C'}, {'b': 'B', 'c': 'D'})
+print(m2)    # ChainMap({}, {'a': 'A', 'c': 'C'}, {'b': 'B', 'c': 'D'})
+m2['c'] = 'E'
+print(m1)    # ChainMap({'a': 'A', 'c': 'C'}, {'b': 'B', 'c': 'D'})
+print(m2)    # ChainMap({'c': 'E'}, {'a': 'A', 'c': 'C'}, {'b': 'B', 'c': 'D'})
+```
+这种堆叠行为使得将`ChainMap` 实例用作模板或应用程序上下文变得非常方便。具体来说，在一次迭代中很容易添加或更新值，然后丢弃下一次迭代的更改。
+对于新上下文已知或预先构建的情况，也可以将映射传递给`new_child()`。
+```python
+a = {'a': 'A', 'c': 'C'}
+b = {'b': 'B', 'c': 'D'}
+c = {'c': 'E'}
+m1 = collections.ChainMap(a, b)
+m2 = m1.new_child(c)
+print('m1["c"] = {}'.format(m1['c']))    # m1["c"] = C
+print('m2["c"] = {}'.format(m2['c']))    # m2["c"] = E
+```
+这相当于：
+```python
+m2 = collections.ChainMap(c, *m1.maps)
+```
 #### `Counter`
 `Counter`是一个简单的计数器，例如，统计字符出现的个数：
 ```python
@@ -3062,6 +3554,101 @@ Counter({'a': 1, 'b': 1})
 c | d                       # union:  max(c[x], d[x])
 Counter({'a': 3, 'b': 2})
 ```
+`Counter` 支持三种初始化形式：
+```python
+print(collections.Counter(['a', 'b', 'c', 'a', 'b', 'b']))
+print(collections.Counter({'a': 2, 'b': 3, 'c': 1}))
+print(collections.Counter(a=2, b=3, c=1))
+# output
+# Counter({'b': 3, 'a': 2, 'c': 1})
+# Counter({'b': 3, 'a': 2, 'c': 1})
+# Counter({'b': 3, 'a': 2, 'c': 1})
+```
+`Counter` 初始化时也可以不传参数，然后通过`update()`方法更新。
+```python
+c = collections.Counter()
+print('Initial :', c)    # Initial : Counter()
+c.update('abcdaab')
+print('Sequence:', c)    # Sequence: Counter({'a': 3, 'b': 2, 'c': 1, 'd': 1})
+c.update({'a': 1, 'd': 5})
+print('Dict    :', c)    # Dict    : Counter({'d': 6, 'a': 4, 'b': 2, 'c': 1})
+```
+计数值基于新数据而不是替换而增加。在上例中，计数`a`从3到 4。
+`Counter` 中的值，可以使用字典 `API` 获取它的值。
+```python
+c = collections.Counter('abcdaab')
+for letter in 'abcde':
+    print('{} : {}'.format(letter, c[letter]))
+# output
+# a : 3
+# b : 2
+# c : 1
+# d : 1
+# e : 0
+```
+对于 `Counter` 中没有的键，不会报 `KeyError`。如本例中的 `e`，将其计数为0。
+`elements()`方法返回一个迭代器，遍历它可以获得 `Counter` 中的值。
+```python
+c = collections.Counter('extremely')
+c['z'] = 0
+print(c)    # Counter({'e': 3, 'x': 1, 't': 1, 'r': 1, 'm': 1, 'l': 1, 'y': 1, 'z': 0})
+print(list(c.elements()))    # ['e', 'e', 'e', 'x', 't', 'r', 'm', 'l', 'y']
+```
+不保证元素的顺序，并且不包括计数小于或等于零的值。
+使用`most_common()`产生序列最常遇到的输入值和它们各自的计数。
+```python
+c = collections.Counter()
+with open('/usr/share/dict/words', 'rt') as f:
+    for line in f:
+        c.update(line.rstrip().lower())
+print('Most common:')
+for letter, count in c.most_common(3):
+    print('{}: {:>7}'.format(letter, count))
+
+# output
+# Most common:
+# e:  235331
+# i:  201032
+# a:  199554
+```
+此示例计算在系统字典所有单词中的字母生成频率分布，然后打印三个最常见的字母。如果没有参数的话，会按频率顺序生成所有项目的列表。
+`Counter`实例支持算术和聚合结果。这个例子显示了标准的操作符计算新的`Counter`实例，就地操作符 `+=`，`-=`，`&=`，和`|=`也支持。
+```python
+c1 = collections.Counter(['a', 'b', 'c', 'a', 'b', 'b'])
+c2 = collections.Counter('alphabet')
+
+print('C1:', c1)
+print('C2:', c2)
+
+print('\nCombined counts:')
+print(c1 + c2)
+
+print('\nSubtraction:')
+print(c1 - c2)
+
+print('\nIntersection (taking positive minimums):')
+print(c1 & c2)
+
+print('\nUnion (taking maximums):')
+print(c1 | c2)
+
+# output
+# C1: Counter({'b': 3, 'a': 2, 'c': 1})
+# C2: Counter({'a': 2, 'l': 1, 'p': 1, 'h': 1, 'b': 1, 'e': 1, 't': 1})
+# 
+# Combined counts:
+# Counter({'a': 4, 'b': 4, 'c': 1, 'l': 1, 'p': 1, 'h': 1, 'e': 1, 't': 1})
+# 
+# Subtraction:
+# Counter({'b': 2, 'c': 1})
+# 
+# Intersection (taking positive minimums):
+# Counter({'a': 2, 'b': 1})
+# 
+# Union (taking maximums):
+# Counter({'b': 3, 'a': 2, 'c': 1, 'l': 1, 'p': 1, 'h': 1, 'e': 1, 't': 1})
+```
+每次`Counter`通过操作产生新的时，任何具有零或负计数的项目都将被丢弃。计数`a`在`c1`和`c2`中是相同的，因此相减之后变为零。
 - `heap`
 这个模块提供了堆队列算法的实现，也称为优先队列算法。
 堆是一个二叉树，它的每个父节点的值都只会小于或大于所有孩子节点（的值）。它使用了数组来实现：从零开始计数，对于所有的 `k` ，都有 `heap[k]` <= `heap[2*k+1]` 和 `heap[k] <= heap[2*k+2]`。 为了便于比较，不存在的元素被认为是无限大。 堆最有趣的特性在于最小的元素总是在根结点：`heap[0]`。
