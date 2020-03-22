@@ -73,15 +73,6 @@ print(a.count(2))
 - `len(tuple)`:计算元组元素个数。
 - `max(tuple)`:返回元组中元素最大值。
 - `min(tuple)`:返回元组中元素最小值。
-#### 代码段
-- 取元组元素
-```python
-a,b,c = ('cat','dog','tiger')
-# 提取首、尾两个元素：
-first,*_,end = (1,2,3,4,5,6)
-# 提取首、中、尾三部分：
-first,*middle,end = (1,2,3,4,5,6)
-```
 ### 列表
 #### 添加和删除元素
 - `insert`在特定的位置插入元素：
@@ -231,120 +222,46 @@ print(list(reversed(range(10))))
 - `list.extend(seq)`:在列表末尾一次性追加另一个序列中的多个值（用新列表扩展原来的列表）
 - `list.index(obj)`:从列表中找出某个值第一个匹配项的索引位置
 - `list.reverse()`:反向列表中元素
-#### 代码段
-- 重复元素判定
-以下方法可以检查给定列表是不是存在重复元素，它会使用 `set()` 函数来移除所有重复元素。
+#### 串联函数
 ```python
-def all_unique(lst):
-    return len(lst) == len(set(lst))
-x = [1,1,2,2,3,2,3,4,5,6]
-y = [1,2,3,4,5]
-all_unique(x) # False
-all_unique(y) # True
+操作函数对象
+def f():
+    print('i\'m f')
+def g():
+    print('i\'m g')
+[f,g][1]()
+i'm g
 ```
-- 取两个列表交集：
-```python
-def common_elements(list1, list2):
-    common = set(list1).intersection(set(list2))
-    return list(common)
-```
-- 压缩
-这个方法可以将布尔型的值去掉，例如`(False，None，0，“”)`，它使用 `filter()` 函数。
-```python
-def compact(lst):
-    return list(filter(bool, lst))
-compact([0, 1, False, 2, '', 3, 'a', 's', 34])
-# [ 1, 2, 3, 'a', 's', 34 ]
-```
-- 解包
-如下代码段可以将打包好的成对列表解开成两组不同的元组。
-```python
-array = [['a', 'b'], ['c', 'd'], ['e', 'f']]
-transposed = zip(*array)
-print(transposed)
-# [('a', 'c', 'e'), ('b', 'd', 'f')]
-```
-- 逗号连接
-下面的代码可以将列表连接成单个字符串，且每一个元素间的分隔方式设置为了逗号。
-```python
-hobbies = ["basketball", "football", "swimming"]
-print("My hobbies are: " + ", ".join(hobbies))
-# My hobbies are: basketball, football, swimming
-```
-- 展开列表
-该方法将通过递归的方式将列表的嵌套展开为单个列表。
-```python
-def spread(arg):
-    ret = []
-    for i in arg:
-        if isinstance(i, list):
-            ret.extend(i)
-        else:
-            ret.append(i)
-    return ret
-
-def deep_flatten(lst):
-    result = []
-    result.extend(
-        spread(list(map(lambda x: deep_flatten(x) if type(x) == list else x, lst))))
-    return result
-deep_flatten([1, [2], [[3], 4], 5]) # [1,2,3,4,5]
-```
-非递归：
-```python
-def spread(arg):
-    ret = []
-    for i in arg:
-        if isinstance(i, list):
-            ret.extend(i)
-        else:
-            ret.append(i)
-    return ret
-spread([1,2,3,[4,5,6],[7],8,9]) # [1,2,3,4,5,6,7,8,9]
-```
-- 列表的差
-该方法将返回第一个列表的元素，其不在第二个列表内。如果同时要反馈第二个列表独有的元素，还需要加一句 `set_b.difference(set_a)`。
-```python
-def difference(a, b):
-    set_a = set(a)
-    set_b = set(b)
-    comparison = set_a.difference(set_b)
-    return list(comparison)
-difference([1,2,3], [1,2,4]) # [3]
-```
-- 通过函数取差
-如下方法首先会应用一个给定的函数，然后再返回应用函数后结果有差别的列表元素。
-```python
-def difference_by(a, b, fn):
-    b = set(map(fn, b))
-    return [item for item in a if fn(item) not in b]
-from math import floor
-difference_by([2.1, 1.2], [2.3, 3.4],floor) # [1.2]
-difference_by([{ 'x': 2 }, { 'x': 1 }], [{ 'x': 1 }], lambda v : v['x'])
-# [ { x: 2 } ]
-```
-- Given a list of N numbers。
-给定一个含有`N`个数字的列表。
-使用单一的列表生成式来产生一个新的列表，该列表只包含满足以下条件的值：
-(a)偶数值
-(b)元素为原始列表中偶数切片。
-例如，如果`list[2]`包含的值是偶数。那么这个值应该被包含在新的列表当中。因为这个数字同时在原始列表的偶数序列（2为偶数）上。然而，如果`list[3]`包含一个偶数，
-那个数字不应该被包含在新的列表当中，因为它在原始列表的奇数序列上。
-对此问题的简单解决方法如下：
-```python
-[x for x in list[::2] if x%2 == 0]
-```
-例如，给定列表如下：
-```python
-list = [ 1 , 3 , 5 , 8 , 10 , 13 , 18 , 36 , 78 ]
-```
-列表生成式`[x for x in list[::2] if x%2 == 0]` 的结果是，`[10, 18, 78]`
-这个表达式工作的步骤是，第一步取出偶数切片的数字，
-第二步剔除其中所有奇数。
 ### 字典
+- 多种构造方法:
+```python
+a = dict(one=1, two=2, three=3)
+b = {'one':1, 'two':2, 'three':3}
+c = dict(zip(['one', 'two', 'three'], [1, 2, 3]))
+d = dict([('one', 1), ('two', 2), ('three', 3)])
+e = dict({'three':3, 'one':1, 'two':2})
+print(a)
+print(b)
+print(c)
+print(d)
+print(e)
+>>>{'one': 1, 'two': 2, 'three': 3}
+>>>{'one': 1, 'two': 2, 'three': 3}
+>>>{'one': 1, 'two': 2, 'three': 3}
+>>>{'one': 1, 'two': 2, 'three': 3}
+>>>{'three': 3, 'one': 1, 'two': 2}
+print(a==b==c==d==e)
+>>>True
+```
+特别注意这种构造方法：
+```python
+t = {x:y for x in range(10) for y in range(10)}
+print(t)
+{0: 9, 1: 9, 2: 9, 3: 9, 4: 9, 5: 9, 6: 9, 7: 9, 8: 9, 9: 9}
+```
 ```python
 d = dict(name='Bob', age=20, score=88)
-```python
+```
 `pickle.dumps()`方法把任意对象序列化成一个`bytes`，然后，就可以把这个`bytes`写入文件。或者用另一个方法`pickle.dump()`直接把对象序列化后写入一个`file-like Object`：
 ```python
 f = open('dump.txt', 'wb')
@@ -479,37 +396,6 @@ sorted(dict.keys())
 ```python
 sorted(dict.items(),key=lamda:item:item[1])
 ```
-#### 代码段
-- 合并字典
-```python
-def merge_two_dicts(a, b):
-    c = a.copy()   # make a copy of a 
-    c.update(b)    # modify keys and values of a with the ones from b
-    return c
-a = { 'x': 1, 'y': 2}
-b = { 'y': 3, 'z': 4}
-print(merge_two_dicts(a, b))
-# {'y': 3, 'x': 1, 'z': 4}
-```
-在 Python 3.5 或更高版本中，我们也可以用以下方式合并字典：
-```python
-def merge_dictionaries(a, b)
-   return {**a, **b}
-a = { 'x': 1, 'y': 2}
-b = { 'y': 3, 'z': 4}
-print(merge_dictionaries(a, b))
-# {'y': 3, 'x': 1, 'z': 4}
-```
-- 将两个列表转化为字典
-如下方法将会把两个列表转化为单个字典。
-```python
-def to_dictionary(keys, values):
-    return dict(zip(keys, values))
-keys = ["a", "b", "c"]    
-values = [2, 3, 4]
-print(to_dictionary(keys, values))
-# {'a': 2, 'c': 4, 'b': 3}
-```
 ### 集合
 - 集合是无序的不可重复的元素的集合。你可以把它当做字典，但是只有键没有值。可以用两种方式创建集合：通过`set`函数或使用尖括号`set`语句：
 ```python
@@ -629,15 +515,6 @@ SyntaxError: invalid syntax
 ```python
 print([[x for x in tup] for tup in some_tuples])
 [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-```
-#### 代码段
-- 元素频率
-下面的方法会根据元素频率取列表中最常见的元素。
-```python
-def most_frequent(list):
-    return max(set(list), key = list.count)
-list = [1,2,1,2,3,2,1,4,2]
-most_frequent(list)
 ```
 ### 函数
 #### 参数
@@ -859,6 +736,55 @@ a = 1 b = 2 c = 3 d = 88 kw = {'x': '#'}
 ```
 - 所以，对于任意函数，都可以通过类似`func(*args, **kw)`的形式调用它，无论它的参数是如何定义的。
 **虽然可以组合多达5种参数，但不要同时使用太多的组合，否则函数接口的可理解性很差。**
+- 示例：
+`python`五类参数：位置参数，关键字参数，默认参数，可变位置或关键字参数的使用。
+```python
+def f(a,*b,c=10,**d):
+  print(f'a:{a},b:{b},c:{c},d:{d}')
+```
+默认参数`c`不能位于可变关键字参数`d`后.
+调用`f`:
+```python
+f(1,2,5,width=10,height=20)
+a:1,b:(2, 5),c:10,d:{'width': 10, 'height': 20}
+```
+可变位置参数`b`实参后被解析为元组`(2,5)`;而`c`取得默认值10; `d`被解析为字典.
+
+再次调用`f`:
+```python
+f(a=1,c=12)
+a:1,b:(),c:12,d:{}
+```
+`a=1`传入时`a`就是关键字参数，`b`,`d`都未传值，`c`被传入12，而非默认值。
+注意观察参数`a`, 既可以`f(1)`,也可以`f(a=1)` 其可读性比第一种更好，建议使用`f(a=1)`。如果要强制使用`f(a=1)`，需要在前面添加一个星号:
+```python
+def f(*,a,*b):
+  print(f'a:{a},b:{b}')
+```
+此时`f(1)`调用，将会报错：`TypeError: f() takes 0 positional arguments but 1 was given`
+只能`f(a=1)`才能`OK`.
+
+说明前面的`*`发挥作用，它变为只能传入关键字参数，那么如何查看这个参数的类型呢？借助`python`的`inspect`模块：
+```python
+for name,val in signature(f).parameters.items():
+    print(name,val.kind)
+a KEYWORD_ONLY
+b VAR_KEYWORD
+```
+可看到参数`a`的类型为`KEYWORD_ONLY`，也就是仅仅为关键字参数。
+但是，如果`f`定义为：
+```python
+def f(a,*b):
+  print(f'a:{a},b:{b}')
+```
+查看参数类型：
+
+In [24]: for name,val in signature(f).parameters.items():
+    ...:     print(name,val.kind)
+    ...:
+a POSITIONAL_OR_KEYWORD
+b VAR_POSITIONAL
+可以看到参数a既可以是位置参数也可是关键字参数。
 #### 匿名(lambda)函数
 - `lambda` 函数拥有自己的命名空间，且不能访问自己参数列表之外或全局命名空间里的参数。
 - 虽然`lambda`函数看起来只能写一行，却不等同于`C`或`C++`的内联函数，后者的目的是调用小函数时不占用栈内存从而增加运行效率。
@@ -1435,17 +1361,6 @@ S ['Steven']
 ```
 - 常用`itertools`函数:
 ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/687474703a2f2f75706c6f61642d696d616765732e6a69616e7368752e696f2f75706c6f61645f696d616765732f373137383639312d313131383233643837363761313034642e706e673f696d6167654d6f6772322f6175746f2d6f7269656e742f7374726970253743696d61676556696577322f322f77.png)
-#### 代码段
-- 链式函数调用
-你可以在一行代码内调用多个函数。
-```python
-def add(a, b):
-    return a + b
-def subtract(a, b):
-    return a - b
-a, b = 4, 5
-print((subtract if a > b else add)(a, b)) # 9 
-```
 ### 字符串
 ```python
  a= 'ABC'
@@ -1537,12 +1452,10 @@ True
 ```
 #### `any()`和`all()`
 `any()`, `all()`很好理解，就是字面意思，即参数中任何一个为 `true` 或者全部为 `true` 则返回 `true`。
-#### 代码段
-- 链式对比,我们可以在一行代码中使用不同的运算符对比多个不同的元素。
+#### 十进制转二进制
 ```python
-a = 3
-print( 2 < a < 8) # True
-print(1 == a < 2) # False
+bin(10)
+'0b1010'
 ```
 ## 模块
 - 每一个包目录下面都会有一个`__init__.py`的文件，这个文件是必须存在的，否则，`Python`就把这个目录当成普通目录，而不是一个包。
@@ -2920,6 +2833,7 @@ q.count(x)
 q.remove(value)
 #逆序排列
 q.reverse()
+```
 `deque`除了实现`list`的`append()`和`pop()`外，还支持`appendleft()`和`popleft()`，这样就可以非常高效地往头部添加或删除元素。
 #### `defaultdict`
 使用`dict`时，如果引用的`Key`不存在，就会抛出`KeyError`。如果希望`key`不存在时，返回一个默认值，就可以用`defaultdict`：
@@ -2931,6 +2845,68 @@ dd['key1'] # key1存在
 'abc'
 dd['key2'] # key2不存在，返回默认值
 'N/A'
+```
+```python
+from collections import deque
+
+dlist=deque([1,'a'])
+dlist.append('b') # 在末尾加数据
+dlist.appendleft(0) # 在最前端插入数据
+print(dlist)
+# 输出 :  deque([0, 1, 'a', 'b'])
+
+dlist.pop() # 删除末尾的数据
+dlist.popleft() # 删除最前端的数据
+print(dlist)
+# 输出 :  deque([1, 'a'])
+
+dlist.extend(['b','c']) # 在末尾追加list 数据
+dlist.extendleft([-1,0])# 在前端插入list 数据
+print(dlist)
+# 输出 : deque([0, -1, 1, 'a', 'b', 'c'])
+
+print(dlist.index('a')) # 找出 a 的索引位置
+# 输出 :  3
+
+dlist.insert(2, 555) # 在索引2 的位置插入555
+print(dlist)
+# 输出 :  deque([0, -1, 555, 1, 'a', 'b', 'c'])
+
+print(dlist.count('a')) # 查找 ‘a’ 的数量
+
+dlist.remove(1) # 删除第一个匹配值
+dlist.reverse()  # 反向
+print(dlist)
+# 输出 :  deque(['c', 'b', 'a', 555, -1, 0])
+
+
+dlist.rotate(-2) # 将左端的元素移动到右端
+print(dlist)
+# 输出 :  deque(['a', 555, -1, 0, 'c', 'b'])
+
+dlist.rotate(2) # 将右端的元素移动到左端
+print(dlist)
+# 输出 :  deque(['c', 'b', 'a', 555, -1, 0])
+
+dl1=dlist # 赋值 dlist 值变化，dl1的值也会修改
+dl2=dlist.copy() # 拷贝 dlist, 拷贝后对dl修改不影响dlist的值
+dlist.pop() # 删除最后一个数据, dl1的值也被修改
+print(dl1) # 输出： deque(['c', 'b', 'a', 555, -1])
+print(dl2) # 输出： deque(['c', 'b', 'a', 555, -1, 0])
+```
+- 合并字典
+这是一般的字典合并写法
+```python
+dic1 = {'x': 1, 'y': 2 }
+dic2 = {'y': 3, 'z': 4 }
+merged1 = {**dic1, **dic2} # {'x': 1, 'y': 3, 'z': 4}
+```
+修改`merged[‘x’]=10`，`dic1`中的`x`值不变，`merged`是重新生成的一个新字典。
+但是，`ChainMap`却不同，它在内部创建了一个容纳这些字典的列表。因此使用`ChainMap`合并字典，修改`merged[‘x’]=10`后，`dic1`中的`x`值改变，如下所示：
+```python
+from collections import ChainMap
+merged2 = ChainMap(dic1,dic2)
+print(merged2) # ChainMap({'x': 1, 'y': 2}, {'y': 3, 'z': 4})
 ```
 默认值是调用函数返回的，而函数在创建`defaultdict`对象时传入。除了在`Key`不存在时返回默认值，`defaultdict`的其他行为跟`dict`是完全一样的。
 #### `OrderedDict`
@@ -3014,6 +2990,40 @@ user=bob
 $ user=admin color=green python3 use_chainmap.py -u bob
 color=green
 user=bob
+```
+```python
+from collections import ChainMap
+m1 = {'Type': 'admin', 'codeID': '00001'}
+m2 = {'name': 'woodname','codeID': '00002'}
+m = ChainMap(m1, m2)
+print(m)
+# 输出：
+# ChainMap({'Type': 'admin', 'codeID': '00001'}, {'name': 'woodname', 'codeID': '00002'})
+print(m.maps)
+# 输出：[{'Type': 'admin', 'codeID': '00001'}, {'name': 'woodname', 'codeID': '00002'}]
+for i in m.items():
+    print(i)
+# 输出：
+# ('name', 'woodname')
+# ('codeID', '00001')
+# ('Type', 'admin')
+print(m['name']) # 读取元素的值
+print(m['codeID']) # 注意，当key重复时以最前一个为准
+print(m.get('Type'))
+# 输出：
+# woodname
+# 00001
+# admin
+# 新增map
+m3 = {'data': '888'}
+m=m.new_child(m3) # 将 m3 加入m
+print(m)
+# 输出：
+# ChainMap({'data': '888'}, {'Type': 'admin', 'codeID': '00001'}, {'name': 'woodname', 'codeID': '00002'})
+print(m.parents) # m 的父亲
+# 输出：ChainMap({'Type': 'admin', 'codeID': '00001'}, {'name': 'woodname', 'codeID': '00002'})
+print(m.parents.parents)
+# 输出 ： ChainMap({'name': 'woodname', 'codeID': '00002'})
 ```
 #### `Counter`
 `Counter`是一个简单的计数器，例如，统计字符出现的个数：
