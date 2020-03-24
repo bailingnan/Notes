@@ -1537,7 +1537,25 @@ for x in myiter:
 19
 20
 ```
+##### 通过字符串调用对象方法
+最简单的情况，可以使用 `getattr()` ：
+```python
+import math
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
+    def __repr__(self):
+        return 'Point({!r:},{!r:})'.format(self.x, self.y)
+
+    def distance(self, x, y):
+        return math.hypot(self.x - x, self.y - y)
+
+p = Point(2, 3)
+d = getattr(p, 'distance')(0, 0)  # Calls p.distance(0, 0)
+```
+调用一个方法实际上是两部独立操作，第一步是查找属性，第二步是函数调用。 因此，为了调用某个方法，你可以首先通过 `getattr()` 来查找到这个属性，然后再去以函数方式调用它即可。
 #### 函数式编程
 ##### 高阶函数
 ###### `map`函数
@@ -2028,6 +2046,167 @@ class Person:
         self._last_name = value
 ```
 重复代码会导致臃肿、易出错和丑陋的程序。好消息是，通过使用装饰器或闭包，有很多种更好的方法来完成同样的事情。 
+在子类中，扩展定义在父类中的`property`的功能。考虑如下的代码，它定义了一个`property`：
+```python
+class Person:
+    def __init__(self, name):
+        self.name = name
+
+    # Getter function
+    @property
+    def name(self):
+        return self._name
+
+    # Setter function
+    @name.setter
+    def name(self, value):
+        if not isinstance(value, str):
+            raise TypeError('Expected a string')
+        self._name = value
+
+    # Deleter function
+    @name.deleter
+    def name(self):
+        raise AttributeError("Can't delete attribute")
+```
+下面是一个示例类，它继承自`Person`并扩展了 `name` 属性的功能：
+```python
+class SubPerson(Person):
+    @property
+    def name(self):
+        print('Getting name')
+        return super().name
+
+    @name.setter
+    def name(self, value):
+        print('Setting name to', value)
+        super(SubPerson, SubPerson).name.__set__(self, value)
+
+    @name.deleter
+    def name(self):
+        print('Deleting name')
+        super(SubPerson, SubPerson).name.__delete__(self)
+```
+接下来使用这个新类：
+```python
+s = SubPerson('Guido')
+Setting name to Guido
+s.name
+Getting name
+'Guido'
+s.name = 'Larry'
+Setting name to Larry
+s.name = 42
+Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+    File "example.py", line 16, in name
+        raise TypeError('Expected a string')
+TypeError: Expected a string
+```
+如果你仅仅只想扩展`property`的某一个方法，那么可以像下面这样写：
+```python
+class SubPerson(Person):
+    @Person.name.getter
+    def name(self):
+        print('Getting name')
+        return super().name
+```
+或者，你只想修改`setter`方法，就这么写：
+```python
+class SubPerson(Person):
+    @Person.name.setter
+    def name(self, value):
+        print('Setting name to', value)
+        super(SubPerson, SubPerson).name.__set__(self, value)
+```
+在子类中扩展一个`property`可能会引起很多不易察觉的问题， 因为一个`property`其实是 `getter`、`setter` 和 `deleter` 方法的集合，而不是单个方法。 因此，当你扩展一个`property`的时候，你需要先确定你是否要重新定义所有的方法还是说只修改其中某一个。
+在第一个例子中，所有的`property`方法都被重新定义。 在每一个方法中，使用了 `super()` 来调用父类的实现。 在 `setter` 函数中使用 `super(SubPerson, SubPerson).name.__set__(self, value)` 的语句是没有错的。 为了委托给之前定义的`setter`方法，需要将控制权传递给之前定义的`name`属性的 `__set__()` 方法。 不过，获取这个方法的唯一途径是使用类变量而不是实例变量来访问它。 这也是为什么我们要使用 `super(SubPerson, SubPerson)` 的原因。
+
+如果你只想重定义其中一个方法，那只使用 `@property` 本身是不够的。比如，下面的代码就无法工作：
+```python
+class SubPerson(Person):
+    @property  # Doesn't work
+    def name(self):
+        print('Getting name')
+        return super().name
+```
+如果你试着运行会发现`setter`函数整个消失了：
+```python
+s = SubPerson('Guido')
+Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+    File "example.py", line 5, in __init__
+        self.name = name
+AttributeError: can't set attribute
+```
+你应该像之前说过的那样修改代码：
+```python
+class SubPerson(Person):
+    @Person.name.getter
+    def name(self):
+        print('Getting name')
+        return super().name
+```
+这么写后，`property`之前已经定义过的方法会被复制过来，而`getter`函数被替换。然后它就能按照期望的工作了：
+```python
+s = SubPerson('Guido')
+s.name
+Getting name
+'Guido'
+s.name = 'Larry'
+s.name
+Getting name
+'Larry'
+s.name = 42
+Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+    File "example.py", line 16, in name
+        raise TypeError('Expected a string')
+TypeError: Expected a string
+```
+在这个特别的解决方案中，我们没办法使用更加通用的方式去替换硬编码的 `Person` 类名。 如果你不知道到底是哪个基类定义了`property`， 那你只能通过重新定义所有`property`并使用 `super()` 来将控制权传递给前面的实现。
+值得注意的是上面演示的第一种技术还可以被用来扩展一个描述器。比如：
+```python
+# A descriptor
+class String:
+    def __init__(self, name):
+        self.name = name
+
+    def __get__(self, instance, cls):
+        if instance is None:
+            return self
+        return instance.__dict__[self.name]
+
+    def __set__(self, instance, value):
+        if not isinstance(value, str):
+            raise TypeError('Expected a string')
+        instance.__dict__[self.name] = value
+
+# A class with a descriptor
+class Person:
+    name = String('name')
+
+    def __init__(self, name):
+        self.name = name
+
+# Extending a descriptor with a property
+class SubPerson(Person):
+    @property
+    def name(self):
+        print('Getting name')
+        return super().name
+
+    @name.setter
+    def name(self, value):
+        print('Setting name to', value)
+        super(SubPerson, SubPerson).name.__set__(self, value)
+
+    @name.deleter
+    def name(self):
+        print('Deleting name')
+        super(SubPerson, SubPerson).name.__delete__(self)
+```
+最后值得注意的是，读到这里时，你应该会发现子类化 `setter` 和 `deleter` 方法其实是很简单的。
 ###### `@classmethod`
 `@classmethod`对应的函数不需要实例化，不需要 `self` 参数，但第一个参数需要是表示自身类的 `cls` 参数，可以来调用类的属性，类的方法，实例化对象等。
 `@classmethod`因为持有`cls`参数，可以来调用类的属性，类的方法，实例化对象等，避免硬编码。
@@ -3084,7 +3263,7 @@ class C(A,B):
         super().__init__()  # Only one call to super() here
         print('C.__init__')
 ```
-运行这个新版本后，你会发现每个 __init__() 方法只会被调用一次了：
+运行这个新版本后，你会发现每个 `__init__()` 方法只会被调用一次了：
 ```python
 c = C()
 Base.__init__
@@ -3092,7 +3271,7 @@ B.__init__
 A.__init__
 C.__init__
 ```
-为了弄清它的原理，我们需要花点时间解释下`Python`是如何实现继承的。 对于你定义的每一个类，`Python`会计算出一个所谓的方法解析顺序(`MRO`)列表。 这个MRO列表就是一个简单的所有基类的线性顺序表。例如：
+为了弄清它的原理，我们需要花点时间解释下`Python`是如何实现继承的。 对于你定义的每一个类，`Python`会计算出一个所谓的方法解析顺序(`MRO`)列表。 这个`MRO`列表就是一个简单的所有基类的线性顺序表。例如：
 ```python
 C.__mro__
 (<class '__main__.C'>, <class '__main__.A'>, <class '__main__.B'>,
@@ -3117,8 +3296,8 @@ class A:
 ```
 如果你试着直接使用这个类就会出错：
 ```python
->>> a = A()
->>> a.spam()
+a = A()
+a.spam()
 Traceback (most recent call last):
     File "<stdin>", line 1, in <module>
     File "<stdin>", line 4, in spam
