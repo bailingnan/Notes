@@ -848,8 +848,10 @@ print(set([2, 2, 2, 1, 3, 3]))
 print({2, 2, 2, 1, 3, 3})
 {1, 2, 3}
 ```
-- 通过`add(key)`方法可以添加元素到set中
-- 通过`remove(key)`方法可以删除元素：
+- 花括号只能用于初始化包含值的集合。使用不包含值的花括号是初始化字典（`dict`）的方法之一，而不是初始化集合的方法。
+- 通过`add(key)`方法可以添加元素到`set`中,只能将不可变的值（例如一个字符串或一个元组）加入到集合中。如果试图将一个列表（`list`）添加到集合中，系统会返回类型错误`TyprError`。
+- 通过`remove(key)`方法可以删除元素,如果你想要删除一个集合中不存在的值，系统会返回一个键值错误`KeyError`。
+- 可以使用`discard`方法从集合中删除一个值。这种方法相对于`remove`方法的好处是，如果你试图删除一个集合中不存在的值，系统不会返回`KeyError`。
 - 合并是取两个集合中不重复的元素。可以用`union`方法，或者`|`运算符：
 ```Python
 a = {1, 2, 3, 4, 5}
@@ -870,6 +872,7 @@ print(a & b)
 
 
   ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200317202703.png)
+  ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200329021757.png)
 - 所有逻辑集合操作都有另外的原地实现方法，可以直接用结果替代集合的内容。对于大的集合，这么做效率更高：
 ```Python
 c = a.copy()
