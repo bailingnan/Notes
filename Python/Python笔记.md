@@ -3,6 +3,14 @@
 
 
 ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200318181309.png)
+## 代码优化原则
+- 专注于优化产生性能瓶颈的地方，而不是全部代码。
+- 避免使用全局变量。局部变量的查找比全局变量更快，将全局变量的代码定义在函数中运行通常会快 15%-30%。
+- 避免使用`.`访问属性。使用 `from module import name` 会更快，将频繁访问的类的成员变量 `self.member` 放入到一个局部变量中。
+- 尽量使用内置数据结构。`str`, `list`, `set`, `dict` 等使用 `C` 实现，运行起来很快。
+- 避免创建没有必要的中间变量，和 `copy.deepcopy()`。
+- 字符串拼接，例如 `a + ':' + b + ':' + c` 会创造大量无用的中间变量，`':',join([a, b, c])` 效率会高不少。另外需要考虑字符串拼接是否必要，例如 `print(':'.join([a, b, c]))` 效率比 `print(a, b, c, sep=':')` 低。
+- 多个`if elif`条件判断，可以把最有可能先发生的条件放到前面写，这样可以减少程序判断的次数，提高效率。
 ## 对象
 ### 可变与不可变对象
 - `Python`中的大多数对象，比如列表、字典、`NumPy`数组，和用户定义的类型（类），都是可变的。意味着这些对象或包含的值可以被修改。
@@ -818,6 +826,19 @@ sorted(dict.keys())
 - 值：
 ```Python
 sorted(dict.items(),key=lamda:item:item[1])
+```
+#### 其他技巧
+##### `argmin` 和 `argmax`
+```python
+items = [2, 1, 3, 4]
+argmin = min(range(len(items)), key=items.__getitem__)
+```
+`argmax`同理。
+###### 转置二维列表
+```python
+A = [['a11', 'a12'], ['a21', 'a22'], ['a31', 'a32']]
+A_transpose = list(zip(*A))  # list of tuple
+A_transpose = list(list(col) for col in zip(*A))  # list of list
 ```
 ### 集合
 - 集合是无序的不可重复的元素的集合。你可以把它当做字典，但是只有键没有值。可以用两种方式创建集合：通过`set`函数或使用尖括号`set`语句：
@@ -1822,7 +1843,7 @@ now.__name__
 因为返回的那个`wrapper()`函数名字就是`'wrapper'`，所以，需要把原始函数的`__name__`等属性复制到`wrapper()`函数中，否则，有些依赖函数签名的代码执行就会出错。
 
 不需要编写`wrapper.__name__ = func.__name__`这样的代码，`Python`内置的`functools.wraps`就是干这个事的，所以，一个完整的`decorator`的写法如下：
-```pythoh
+```python
 import functools
 def log(func):
     @functools.wraps(func)
@@ -2316,6 +2337,41 @@ S ['Steven']
 ```
 - 常用`itertools`函数:
 ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/687474703a2f2f75706c6f61642d696d616765732e6a69616e7368752e696f2f75706c6f61645f696d616765732f373137383639312d313131383233643837363761313034642e706e673f696d6167654d6f6772322f6175746f2d6f7269656e742f7374726970253743696d61676556696577322f322f77.png)
+子序列工具:
+```python
+import itertools
+itertools.islice(iterable, start=None, stop, step=None)
+# islice('ABCDEF', 2, None) -> C, D, E, F
+itertools.filterfalse(predicate, iterable)         # 过滤掉predicate为False的元素
+# filterfalse(lambda x: x < 5, [1, 4, 6, 4, 1]) -> 6
+itertools.takewhile(predicate, iterable)           # 当predicate为False时停止迭代
+# takewhile(lambda x: x < 5, [1, 4, 6, 4, 1]) -> 1, 4
+itertools.dropwhile(predicate, iterable)           # 当predicate为False时开始迭代
+# dropwhile(lambda x: x < 5, [1, 4, 6, 4, 1]) -> 6, 4, 1
+itertools.compress(iterable, selectors)            # 根据selectors每个元素是True或False进行选择
+# compress('ABCDEF', [1, 0, 1, 0, 1, 1]) -> A, C, E, F
+```
+序列排序：
+```python
+sorted(iterable, key=None, reverse=False)
+itertools.groupby(iterable, key=None)              # 按值分组，iterable需要先被排序
+# groupby(sorted([1, 4, 6, 4, 1])) -> (1, iter1), (4, iter4), (6, iter6)
+itertools.permutations(iterable, r=None)           # 排列，返回值是Tuple
+# permutations('ABCD', 2) -> AB, AC, AD, BA, BC, BD, CA, CB, CD, DA, DB, DC
+itertools.combinations(iterable, r=None)           # 组合，返回值是Tuple
+itertools.combinations_with_replacement(...)
+# combinations('ABCD', 2) -> AB, AC, AD, BC, BD, CD
+```
+多个序列合并：
+```python
+itertools.chain(*iterables)                        # 多个序列直接拼接
+# chain('ABC', 'DEF') -> A, B, C, D, E, F
+import heapq
+heapq.merge(*iterables, key=None, reverse=False)   # 多个序列按顺序拼接
+# merge('ABF', 'CDE') -> A, B, C, D, E, F
+zip(*iterables)                                    # 当最短的序列耗尽时停止，结果只能被消耗一次
+itertools.zip_longest(*iterables, fillvalue=None)  # 当最长的序列耗尽时停止，结果只能被消耗一次
+```
 ### 字符串
 ```Python
  a= 'ABC'
@@ -2481,6 +2537,7 @@ with open('filename', 'w') as f:
 - `str.center(width[, fillchar])`:返回长度为 `width` 的字符串，原字符串在其正中。 使用指定的 `fillchar` 填充两边的空位（默认使用 `ASCII` 空格符）。 如果 `width` 小于等于 `len(s)` 则返回原字符串的副本。
 - `str.count(str, beg= 0,end=len(string))`:返回 `str` 在 `string` 里面出现的次数，如果 `beg` 或者 `end `指定则返回指定范围内 `str` 出现的次数
 - `str.find(str, beg=0, end=len(string))`:检测 `str` 是否包含在字符串中，如果指定范围 `beg` 和 `end` ，则检查是否包含在指定范围内，如果包含返回开始的索引值，否则返回`-1`
+- `str.index(sub, start=None, end=None)`:如果找不到抛出`ValueError`异常
 - `str.upper()`:转换字符串中的小写字母为大写
 - `str.lower()`:转换字符串中所有大写字符为小写
 - `str.replace(old, new [, max])`:将字符串中的 `str1` 替换成 `str2`,如果`max`指定，则替换不超过`max`次。
@@ -2532,6 +2589,11 @@ True
 ```Python
 bin(10)
 '0b1010'
+```
+#### 判断类型
+```python
+type(a) == int      # 忽略面向对象设计中的多态特征
+isinstance(a, int)  # 考虑了面向对象设计中的多态特征
 ```
 ## 模块
 - 每一个包目录下面都会有一个`__init__.py`的文件，这个文件是必须存在的，否则，`Python`就把这个目录当成普通目录，而不是一个包。
@@ -2617,6 +2679,27 @@ from sound.effects import *
 ```
 这个例子中，在执行 `from...import` 前，包 `sound.effects` 中的 `echo` 和 `surround` 模块都被导入到当前的命名空间中了。（当然如果定义了 `__all__` 就更没问题了）
 ## OOP
+### `__new__`和`__init__`区别
+`__init__`是初始化方法，创建对象后，就立刻被默认调用了，可接收参数。
+1. `__new__`至少要有一个参数`cls`，代表当前类，此参数在实例化时由`Python`解释器自动识别
+2. `__new__`必须要有返回值，返回实例化出来的实例，这点在自己实现`__new__`时要特别注意，可以`return`父类（通过`super(当前类名, cls)`）`__new__`出来的实例，或者直接是`object`的`__new__`出来的实例
+3. `__init__`有一个参数`self`，就是这个`__new__`返回的实例，`__init__`在`__new__`的基础上可以完成一些其它初始化的动作，`__init__`不需要返回值
+4. 如果`__new__`创建的是当前类的实例，会自动调用`__init__`函数，通过`return`语句里面调用的`__new__`函数的第一个参数是`cls`来保证是当前类实例，如果是其他类的类名，那么实际创建返回的就是其他类的实例，其实就不会调用当前类的`__init__`函数，也不会调用其他类的`__init__`函数。
+```python
+class A(object):
+    def __init__(self):
+        print('这是init方法:',self)
+    def __new__(cls):
+        print('这是cls的ID:',id(cls))
+        print('这是new方法:',object.__new__(cls))
+        return(object.__new__(cls))
+A()
+print('这是类A的ID',id(A))
+这是cls的ID: 140345183503936
+这是new方法: <__main__.A object at 0x7fa4b0290ed0>
+这是init方法: <__main__.A object at 0x7fa4b0290ed0># __init__方法的self和new方法返回地址一样，说明返回值是对象
+这是类A的ID 140345183503936# cls和类ID一样，说明指向同一个类
+```
 ### 访问限制
 如果要让内部属性不被外部访问，可以把属性的名称前加上两个下划线`__`，在`Python`中，实例的变量名如果以`__`开头，就变成了一个私有变量(`private`)，只有内部可以访问，外部不能访问:
 ```Python
@@ -4486,7 +4569,7 @@ print('Sequence:', c)    # Sequence: Counter({'a': 3, 'b': 2, 'c': 1, 'd': 1})
 c.update({'a': 1, 'd': 5})
 print('Dict    :', c)    # Dict    : Counter({'d': 6, 'a': 4, 'b': 2, 'c': 1})
 ```
-计数值基于新数据而不是替换而增加。在上例中，计数`a`从3到 4。
+计数值基于新数据而不是替换而增加。在上例中，计数`a`从3到4。
 `Counter` 中的值，可以使用字典 `API` 获取它的值。
 ```Python
 c = collections.Counter('abcdaab')
@@ -4562,6 +4645,24 @@ print(c1 | c2)
 # Counter({'b': 3, 'a': 2, 'c': 1, 'l': 1, 'p': 1, 'h': 1, 'e': 1, 't': 1})
 ```
 每次`Counter`通过操作产生新的时，任何具有零或负计数的项目都将被丢弃。计数`a`在`c1`和`c2`中是相同的，因此相减之后变为零。
+计数器可以统计一个可迭代对象中每个元素出现的次数。
+```python
+import collections
+# 创建
+collections.Counter(iterable)
+
+# 频次
+collections.Counter[key]                 # key出现频次
+# 返回n个出现频次最高的元素和其对应出现频次，如果n为None，返回所有元素
+collections.Counter.most_common(n=None)
+
+# 插入/更新
+collections.Counter.update(iterable)
+counter1 + counter2; counter1 - counter2  # counter加减
+
+# 检查两个字符串的组成元素是否相同
+collections.Counter(list1) == collections.Counter(list2)
+```
 ### `heapq`
 这个模块提供了堆队列算法的实现，也称为优先队列算法。
 堆是一个二叉树，它的每个父节点的值都只会小于或大于所有孩子节点（的值）。它使用了数组来实现：从零开始计数，对于所有的 `k` ，都有 `heap[k]` <= `heap[2*k+1]` 和 `heap[k] <= heap[2*k+2]`。 为了便于比较，不存在的元素被认为是无限大。 堆最有趣的特性在于最小的元素总是在根结点：`heap[0]`。
@@ -4813,6 +4914,16 @@ print(list(x))
 x = itertools.filterfalse(lambda e: e < 5, (1, 5, 3, 6, 9, 4))
 print(list(x))
 [5, 6, 9]
+```
+### `functools`
+- 缓存机制加速递归函数
+`@functools.lru_cache(maxsize=128, typed=False)`:这个装饰器实现了备忘的功能，是一项优化技术，把耗时的函数的结果保存起来，避免传入相同的参数时重复计算。`lru` 是（`least recently used`）的缩写，即最近最少使用原则。表明缓存不会无限制增长，一段时间不用的缓存条目会被扔掉。
+这个装饰器支持传入参数，还能有这种操作的？`maxsize` 是保存最近多少个调用的结果，最好设置为 `2` 的倍数，默认为 `128`。如果设置为 `None` 的话就相当于是 `maxsize` 为正无穷了。还有一个参数是 `type`，如果 `type` 设置为 `true`，即把不同参数类型得到的结果分开保存，如 `f(3)` 和 `f(3.0)` 会被区分开。
+```python
+from functools import lru_cache
+@lru_cache(100)
+def fib(n)
+    return (1 if n in (1,2) else fib(n-1)+fib(n-2))
 ```
 ### `math`
 - `math.ceil(x)`:返回 `x` 的上限，即大于或者等于 `x` 的最小整数。

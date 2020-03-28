@@ -371,6 +371,12 @@ W
 r
 d
 ```
+- 排序
+```python
+s=['ab','abc','a','djkj']
+b=sorted(s,key=lambda x:len(x))# 有返回值
+s.sort(key=len)# 原地排序
+```
 - 排序不支持原生比较的对象
 内置的 `sorted()` 函数有一个关键字参数 `key` ，可以传入一个 `callable` 对象给它， 这个 `callable` 对象对每个传入的对象返回一个值，这个值会被 `sorted` 用来排序这些对象。 比如，如果你在应用程序里面有一个 `User` 实例序列，并且你希望通过他们的 `user_id` 属性进行排序， 你可以提供一个以 `User` 实例作为输入并输出对应 `user_id` 值的 `callable` 对象。比如：
 ```python
@@ -513,6 +519,22 @@ dict_to_stock(b)
 Stock(name='ACME', shares=100, price=123.45, date='12/17/2012', time=None)
 ```
 最后要说的是，如果你的目标是定义一个需要更新很多实例属性的高效数据结构，那么命名元组并不是你的最佳选择。 这时候你应该考虑定义一个包含 `__slots__` 方法的类。
+- `x="abc"`,`y="def"`,`z=["d","e","f"]`,分别求出`x.join(y)`和`x.join(z)`返回的结果
+```python
+x="abc"
+y="def"
+z=["d","e","f"]
+print(x.join(y),x.join(z))
+dabceabcf dabceabcf
+```
+`join()`括号里面的是可迭代对象，`x`插入可迭代对象中间，形成字符串，结果一致。
+- 去空格的两种方法
+```python
+str="hello world ha ha"
+res=str.replace(" ","")
+list=str.split(" ")
+res="".join(list)
+```
 ## 运算符
 - 链式对比,我们可以在一行代码中使用不同的运算符对比多个不同的元素。
 ```Python
