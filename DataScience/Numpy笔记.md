@@ -239,6 +239,14 @@ np.sort(np.array([1,4,3,2,5,6]))  # 排序
 - `np.clip(array,min,max))`:限制数组中最小值为`min`,最大值为`max`
 - `np.append(array,element/array)`:将元素或者新数组的每一个元素添加至新数组
 - `np.diff(array,n=num)`:求取该数组两个元素之间的差，可用于计算相对误差，差分数组比原来少n个元素
+- `np.extract(condition, array)`:按条件选取元素
+- `np.setdiff1d(a,b)`:返回数组中不在另一个数组中的独有元素。这等价于两个数组元素集合的差集。
+```python
+a = np.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+b = np.array([3,4,7,6,7,8,11,12,14])
+c = np.setdiff1d(a,b)
+array([1, 2, 5, 9])
+```
 ### 基本索引及切片
 当有些维度没有指定索引时，空缺的维度被默认为取所有元素。
 `NumPy`还允许使用 `dots (...)` 表示足够多的冒号来构建完整的索引元组。
