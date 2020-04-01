@@ -1,8 +1,8 @@
-# `NumPy`常用函数
+# `NumPy`笔记
 ```python
 import numpy as np
 ```
-## Numpy基础数据结构
+## `Numpy`基础数据结构
 ### 多维数组
 ```python
 ar = np.array([1,2,3,4,5,6,7])
