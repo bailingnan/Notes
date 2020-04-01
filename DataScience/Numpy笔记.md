@@ -154,6 +154,7 @@ array([[[ 0,  4],
 ```
 `swapaxes`也是返回源数据的视图（不会进行任何复制操作）。
 #### 改变形状
+以下三个命令都返回一个修改后的数组，但不会更改原始数组：`reshape`,`ravel`,`T`
 - `numpy.reshape(a, newshape, order='C')`：为数组提供新形状，而不更改其数据，所以元素数量需要一致
 ```python
 ar3 = ar1.reshape(2,5)     # 用法1：直接将已有数组改变形状             
@@ -463,6 +464,167 @@ array([[ 4,  7,  5,  6],
        [ 8, 11,  9, 10]])
 ```
 花式索引跟切片不一样，它总是将数据复制到新数组中。
+##### 使用索引数组进行索引
+```python
+a = np.arange(12)**2                       # the first 12 square numbers
+i = np.array( [ 1,1,3,8,5 ] )              # an array of indices
+a[i]                                       # the elements of a at the positions i
+array([ 1,  1,  9, 64, 25])
+j = np.array( [ [ 3, 4], [ 9, 7 ] ] )      # a bidimensional array of indices
+a[j]                                       # the same shape as j
+array([[ 9, 16],
+       [81, 49]])
+```
+当索引数组`a`是多维的时，单个索引数组指的是第一个维度`a`。以下示例通过使用调色板将标签图像转换为彩色图像来显示此行为。和上边的二维矩阵的例子相比本例传入的参数为一个二维矩阵，而上例为两个一维矩阵。
+```python
+palette = np.array( [ [0,0,0],                # black
+                       [255,0,0],              # red
+                       [0,255,0],              # green
+                       [0,0,255],              # blue
+                       [255,255,255] ] )       # white
+image = np.array( [ [ 0, 1, 2, 0 ],           # each value corresponds to a color in the palette
+                  [ 0, 3, 4, 0 ]  ] )
+palette[image]                            # the (2,4,3) color image
+array([[[  0,   0,   0],
+        [255,   0,   0],
+        [  0, 255,   0],
+        [  0,   0,   0]],
+       [[  0,   0,   0],
+        [  0,   0, 255],
+        [255, 255, 255],
+        [  0,   0,   0]]])
+```
+我们还可以为多个维度提供索引。每个维度的索引数组必须具有相同的形状。
+```python
+a = np.arange(12).reshape(3,4)
+a
+array([[ 0,  1,  2,  3],
+       [ 4,  5,  6,  7],
+       [ 8,  9, 10, 11]])
+i = np.array( [ [0,1],                        # indices for the first dim of a
+             [1,2] ] )
+j = np.array( [ [2,1],                        # indices for the second dim
+                 [3,3] ] )
+a[i,j]                                     # i and j must have equal shape
+array([[ 2,  5],
+       [ 7, 11]])
+a[i,2]
+array([[ 2,  6],
+       [ 6, 10]])
+a[:,j]                                     # i.e., a[ : , j]
+array([[[ 2,  1],
+        [ 3,  3]],
+       [[ 6,  5],
+        [ 7,  7]],
+       [[10,  9],
+        [11, 11]]])
+```
+当然，我们可以按顺序（比如列表）放入`i`，`j`然后使用列表进行索引。
+```python
+l = [i,j]
+a[l]                                       # equivalent to a[i,j]
+array([[ 2,  5],
+       [ 7, 11]])
+```
+但是，我们不能通过放入`i`和`j`放入数组来实现这一点，因为这个数组将被解释为索引a的第一个维度。
+```python
+s = np.array( [i,j] )
+a[s]                                       # not what we want
+Traceback (most recent call last):
+  File "<stdin>", line 1, in ?
+IndexError: index (3) out of range (0<=index<=2) in dimension 0
+a[tuple(s)]                                # same as a[i,j]
+array([[ 2,  5],
+       [ 7, 11]])
+```
+使用数组索引的另一个常见用法是搜索与时间相关的系列的最大值：
+```python
+time = np.linspace(20, 145, 5)                 # time scale
+data = np.sin(np.arange(20)).reshape(5,4)      # 4 time-dependent series
+time
+array([  20.  ,   51.25,   82.5 ,  113.75,  145.  ])
+data
+array([[ 0.        ,  0.84147098,  0.90929743,  0.14112001],
+       [-0.7568025 , -0.95892427, -0.2794155 ,  0.6569866 ],
+       [ 0.98935825,  0.41211849, -0.54402111, -0.99999021],
+       [-0.53657292,  0.42016704,  0.99060736,  0.65028784],
+       [-0.28790332, -0.96139749, -0.75098725,  0.14987721]])
+ind = data.argmax(axis=0)                  # index of the maxima for each series
+ind
+array([2, 0, 3, 1])
+time_max = time[ind]                       # times corresponding to the maxima
+data_max = data[ind, range(data.shape[1])] # => data[ind[0],0], data[ind[1],1]...
+time_max
+array([  82.5 ,   20.  ,  113.75,   51.25])
+data_max
+array([ 0.98935825,  0.84147098,  0.99060736,  0.6569866 ])
+np.all(data_max == data.max(axis=0))
+True
+```
+您还可以使用数组索引作为分配给的目标：
+```python
+a = np.arange(5)
+a
+array([0, 1, 2, 3, 4])
+a[[1,3,4]] = 0
+a
+array([0, 0, 2, 0, 0])
+```
+但是，当索引列表包含重复时，分配会多次完成，留下最后一个值：
+```python
+a = np.arange(5)
+a[[0,0,2]]=[1,2,3]
+a
+array([2, 1, 3, 3, 4])
+```
+这是合理的，但请注意是否要使用`Python`的 `+=`构造，因为它可能不会按预期执行：
+```python
+a = np.arange(5)
+a[[0,0,2]]+=1
+a
+array([1, 1, 3, 3, 4])
+```
+即使`0`在索引列表中出现两次，第`0`个元素也只增加一次。这是因为`Python`要求`a + = 1`等同于`a = a + 1`。
+##### 使用布尔数组进行索引
+当我们使用（整数）索引数组索引数组时，我们提供了要选择的索引列表。使用布尔索引，方法是不同的; 我们明确地选择我们想要的数组中的哪些项目以及我们不需要的项目。
+人们可以想到的最自然的布尔索引方法是使用与原始数组具有 相同形状的 布尔数组：
+```python
+a = np.arange(12).reshape(3,4)
+b = a > 4
+b                                          # b is a boolean with a's shape
+array([[False, False, False, False],
+       [False,  True,  True,  True],
+       [ True,  True,  True,  True]])
+a[b]                                       # 1d array with the selected elements
+array([ 5,  6,  7,  8,  9, 10, 11])
+```
+此属性在分配中非常有用：
+```python
+a[b] = 0                                   # All elements of 'a' higher than 4 become 0
+a
+array([[0, 1, 2, 3],
+       [4, 0, 0, 0],
+       [0, 0, 0, 0]])
+```
+使用布尔值进行索引的第二种方法更类似于整数索引; 对于数组的每个维度，我们给出一个`1D`布尔数组，选择我们想要的切片：
+```python
+a = np.arange(12).reshape(3,4)
+b1 = np.array([False,True,True])             # first dim selection
+b2 = np.array([True,False,True,False])       # second dim selection
+a[b1,:]                                   # selecting rows
+array([[ 4,  5,  6,  7],
+       [ 8,  9, 10, 11]])
+a[b1]                                     # same thing
+array([[ 4,  5,  6,  7],
+       [ 8,  9, 10, 11]])
+a[:,b2]                                   # selecting columns
+array([[ 0,  2],
+       [ 4,  6],
+       [ 8, 10]])
+a[b1,b2]                                  # a weird thing to do
+array([ 4, 10])
+```
+请注意，`1D`布尔数组的长度必须与要切片的尺寸（或轴）的长度一致。
 #### 元素级数组函数
 通用函数（即`ufunc`）是一种对`ndarray`中的数据执行元素级运算的函数。你可以将其看做简单函数（接受一个或多个标量值，并产生一个或多个标量值）的矢量化包装器。
 许多`ufunc`都是简单的元素级变体，如`sqrt`和`exp`：
