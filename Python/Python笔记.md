@@ -1,4 +1,93 @@
 # `Python`笔记
+<!-- TOC -->
+
+- [`Python`笔记](#python笔记)
+  - [编码规范](#编码规范)
+  - [代码优化原则](#代码优化原则)
+  - [对象](#对象)
+    - [可变与不可变对象](#可变与不可变对象)
+    - [拷贝](#拷贝)
+    - [元组](#元组)
+      - [拆分元组](#拆分元组)
+      - [`tuple`方法](#tuple方法)
+      - [常用函数](#常用函数)
+    - [列表](#列表)
+      - [添加和删除元素](#添加和删除元素)
+      - [串联和组合列表](#串联和组合列表)
+      - [排序](#排序)
+      - [二分搜索和维护已排序的列表](#二分搜索和维护已排序的列表)
+      - [zip函数](#zip函数)
+      - [`reversed`函数](#reversed函数)
+      - [列表拷贝](#列表拷贝)
+      - [常用函数](#常用函数-1)
+      - [串联函数](#串联函数)
+    - [字典](#字典)
+      - [删除值](#删除值)
+      - [更新字典](#更新字典)
+      - [用序列创建字典](#用序列创建字典)
+      - [默认值](#默认值)
+      - [有效的键类型](#有效的键类型)
+      - [按键值排序](#按键值排序)
+      - [其他技巧](#其他技巧)
+        - [`argmin` 和 `argmax`](#argmin-和-argmax)
+          - [转置二维列表](#转置二维列表)
+    - [集合](#集合)
+    - [列表、集合和字典推导式](#列表集合和字典推导式)
+      - [嵌套列表推导式](#嵌套列表推导式)
+    - [函数](#函数)
+      - [参数](#参数)
+      - [默认参数](#默认参数)
+      - [可变参数](#可变参数)
+      - [关键字参数](#关键字参数)
+      - [命名关键字参数](#命名关键字参数)
+      - [强制位置参数](#强制位置参数)
+      - [参数组合](#参数组合)
+      - [匿名(lambda)函数](#匿名lambda函数)
+      - [柯里化：部分参数应用](#柯里化部分参数应用)
+      - [生成器](#生成器)
+      - [生成器表达式](#生成器表达式)
+      - [迭代器](#迭代器)
+        - [类作为迭代器](#类作为迭代器)
+        - [通过字符串调用对象方法](#通过字符串调用对象方法)
+      - [函数式编程](#函数式编程)
+        - [高阶函数](#高阶函数)
+          - [`map`函数](#map函数)
+          - [`reduce`函数](#reduce函数)
+          - [`filter`函数](#filter函数)
+          - [`sorted`函数](#sorted函数)
+        - [返回函数](#返回函数)
+          - [闭包](#闭包)
+      - [多重继承](#多重继承)
+      - [定制类](#定制类)
+        - [`__str__`](#str)
+        - [`__iter__`](#iter)
+        - [`__getitem__`](#getitem)
+        - [`__getattr__`](#getattr)
+        - [`__call__`](#call)
+  - [命名空间和作用域](#命名空间和作用域)
+    - [三种命名空间：](#三种命名空间)
+      - [四种作用域：](#四种作用域)
+      - [`global` 和 `nonlocal`关键字](#global-和-nonlocal关键字)
+  - [错误和异常处理](#错误和异常处理)
+    - [调试](#调试)
+  - [文件和操作系统](#文件和操作系统)
+    - [操作文件和目录](#操作文件和目录)
+    - [`datetime`](#datetime)
+  - [`os`](#os)
+  - [`Path`](#path)
+  - [第三方库](#第三方库)
+    - [`h5py`](#h5py)
+      - [创建](#创建)
+      - [读取](#读取)
+      - [创建数据集：](#创建数据集)
+      - [赋值](#赋值)
+      - [综合示例1](#综合示例1)
+      - [创建`group`](#创建group)
+      - [`Pandas`对`h5py`的操作](#pandas对h5py的操作)
+        - [写出](#写出)
+        - [读取](#读取-1)
+
+<!-- /TOC -->
 ## 编码规范
 
 
@@ -1438,7 +1527,9 @@ if __name__ == '__main__':
 
     for ch in root.depth_first():
         print(ch)
-    # Outputs Node(0), Node(1), Node(3), Node(4), Node(2), Node(5)
+    '''
+    Outputs Node(0), Node(1), Node(3), Node(4), Node(2), Node(5)
+    '''
 ```
 在这段代码中，`depth_first()` 方法简单直观。 它首先返回自己本身并迭代每一个子节点并通过调用子节点的 `depth_first()` 方法(使用 `yield from` 语句)返回对应元素。
 #### 生成器表达式
@@ -2191,7 +2282,9 @@ TypeError: Expected a string
 在这个特别的解决方案中，我们没办法使用更加通用的方式去替换硬编码的 `Person` 类名。 如果你不知道到底是哪个基类定义了`property`， 那你只能通过重新定义所有`property`并使用 `super()` 来将控制权传递给前面的实现。
 值得注意的是上面演示的第一种技术还可以被用来扩展一个描述器。比如：
 ```python
-# A descriptor
+'''
+A descriptor
+'''
 class String:
     def __init__(self, name):
         self.name = name
@@ -2205,15 +2298,17 @@ class String:
         if not isinstance(value, str):
             raise TypeError('Expected a string')
         instance.__dict__[self.name] = value
-
-# A class with a descriptor
+'''
+A class with a descriptor
+'''
 class Person:
     name = String('name')
 
     def __init__(self, name):
         self.name = name
-
-# Extending a descriptor with a property
+'''
+Extending a descriptor with a property
+'''
 class SubPerson(Person):
     @property
     def name(self):
@@ -2283,7 +2378,7 @@ class Number:
 - `int()`函数可以把字符串转换为整数，当仅传入字符串时，`int()`函数默认按十进制转换。
 但`int()`函数还提供额外的`base`参数，默认值为10。如果传入`base`参数，就可以做N进制的转换：
 `functools.partial`就是帮助我们创建一个偏函数的，不需要我们自己定义`int2()`，可以直接使用下面的代码创建一个新的函数`int2`：
-```
+```python
 import functools
 int2 = functools.partial(int, base=2)
 int2('1000000')
@@ -2344,34 +2439,54 @@ S ['Steven']
 ```python
 import itertools
 itertools.islice(iterable, start=None, stop, step=None)
-# islice('ABCDEF', 2, None) -> C, D, E, F
+'''
+slice('ABCDEF', 2, None) -> C, D, E, F
+'''
 itertools.filterfalse(predicate, iterable)         # 过滤掉predicate为False的元素
-# filterfalse(lambda x: x < 5, [1, 4, 6, 4, 1]) -> 6
+'''
+filterfalse(lambda x: x < 5, [1, 4, 6, 4, 1]) -> 6
+'''
 itertools.takewhile(predicate, iterable)           # 当predicate为False时停止迭代
-# takewhile(lambda x: x < 5, [1, 4, 6, 4, 1]) -> 1, 4
+'''
+takewhile(lambda x: x < 5, [1, 4, 6, 4, 1]) -> 1, 4
+'''
 itertools.dropwhile(predicate, iterable)           # 当predicate为False时开始迭代
-# dropwhile(lambda x: x < 5, [1, 4, 6, 4, 1]) -> 6, 4, 1
+'''
+dropwhile(lambda x: x < 5, [1, 4, 6, 4, 1]) -> 6, 4, 1
+'''
 itertools.compress(iterable, selectors)            # 根据selectors每个元素是True或False进行选择
-# compress('ABCDEF', [1, 0, 1, 0, 1, 1]) -> A, C, E, F
+'''
+compress('ABCDEF', [1, 0, 1, 0, 1, 1]) -> A, C, E, F
+'''
 ```
 序列排序：
 ```python
 sorted(iterable, key=None, reverse=False)
 itertools.groupby(iterable, key=None)              # 按值分组，iterable需要先被排序
-# groupby(sorted([1, 4, 6, 4, 1])) -> (1, iter1), (4, iter4), (6, iter6)
+'''
+groupby(sorted([1, 4, 6, 4, 1])) -> (1, iter1), (4, iter4), (6, iter6)
+'''
 itertools.permutations(iterable, r=None)           # 排列，返回值是Tuple
-# permutations('ABCD', 2) -> AB, AC, AD, BA, BC, BD, CA, CB, CD, DA, DB, DC
+'''
+permutations('ABCD', 2) -> AB, AC, AD, BA, BC, BD, CA, CB, CD, DA, DB, DC
+'''
 itertools.combinations(iterable, r=None)           # 组合，返回值是Tuple
 itertools.combinations_with_replacement(...)
-# combinations('ABCD', 2) -> AB, AC, AD, BC, BD, CD
+'''
+combinations('ABCD', 2) -> AB, AC, AD, BC, BD, CD
+'''
 ```
 多个序列合并：
 ```python
 itertools.chain(*iterables)                        # 多个序列直接拼接
-# chain('ABC', 'DEF') -> A, B, C, D, E, F
+'''
+chain('ABC', 'DEF') -> A, B, C, D, E, F
+'''
 import heapq
 heapq.merge(*iterables, key=None, reverse=False)   # 多个序列按顺序拼接
-# merge('ABF', 'CDE') -> A, B, C, D, E, F
+'''
+merge('ABF', 'CDE') -> A, B, C, D, E, F
+'''
 zip(*iterables)                                    # 当最短的序列耗尽时停止，结果只能被消耗一次
 itertools.zip_longest(*iterables, fillvalue=None)  # 当最长的序列耗尽时停止，结果只能被消耗一次
 ```
@@ -2493,9 +2608,13 @@ print(a, b, c, sep=':') # Better
 ```
 当混合使用`I/O`操作和字符串连接操作的时候，有时候需要仔细研究你的程序。 比如，考虑下面的两端代码片段：
 ```python
-# Version 1 (string concatenation)
+'''
+Version 1 (string concatenation)
+'''
 f.write(chunk1 + chunk2)
-# Version 2 (separate I/O operations)
+'''
+Version 2 (separate I/O operations)
+'''
 f.write(chunk1)
 f.write(chunk2)
 ```
@@ -2530,7 +2649,9 @@ def combine(source, maxsize):
             parts = []
             size = 0
     yield ''.join(parts)
-# 结合文件操作
+'''
+结合文件操作
+'''
 with open('filename', 'w') as f:
     for part in combine(sample(), 32768):
         f.write(part)
@@ -2554,15 +2675,21 @@ s.replace(' ', '')
 - 匹配的是字面字符串，那么你通常只需要调用基本字符串方法就行， 比如 `str.find()` , `str.endswith()` , `str.startswith()` 或者类似的方法：
 ```python
 text = 'yeah, but no, but yeah, but no, but yeah'
-# Exact match
+'''
+Exact match
+'''
 text == 'yeah'
 False
-# Match at start or end
+'''
+Match at start or end
+'''
 text.startswith('yeah')
 True
 text.endswith('no')
 False
-# Search for the location of the first occurrence
+'''
+Search for the location of the first occurrence
+'''
 text.find('no')
 10
 ```
@@ -2576,7 +2703,9 @@ b = a
 c = list(a)
 print(a is b)
 True
-# 因为list总是创建一个新的Python列表（即复制），我们可以断定c是不同于a的。
+'''
+因为list总是创建一个新的Python列表（即复制），我们可以断定c是不同于a的。
+'''
 print(a is not c)
 True
 print(a == c)
@@ -2630,7 +2759,9 @@ sys.path.append('/Users/michael/my_py_scripts')
 第二种方法是设置环境变量`PYTHONPATH`，该环境变量的内容会被自动添加到模块搜索路径中。设置方式与设置`Path`环境变量类似。注意只需要添加你自己的搜索路径，`Python`自己本身的搜索路径不受影响。
 现在，在解释器的当前目录或者 `sys.path `中的一个目录里面来创建一个`fibo.py`的文件，代码如下：
 ```Python
-# 斐波那契(fibonacci)数列模块
+'''
+斐波那契(fibonacci)数列模块
+'''
 def fib(n):    # 定义到 n 的斐波那契数列
     a, b = 0, 1
     while b < n:
@@ -2653,8 +2784,10 @@ import fibo
 这样做并没有把直接定义在`fibo`中的函数名称写入到当前符号表里，只是把模块`fibo`的名字写到了那里。
 ### `name`属性
 一个模块被另一个程序第一次引入时，其主程序将运行。如果我们想在模块被引入时，模块中的某一程序块不执行，我们可以用`__name__`属性来使该程序块仅在该模块自身运行时执行。
-```Python3
-# Filename: using_name.py
+```Python
+'''
+Filename: using_name.py
+'''
 if __name__ == '__main__':
    print('程序自身在运行')
 else:
@@ -2664,7 +2797,7 @@ else:
 $ Python using_name.py
 程序自身在运行
 $ Python
->>> import using_name
+>>>import using_name
 我来自另一模块
 ```
 说明： 每个模块都有一个`__name_`_属性，当其值是`'__main__'`时，表明该模块自身在运行，否则是被引入。
@@ -2791,8 +2924,9 @@ class C(B):
     def __init__(self):
         super().__init__()
         self.__private = 1 # Does not override B.__private
-
-    # Does not override B.__private_method()
+    '''
+    Does not override B.__private_method()
+    '''
     def __private_method(self):
         pass
 ```
@@ -2800,29 +2934,42 @@ class C(B):
 大多数而言，你应该让你的非公共名称以单下划线开头。但是，如果你清楚你的代码会涉及到子类， 并且有些内部属性应该在子类中隐藏起来，那么才考虑使用双下划线方案。
 ### 继承和多态
 ```Python
-#类定义
+'''
+类定义
+'''
 class people:
-    #定义基本属性
+'''
+    定义基本属性
+'''
     name = ''
     age = 0
-    #定义私有属性,私有属性在类外部无法直接进行访问
+    '''
+    定义私有属性,私有属性在类外部无法直接进行访问
+    '''
     __weight = 0
-    #定义构造方法
+    '''
+    定义构造方法
+    '''
     def __init__(self,n,a,w):
         self.name = n
         self.age = a
         self.__weight = w
     def speak(self):
         print("%s 说: 我 %d 岁。" %(self.name,self.age))
- 
-#单继承示例
+'''
+单继承示例
+'''
 class student(people):
     grade = ''
     def __init__(self,n,a,w,g):
-        #调用父类的构函
+    '''
+        调用父类的构函
+    '''
         people.__init__(self,n,a,w)
         self.grade = g
-    #覆写父类的方法
+    '''
+    覆写父类的方法
+    '''
     def speak(self):
         print("%s 说: 我 %d 岁了，我在读 %d 年级"%(self.name,self.age,self.grade))
 ```
@@ -3183,31 +3330,43 @@ class MyTCPServer(TCPServer, CoroutineMixIn):
 ```Python
 #类定义
 class people:
-    #定义基本属性
+'''
+    定义基本属性
+    '''
     name = ''
     age = 0
-    #定义私有属性,私有属性在类外部无法直接进行访问
+    '''
+    定义私有属性,私有属性在类外部无法直接进行访问
+    '''
     __weight = 0
-    #定义构造方法
+    '''
+    定义构造方法
+    '''
     def __init__(self,n,a,w):
         self.name = n
         self.age = a
         self.__weight = w
     def speak(self):
         print("%s 说: 我 %d 岁。" %(self.name,self.age))
- 
-#单继承示例
+'''
+单继承示例
+'''
 class student(people):
     grade = ''
     def __init__(self,n,a,w,g):
-        #调用父类的构函
+    '''
+        调用父类的构函
+        '''
         people.__init__(self,n,a,w)
         self.grade = g
-    #覆写父类的方法
+    '''
+    覆写父类的方法
+    '''
     def speak(self):
         print("%s 说: 我 %d 岁了，我在读 %d 年级"%(self.name,self.age,self.grade))
- 
-#另一个类，多重继承之前的准备
+''' 
+另一个类，多重继承之前的准备
+'''
 class speaker():
     topic = ''
     name = ''
@@ -3216,8 +3375,9 @@ class speaker():
         self.topic = t
     def speak(self):
         print("我叫 %s，我是一个演说家，我演讲的主题是 %s"%(self.name,self.topic))
- 
-#多重继承
+'''
+多重继承
+'''
 class sample(speaker,student):
     a =''
     def __init__(self,n,a,w,g,t):
@@ -3642,7 +3802,9 @@ class House:
 ```
 这里我们只是给`House`类定义了两个方法：`__eq__()` 和 `__lt__()` ，它就能支持所有的比较操作：
 ```python
-# Build a few houses, and add rooms to them
+'''
+Build a few houses, and add rooms to them
+'''
 h1 = House('h1', 'Cape')
 h1.add_room(Room('Master Bedroom', 14, 21))
 h1.add_room(Room('Living Room', 18, 20))
@@ -3792,7 +3954,9 @@ class的方法名称与函数绑定，这里我们把函数`fn`绑定到方法�
 
 定义`ListMetaclass`，按照默认习惯，`metaclass`的类名总是以`Metaclass`结尾，以便清楚地表示这是一个`metaclass`：
 ```Python
-# metaclass是类的模板，所以必须从`type`类型派生：
+'''
+metaclass是类的模板，所以必须从type类型派生：
+'''
 class ListMetaclass(type):
     def __new__(cls, name, bases, attrs):
         attrs['add'] = lambda self, value: self.append(value)
@@ -4251,14 +4415,10 @@ q.append('x')
 q.appendleft('y')
 q
 deque(['y', 'a', 'b', 'c', 'x'])
-# 清除所有元素
-q.clear()
-# 计算x的个数
-q.count(x)
-#移除找到的第一个 value。
-q.remove(value)
-#逆序排列
-q.reverse()
+q.clear()# 清除所有元素
+q.count(x)# 计算x的个数
+q.remove(value)#移除找到的第一个 value。
+q.reverse()#逆序排列
 ```
 `deque`除了实现`list`的`append()`和`pop()`外，还支持`appendleft()`和`popleft()`，这样就可以非常高效地往头部添加或删除元素。
 #### `defaultdict`
@@ -4278,41 +4438,32 @@ from collections import deque
 dlist=deque([1,'a'])
 dlist.append('b') # 在末尾加数据
 dlist.appendleft(0) # 在最前端插入数据
-print(dlist)
-# 输出 :  deque([0, 1, 'a', 'b'])
+print(dlist)# 输出 :  deque([0, 1, 'a', 'b'])
 
 dlist.pop() # 删除末尾的数据
 dlist.popleft() # 删除最前端的数据
-print(dlist)
-# 输出 :  deque([1, 'a'])
+print(dlist)# 输出 :  deque([1, 'a'])
 
 dlist.extend(['b','c']) # 在末尾追加list 数据
 dlist.extendleft([-1,0])# 在前端插入list 数据
-print(dlist)
-# 输出 : deque([0, -1, 1, 'a', 'b', 'c'])
-
-print(dlist.index('a')) # 找出 a 的索引位置
-# 输出 :  3
+print(dlist)# 输出 : deque([0, -1, 1, 'a', 'b', 'c'])
+print(dlist.index('a')) # 找出 a 的索引位置,输出 :  3
 
 dlist.insert(2, 555) # 在索引2 的位置插入555
-print(dlist)
-# 输出 :  deque([0, -1, 555, 1, 'a', 'b', 'c'])
+print(dlist)# 输出 :  deque([0, -1, 555, 1, 'a', 'b', 'c'])
 
 print(dlist.count('a')) # 查找 ‘a’ 的数量
 
 dlist.remove(1) # 删除第一个匹配值
 dlist.reverse()  # 反向
-print(dlist)
-# 输出 :  deque(['c', 'b', 'a', 555, -1, 0])
+print(dlist)# 输出 :  deque(['c', 'b', 'a', 555, -1, 0])
 
 
 dlist.rotate(-2) # 将左端的元素移动到右端
-print(dlist)
-# 输出 :  deque(['a', 555, -1, 0, 'c', 'b'])
+print(dlist)# 输出 :  deque(['a', 555, -1, 0, 'c', 'b'])
 
 dlist.rotate(2) # 将右端的元素移动到左端
-print(dlist)
-# 输出 :  deque(['c', 'b', 'a', 555, -1, 0])
+print(dlist)# 输出 :  deque(['c', 'b', 'a', 555, -1, 0])
 
 dl1=dlist # 赋值 dlist 值变化，dl1的值也会修改
 dl2=dlist.copy() # 拷贝 dlist, 拷贝后对dl修改不影响dlist的值
@@ -4382,20 +4533,28 @@ class LastUpdatedOrderedDict(OrderedDict):
 ``` Python
 from collections import ChainMap
 import os, argparse
-# 构造缺省参数:
+'''
+构造缺省参数:
+'''
 defaults = {
     'color': 'red',
     'user': 'guest'
 }
-# 构造命令行参数:
+'''
+构造命令行参数:
+'''
 parser = argparse.ArgumentParser()
 parser.add_argument('-u', '--user')
 parser.add_argument('-c', '--color')
 namespace = parser.parse_args()
 command_line_args = { k: v for k, v in vars(namespace).items() if v }
-# 组合成ChainMap:
+'''
+组合成ChainMap:
+'''
 combined = ChainMap(command_line_args, os.environ, defaults)
-# 打印参数:
+'''
+打印参数:
+'''
 print('color=%s' % combined['color'])
 print('user=%s' % combined['user'])
 ```
@@ -4423,33 +4582,47 @@ m1 = {'Type': 'admin', 'codeID': '00001'}
 m2 = {'name': 'woodname','codeID': '00002'}
 m = ChainMap(m1, m2)
 print(m)
-# 输出：
-# ChainMap({'Type': 'admin', 'codeID': '00001'}, {'name': 'woodname', 'codeID': '00002'})
+'''
+输出：
+ChainMap({'Type': 'admin', 'codeID': '00001'}, {'name': 'woodname', 'codeID': '00002'})
+'''
 print(m.maps)
-# 输出：[{'Type': 'admin', 'codeID': '00001'}, {'name': 'woodname', 'codeID': '00002'}]
+'''
+输出：[{'Type': 'admin', 'codeID': '00001'}, {'name': 'woodname', 'codeID': '00002'}]
+'''
 for i in m.items():
     print(i)
-# 输出：
-# ('name', 'woodname')
-# ('codeID', '00001')
-# ('Type', 'admin')
+'''
+输出：
+('name', 'woodname')
+('codeID', '00001')
+('Type', 'admin')
+'''
 print(m['name']) # 读取元素的值
 print(m['codeID']) # 注意，当key重复时以最前一个为准
 print(m.get('Type'))
-# 输出：
-# woodname
-# 00001
-# admin
-# 新增map
+'''
+输出：
+woodname
+00001
+admin
+新增map
+'''
 m3 = {'data': '888'}
 m=m.new_child(m3) # 将 m3 加入m
 print(m)
-# 输出：
-# ChainMap({'data': '888'}, {'Type': 'admin', 'codeID': '00001'}, {'name': 'woodname', 'codeID': '00002'})
+'''
+输出：
+ChainMap({'data': '888'}, {'Type': 'admin', 'codeID': '00001'}, {'name': 'woodname', 'codeID': '00002'})
+'''
 print(m.parents) # m 的父亲
-# 输出：ChainMap({'Type': 'admin', 'codeID': '00001'}, {'name': 'woodname', 'codeID': '00002'})
+'''
+输出：ChainMap({'Type': 'admin', 'codeID': '00001'}, {'name': 'woodname', 'codeID': '00002'})
+'''
 print(m.parents.parents)
-# 输出 ： ChainMap({'name': 'woodname', 'codeID': '00002'})
+'''
+输出 ： ChainMap({'name': 'woodname', 'codeID': '00002'})
+'''
 ```
 ```Python
 a = {'a': 'A', 'c': 'C'}
@@ -4465,8 +4638,8 @@ b = {'b': 'B', 'c': 'D'}
 m = collections.ChainMap(a, b)
 print(m.maps)    # [{'a': 'A', 'c': 'C'}, {'b': 'B', 'c': 'D'}]
 print('c = {}\n'.format(m['c']))    # c = C
-# reverse the list
-m.maps = list(reversed(m.maps))
+
+m.maps = list(reversed(m.maps))# reverse the list
 print(m.maps)    # [{'b': 'B', 'c': 'D'}, {'a': 'A', 'c': 'C'}]
 print('c = {}'.format(m['c']))    # c = D
 ```
@@ -4558,10 +4731,12 @@ Counter({'a': 3, 'b': 2})
 print(collections.Counter(['a', 'b', 'c', 'a', 'b', 'b']))
 print(collections.Counter({'a': 2, 'b': 3, 'c': 1}))
 print(collections.Counter(a=2, b=3, c=1))
-# output
-# Counter({'b': 3, 'a': 2, 'c': 1})
-# Counter({'b': 3, 'a': 2, 'c': 1})
-# Counter({'b': 3, 'a': 2, 'c': 1})
+'''
+output
+Counter({'b': 3, 'a': 2, 'c': 1})
+Counter({'b': 3, 'a': 2, 'c': 1})
+Counter({'b': 3, 'a': 2, 'c': 1})
+'''
 ```
 `Counter` 初始化时也可以不传参数，然后通过`update()`方法更新。
 ```Python
@@ -4578,12 +4753,14 @@ print('Dict    :', c)    # Dict    : Counter({'d': 6, 'a': 4, 'b': 2, 'c': 1})
 c = collections.Counter('abcdaab')
 for letter in 'abcde':
     print('{} : {}'.format(letter, c[letter]))
-# output
-# a : 3
-# b : 2
-# c : 1
-# d : 1
-# e : 0
+    '''
+output
+a : 3
+b : 2
+c : 1
+d : 1
+e : 0
+'''
 ```
 对于 `Counter` 中没有的键，不会报 `KeyError`。如本例中的 `e`，将其计数为0。
 `elements()`方法返回一个迭代器，遍历它可以获得 `Counter` 中的值。
@@ -4603,12 +4780,13 @@ with open('/usr/share/dict/words', 'rt') as f:
 print('Most common:')
 for letter, count in c.most_common(3):
     print('{}: {:>7}'.format(letter, count))
-
-# output
-# Most common:
-# e:  235331
-# i:  201032
-# a:  199554
+'''
+output
+Most common:
+e:  235331
+i:  201032
+a:  199554
+'''
 ```
 此示例计算在系统字典所有单词中的字母生成频率分布，然后打印三个最常见的字母。如果没有参数的话，会按频率顺序生成所有项目的列表。
 `Counter`实例支持算术和聚合结果。这个例子显示了标准的操作符计算新的`Counter`实例，就地操作符 `+=`，`-=`，`&=`，和`|=`也支持。
@@ -4630,40 +4808,48 @@ print(c1 & c2)
 
 print('\nUnion (taking maximums):')
 print(c1 | c2)
+'''
+output
+C1: Counter({'b': 3, 'a': 2, 'c': 1})
+C2: Counter({'a': 2, 'l': 1, 'p': 1, 'h': 1, 'b': 1, 'e': 1, 't': 1})
 
-# output
-# C1: Counter({'b': 3, 'a': 2, 'c': 1})
-# C2: Counter({'a': 2, 'l': 1, 'p': 1, 'h': 1, 'b': 1, 'e': 1, 't': 1})
-# 
-# Combined counts:
-# Counter({'a': 4, 'b': 4, 'c': 1, 'l': 1, 'p': 1, 'h': 1, 'e': 1, 't': 1})
-# 
-# Subtraction:
-# Counter({'b': 2, 'c': 1})
-# 
-# Intersection (taking positive minimums):
-# Counter({'a': 2, 'b': 1})
-# 
-# Union (taking maximums):
-# Counter({'b': 3, 'a': 2, 'c': 1, 'l': 1, 'p': 1, 'h': 1, 'e': 1, 't': 1})
+Combined counts:
+Counter({'a': 4, 'b': 4, 'c': 1, 'l': 1, 'p': 1, 'h': 1, 'e': 1, 't': 1})
+ 
+Subtraction:
+Counter({'b': 2, 'c': 1})
+
+Intersection (taking positive minimums):
+Counter({'a': 2, 'b': 1})
+ 
+Union (taking maximums):
+Counter({'b': 3, 'a': 2, 'c': 1, 'l': 1, 'p': 1, 'h': 1, 'e': 1, 't': 1})
+'''
 ```
 每次`Counter`通过操作产生新的时，任何具有零或负计数的项目都将被丢弃。计数`a`在`c1`和`c2`中是相同的，因此相减之后变为零。
 计数器可以统计一个可迭代对象中每个元素出现的次数。
 ```python
 import collections
-# 创建
+'''
+创建
+'''
 collections.Counter(iterable)
-
-# 频次
+'''
+频次
+'''
 collections.Counter[key]                 # key出现频次
-# 返回n个出现频次最高的元素和其对应出现频次，如果n为None，返回所有元素
+''' 
+返回n个出现频次最高的元素和其对应出现频次，如果n为None，返回所有元素
+'''
 collections.Counter.most_common(n=None)
-
-# 插入/更新
+'''
+插入/更新
+'''
 collections.Counter.update(iterable)
 counter1 + counter2; counter1 - counter2  # counter加减
-
-# 检查两个字符串的组成元素是否相同
+'''
+检查两个字符串的组成元素是否相同
+'''
 collections.Counter(list1) == collections.Counter(list2)
 ```
 ### `heapq`
@@ -5146,7 +5332,9 @@ dset3 = f.create_dataset('subgroup2/dataset_three', (10,), dtype='i')
 ```Python
 d1=f.create_dataset("dset1",(20,),'i')
 d1[...]=np.arange(20)
-#或者我们可以直接按照下面的方式创建数据集并赋值
+'''
+或者我们可以直接按照下面的方式创建数据集并赋值
+'''
 f["dset2"]=np.arange(15)
 for key in f.keys():
     print(f[key].name)
@@ -5168,7 +5356,9 @@ for key in f.keys():
 ```
 #### 综合示例1
 ```Python
-#分别创建dset1,dset2,dset3这三个数据集
+'''
+分别创建dset1,dset2,dset3这三个数据集
+'''
 a=np.arange(20)
 d1=f.create_dataset("dset1",data=a)
 
@@ -5189,14 +5379,17 @@ for key in f.keys():
 /dset3
 [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14]
 ```
-#### 创建`group`,需要首先以`append`模式打开文件
+#### 创建`group`
+需要首先以`append`模式打开文件
 ```Python
 f = h5py.File('mydataset.hdf5', 'a')
 grp = f.create_group("subgroup")
 ```
 ```Python
 g1=f.create_group("bar")
-#在bar这个组里面分别创建name为dset1,dset2的数据集并赋值。
+'''
+在bar这个组里面分别创建name为dset1,dset2的数据集并赋值。
+'''
 g1["dset1"]=np.arange(10)
 g1["dset2"]=np.arange(12).reshape((3,4))
 
@@ -5212,37 +5405,47 @@ for key in g1.keys():
 ```
 注意观察数据集`dset1`和`dset2`的名字是不是有点和前面的不一样，如果是直接创建的数据集，不在任何组里面，那么它的名字就是`/+名字`，现在这两个数据集都在`bar`这个`group`(组)里面，名字就变成了`/bar+/`名字，是不是有点文件夹的感觉！继续看下面的代码，你会对`group`和`dataset`的关系进一步了解。
 ```Python
-#创建组bar1,组bar2，数据集dset
+'''
+创建组bar1,组bar2，数据集dset
+'''
 g1=f.create_group("bar1")
 g2=f.create_group("bar2")
 d=f.create_dataset("dset",data=np.arange(10))
-
-#在bar1组里面创建一个组car1和一个数据集dset1。
+'''
+在bar1组里面创建一个组car1和一个数据集dset1。
+'''
 c1=g1.create_group("car1")
 d1=g1.create_dataset("dset1",data=np.arange(10))
-
-#在bar2组里面创建一个组car2和一个数据集dset2
+'''
+在bar2组里面创建一个组car2和一个数据集dset2
+'''
 c2=g2.create_group("car2")
 d2=g2.create_dataset("dset2",data=np.arange(10))
-
-#根目录下的组和数据集
+'''
+根目录下的组和数据集
+'''
 for key in f.keys():
     print(f[key].name)
 /bar1
 /bar2
 /dset
-
-#bar1这个组下面的组和数据集
+'''
+bar1这个组下面的组和数据集
+'''
 for key in g1.keys():
     print(g1[key].name)
 /bar1/car1
 /bar1/dset1
-#bar2这个组下面的组和数据集
+'''
+bar2这个组下面的组和数据集
+'''
 for key in g2.keys():
     print(g2[key].name)
 /bar2/car2
 /bar2/dset2
-#顺便看下car1组和car2组下面都有什么，估计你都猜到了为空。
+'''
+顺便看下car1组和car2组下面都有什么，估计你都猜到了为空。
+'''
 print(c1.keys())
 print(c2.keys())
 []
@@ -5250,19 +5453,31 @@ print(c2.keys())
 ```
 - 综合示例2
 ```Python
-#遍历文件中的一级组
+'''
+遍历文件中的一级组
+'''
 for group in f.keys():
     print (group)
-    #根据一级组名获得其下面的组
+    '''
+    根据一级组名获得其下面的组
+    '''
     group_read = f[group]
-    #遍历该一级组下面的子组
+    '''
+    遍历该一级组下面的子组
+    '''
     for subgroup in group_read.keys():
         print subgroup     
-        #根据一级组和二级组名获取其下面的dataset          
-        dset_read = f[group+'/'+subgroup]                           
-        #遍历该子组下所有的dataset
+        '''
+        根据一级组和二级组名获取其下面的dataset          
+        '''
+        dset_read = f[group+'/'+subgroup]
+        '''                           
+        遍历该子组下所有的dataset
+        '''
         for dset in dset_read.keys():
-            #获取dataset数据
+        '''
+            获取dataset数据
+            '''
             dset1 = f[group+'/'+subgroup+'/'+dset]
             print dset1.name
             data = np.array(dset1)
@@ -5285,13 +5500,21 @@ store['s'],store['df'] = s,df
 ```
 从`pandas`中的数据结构直接导出到本地`h5`文件中：
 ```Python
-#创建新的数据框
+'''
+创建新的数据框
+'''
 df_ = pd.DataFrame(np.random.randn(5,5))
-#导出到已存在的h5文件中，这里需要指定key
+'''
+导出到已存在的h5文件中，这里需要指定key
+'''
 df_.to_hdf(path_or_buf='demo.h5',key='df_')
-#创建于本地demo.h5进行IO连接的store对象
+'''
+创建于本地demo.h5进行IO连接的store对象
+'''
 store = pd.HDFStore('demo.h5')
-#查看指定h5对象中的所有键
+'''
+查看指定h5对象中的所有键
+'''
 print(store.keys())
 ```
 利用store对象的`put()`方法，其主要参数如下：
