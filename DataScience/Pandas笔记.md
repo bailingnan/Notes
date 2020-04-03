@@ -25,6 +25,13 @@
         - [转置](#转置)
         - [`DataFrame` 应用 `NumPy`函数](#dataframe-应用-numpy函数)
         - [`DataFrame` 列属性访问](#dataframe-列属性访问)
+    - [数据类型](#数据类型)
+    - [整数被强制转换为浮点数](#整数被强制转换为浮点数)
+    - [默认值](#默认值)
+    - [向上转型](#向上转型)
+    - [`astype·](#astype)
+    - [对象转换](#对象转换)
+    - [各种坑](#各种坑)
   - [查看数据](#查看数据)
   - [二进制操作](#二进制操作)
     - [匹配/广播机制](#匹配广播机制)
@@ -51,11 +58,72 @@
     - [多函数 `Transform`](#多函数-transform)
     - [用字典执行 `transform` 操作](#用字典执行-transform-操作)
     - [元素级函数应用](#元素级函数应用)
+  - [重置索引与更换标签](#重置索引与更换标签)
+    - [重置索引，并与其它对象对齐](#重置索引并与其它对象对齐)
+    - [用 `align` 对齐多个对象](#用-align-对齐多个对象)
+    - [重置索引填充的限制](#重置索引填充的限制)
+    - [去掉轴上的标签](#去掉轴上的标签)
+    - [重命名或映射标签](#重命名或映射标签)
+  - [迭代](#迭代)
+    - [项目（`items`）](#项目items)
+    - [`iterrows()`](#iterrows)
+    - [`itertuples()`](#itertuples)
+  - [`.dt` 访问器](#dt-访问器)
+    - [`DatetimeIndex`](#datetimeindex)
+    - [PeriodIndex](#periodindex)
+    - [`period`](#period)
+    - [`timedelta`](#timedelta)
+  - [矢量化字符串方法](#矢量化字符串方法)
+  - [排序](#排序)
+    - [按索引排序](#按索引排序)
+    - [按值排序](#按值排序)
+    - [按索引与值排序](#按索引与值排序)
+      - [创建 `MultiIndex`](#创建-multiindex)
+      - [创建 `DataFrame`](#创建-dataframe)
+    - [搜索排序](#搜索排序)
+    - [最大值与最小值](#最大值与最小值)
+    - [用多层索引的列排序](#用多层索引的列排序)
   - [选择](#选择)
     - [获取数据](#获取数据)
     - [按标签选择](#按标签选择)
     - [按位置选择](#按位置选择)
-- [分解为多组](#分解为多组)
+    - [布尔索引](#布尔索引)
+    - [赋值](#赋值)
+    - [基于 `dtype` 选择列](#基于-dtype-选择列)
+  - [缺失值](#缺失值)
+  - [运算](#运算)
+    - [统计](#统计)
+    - [`Apply` 函数](#apply-函数)
+    - [直方图](#直方图)
+    - [字符串方法](#字符串方法)
+  - [合并（`Merge`）](#合并merge)
+    - [结合（`Concat`）](#结合concat)
+    - [连接（`join`）](#连接join)
+    - [追加（`Append`）](#追加append)
+  - [分组（`Grouping`）](#分组grouping)
+    - [堆叠（`Stack`）](#堆叠stack)
+  - [数据透视表（`Pivot Tables`）](#数据透视表pivot-tables)
+  - [时间序列(`TimeSeries`)](#时间序列timeseries)
+  - [类别型（`Categoricals`）](#类别型categoricals)
+  - [可视化](#可视化)
+  - [数据输入 / 输出](#数据输入--输出)
+    - [`CSV`](#csv)
+    - [`HDF5`](#hdf5)
+  - [各种坑（`Gotchas`）](#各种坑gotchas)
+  - [与`SQL`比较](#与sql比较)
+    - [`SELECT`](#select)
+    - [`WHERE`](#where)
+    - [`GROUP BY`](#group-by)
+    - [`JOIN`](#join)
+    - [`LEFT OUTER JOIN`](#left-outer-join)
+    - [`RIGHT JOIN`](#right-join)
+    - [`FULL JOIN`](#full-join)
+    - [`UNION`](#union)
+    - [`Pandas`等同于某些`SQL`分析和聚合函数](#pandas等同于某些sql分析和聚合函数)
+      - [带有偏移量的前N行](#带有偏移量的前n行)
+      - [每组前`N`行](#每组前n行)
+    - [更新（`UPDATE`）](#更新update)
+    - [删除（`DELETE`）](#删除delete)
 
 <!-- /TOC -->
 ```python
@@ -873,6 +941,412 @@ df.foo1
 3   -1.066969
 4   -0.303421
 Name: foo1, dtype: float64
+```
+### 数据类型
+大多数情况下，`Pandas` 使用 `NumPy` 数组、`Series` 或 `DataFrame` 里某列的数据类型。`NumPy` 支持 `float`、`int`、`bool`、`timedelta[ns]`、`datetime64[ns]`，注意，`NumPy` 不支持带时区信息的 `datetime`。
+`Pandas` 与第三方支持库扩充了 `NumPy` 类型系统，本节只介绍 `Pandas` 的内部扩展。
+下表列出了 `Pandas` 扩展类型:
+![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200403160958.png)
+`Pandas` 用 `object` 存储字符串。
+虽然， `object` 数据类型能够存储任何对象，但应尽量避免这种操作。
+`DataFrame` 的 `dtypes` 属性用起来很方便，以 `Series` 形式返回每列的数据类型。
+```python
+dft = pd.DataFrame({'A': np.random.rand(3),
+                    'B': 1,
+                    'C': 'foo',
+                    'D': pd.Timestamp('20010102'),
+                    'E': pd.Series([1.0] * 3).astype('float32'),
+                    'F': False,
+                    'G': pd.Series([1] * 3, dtype='int8')})
+dft
+          A  B    C          D    E      F  G
+0  0.035962  1  foo 2001-01-02  1.0  False  1
+1  0.701379  1  foo 2001-01-02  1.0  False  1
+2  0.281885  1  foo 2001-01-02  1.0  False  1
+dft.dtypes
+A           float64
+B             int64
+C            object
+D    datetime64[ns]
+E           float32
+F              bool
+G              int8
+dtype: object
+```
+要查看 `Series` 的数据类型，用 `dtype` 属性。
+```python
+dft['A'].dtype
+dtype('float64')
+```
+`Pandas` 对象单列中含多种类型的数据时，该列的数据类型为可适配于各类数据的数据类型，通常为 `object`。
+
+### 整数被强制转换为浮点数
+```python
+pd.Series([1, 2, 3, 4, 5, 6.])
+0    1.0
+1    2.0
+2    3.0
+3    4.0
+4    5.0
+5    6.0
+dtype: float64
+'''
+字符串数据决定了该 Series 的数据类型为object
+'''
+In [333]: pd.Series([1, 2, 3, 6., 'foo'])
+Out[333]: 
+0      1
+1      2
+2      3
+3      6
+4    foo
+dtype: object
+```
+`DataFrame.dtypes.value_counts()` 用于统计 `DataFrame` 里不同数据类型的列数。
+```python
+dft.dtypes.value_counts()
+float32           1
+object            1
+bool              1
+int8              1
+float64           1
+datetime64[ns]    1
+int64             1
+dtype: int64
+```
+多种数值型数据类型可以在 `DataFrame` 里共存。如果只传递一种数据类型，不论是通过 `dtype` 关键字直接传递，还是通过 `ndarray` 或 `Series` 传递，都会保存至 `DataFrame` 操作。此外，不同数值型数据类型不会合并。示例如下：
+```python
+df1 = pd.DataFrame(np.random.randn(8, 1), columns=['A'], dtype='float32')
+df1
+          A
+0  0.224364
+1  1.890546
+2  0.182879
+3  0.787847
+4 -0.188449
+5  0.667715
+6 -0.011736
+7 -0.399073
+df1.dtypes
+A    float32
+dtype: object
+df2 = pd.DataFrame({'A': pd.Series(np.random.randn(8), dtype='float16'),
+                    'B': pd.Series(np.random.randn(8)),
+                    'C': pd.Series(np.array(np.random.randn(8),
+                     dtype='uint8'))})
+df2
+          A         B    C
+0  0.823242  0.256090    0
+1  1.607422  1.426469    0
+2 -0.333740 -0.416203  255
+3 -0.063477  1.139976    0
+4 -1.014648 -1.193477    0
+5  0.678711  0.096706    0
+6 -0.040863 -1.956850    1
+7 -0.357422 -0.714337    0
+df2.dtypes
+A    float16
+B    float64
+C      uint8
+dtype: object
+```
+### 默认值
+整数的默认类型为 `int64`，浮点数的默认类型为 `float64`，这里的默认值与系统平台无关，不管是 `32` 位系统，还是 `64` 位系统都是一样的。下列代码返回的结果都是 `int64`：
+```python
+pd.DataFrame([1, 2], columns=['a']).dtypes
+a    int64
+dtype: object
+pd.DataFrame({'a': [1, 2]}).dtypes
+a    int64
+dtype: object
+pd.DataFrame({'a': 1}, index=list(range(2))).dtypes
+a    int64
+dtype: object
+```
+注意，`NumPy` 创建数组时，会根据系统选择类型。下列代码在 `32` 位系统上将返回 `int32`。
+```python
+frame = pd.DataFrame(np.array([1, 2]))
+```
+### 向上转型
+与其它类型合并时，用的是向上转型，指的是从现有类型转换为另一种类型，如`int` 变为 `float`。
+```python
+df3 = df1.reindex_like(df2).fillna(value=0.0) + df2
+df3
+          A         B      C
+0  1.047606  0.256090    0.0
+1  3.497968  1.426469    0.0
+2 -0.150862 -0.416203  255.0
+3  0.724370  1.139976    0.0
+4 -1.203098 -1.193477    0.0
+5  1.346426  0.096706    0.0
+6 -0.052599 -1.956850    1.0
+7 -0.756495 -0.714337    0.0
+df3.dtypes
+A    float32
+B    float64
+C    float64
+dtype: object
+```
+`DataFrame.to_numpy()` 返回多个数据类型里用得最多的数据类型，这里指的是，输出结果的数据类型，适用于所有同构 `NumPy` 数组的数据类型。此处强制执行向上转型。
+```python
+df3.to_numpy().dtype
+dtype('float64')
+```
+### `astype·
+`astype()` 方法显式地把一种数据类型转换为另一种，默认操作为复制数据，就算数据类型没有改变也会复制数据，`copy=False` 改变默认操作模式。此外，`astype` 无效时，会触发异常。
+
+向上转型一般都遵循 `NumPy` 规则。操作中含有两种不同类型的数据时，返回更为通用的那种数据类型。
+```python
+df3
+          A         B      C
+0  1.047606  0.256090    0.0
+1  3.497968  1.426469    0.0
+2 -0.150862 -0.416203  255.0
+3  0.724370  1.139976    0.0
+4 -1.203098 -1.193477    0.0
+5  1.346426  0.096706    0.0
+6 -0.052599 -1.956850    1.0
+7 -0.756495 -0.714337    0.0
+df3.dtypes
+A    float32
+B    float64
+C    float64
+dtype: object
+''' 
+转换数据类型
+'''
+df3.astype('float32').dtypes
+A    float32
+B    float32
+C    float32
+dtype: object
+```
+用 `astype()` 把一列或多列转换为指定类型 。
+```python
+dft = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]})
+dft[['a', 'b']] = dft[['a', 'b']].astype(np.uint8)
+dft
+   a  b  c
+0  1  4  7
+1  2  5  8
+2  3  6  9
+dft.dtypes
+a    uint8
+b    uint8
+c    int64
+dtype: object
+```
+`astype()` 通过字典指定哪些列转换为哪些类型。
+```python
+dft1 = pd.DataFrame({'a': [1, 0, 1], 'b': [4, 5, 6], 'c': [7, 8, 9]})
+dft1 = dft1.astype({'a': np.bool, 'c': np.float64})
+dft1
+       a  b    c
+0   True  4  7.0
+1  False  5  8.0
+2   True  6  9.0
+dft1.dtypes
+a       bool
+b      int64
+c    float64
+dtype: object
+```
+注意:用 `astype()` 与 `loc()` 为部分列转换指定类型时，会发生向上转型。
+
+`loc()` 尝试分配当前的数据类型，而 `[]` 则会从右方获取数据类型并进行覆盖。因此，下列代码会产出意料之外的结果：
+```python
+dft = pd.DataFrame({'a': [1, 2, 3], 'b': [4, 5, 6], 'c': [7, 8, 9]})
+dft.loc[:, ['a', 'b']].astype(np.uint8).dtypes
+a    uint8
+b    uint8
+dtype: object
+dft.loc[:, ['a', 'b']] = dft.loc[:, ['a', 'b']].astype(np.uint8)
+dft.dtypes
+a    int64
+b    int64
+c    int64
+dtype: object
+```
+### 对象转换
+`Pandas` 提供了多种函数可以把 `object` 从一种类型强制转为另一种类型。这是因为，数据有时存储的是正确类型，但在保存时却存成了 `object` 类型，此时，用 `DataFrame.infer_objects()` 与 `Series.infer_objects()` 方法即可把数据软转换为正确的类型。
+```python
+import datetime
+df = pd.DataFrame([[1, 2],
+                  ['a', 'b'],
+                  [datetime.datetime(2016, 3, 2),
+                  datetime.datetime(2016, 3, 2)]])
+df = df.T
+df
+   0  1          2
+0  1  a 2016-03-02
+1  2  b 2016-03-02
+df.dtypes
+0            object
+1            object
+2    datetime64[ns]
+dtype: object
+```
+因为数据被转置，所以把原始列的数据类型改成了 `object`，但使用 `infer_objects` 后就变正确了。
+```python
+df.infer_objects().dtypes
+0             int64
+1            object
+2    datetime64[ns]
+dtype: object
+```
+下列函数可以应用于一维数组与标量，执行硬转换，把对象转换为指定类型。
+`to_numeric()`，转换为数值型:
+```python
+m = ['1.1', 2, 3]
+pd.to_numeric(m)
+array([1.1, 2. , 3. ])
+```
+`to_datetime()`，转换为 `datetime` 对象:
+```python
+import datetime
+m = ['2016-07-09', datetime.datetime(2016, 3, 2)]
+pd.to_datetime(m)
+DatetimeIndex(['2016-07-09', '2016-03-02'], dtype='datetime64[ns]', freq=None)
+```
+`to_timedelta()`，转换为 `timedelta` 对象:
+```python
+m = ['5us', pd.Timedelta('1day')]
+pd.to_timedelta(m)
+TimedeltaIndex(['0 days 00:00:00.000005', '1 days 00:00:00'], dtype='timedelta64[ns]', freq=None)
+```
+如需强制转换，则要加入 `error` 参数，指定 `Pandas` 怎样处理不能转换为成预期类型或对象的数据。`errors` 参数的默认值为 `False`，指的是在转换过程中，遇到任何问题都触发错误。设置为 `errors='coerce'` 时，`pandas` 会忽略错误，强制把问题数据转换为 `pd.NaT`（`datetime` 与 `timedelta`），或 `np.nan`（数值型）。读取数据时，如果大部分要转换的数据是数值型或 `datetime`，这种操作非常有用，但偶尔也会有非制式数据混合在一起，可能会导致展示数据缺失：
+```python
+import datetime
+m = ['apple', datetime.datetime(2016, 3, 2)]
+pd.to_datetime(m, errors='coerce')
+DatetimeIndex(['NaT', '2016-03-02'], dtype='datetime64[ns]', freq=None)
+m = ['apple', 2, 3]
+pd.to_numeric(m, errors='coerce')
+array([nan,  2.,  3.])
+m = ['apple', pd.Timedelta('1day')]
+pd.to_timedelta(m, errors='coerce')
+TimedeltaIndex([NaT, '1 days'], dtype='timedelta64[ns]', freq=None)
+```
+`error` 参数还有第三个选项，`error='ignore'`。转换数据时会忽略错误，直接输出问题数据：
+```python
+import datetime
+m = ['apple', datetime.datetime(2016, 3, 2)]
+pd.to_datetime(m, errors='ignore')
+Index(['apple', 2016-03-02 00:00:00], dtype='object')
+m = ['apple', 2, 3]
+pd.to_numeric(m, errors='ignore')
+array(['apple', 2, 3], dtype=object)
+m = ['apple', pd.Timedelta('1day')]
+pd.to_timedelta(m, errors='ignore')
+array(['apple', Timedelta('1 days 00:00:00')], dtype=object)
+```
+执行转换操作时，`to_numeric()` 还有一个参数，`downcast`，即向下转型，可以把数值型转换为减少内存占用的数据类型：
+```python
+m = ['1', 2, 3]
+pd.to_numeric(m, downcast='integer')   # smallest signed int dtype
+array([1, 2, 3], dtype=int8)
+pd.to_numeric(m, downcast='signed')    # same as 'integer'
+array([1, 2, 3], dtype=int8)
+pd.to_numeric(m, downcast='unsigned')  # smallest unsigned int dtype
+array([1, 2, 3], dtype=uint8)
+pd.to_numeric(m, downcast='float')     # smallest float dtype
+array([1., 2., 3.], dtype=float32)
+```
+上述方法仅能应用于一维数组、列表或标量；不能直接用于 `DataFrame` 等多维对象。不过，用 `apply()`，可以快速为每列应用函数：
+```python
+import datetime
+df = pd.DataFrame([['2016-07-09', datetime.datetime(2016, 3, 2)]] * 2, dtype='O')
+df
+            0                    1
+0  2016-07-09  2016-03-02 00:00:00
+1  2016-07-09  2016-03-02 00:00:00
+df.apply(pd.to_datetime)
+           0          1
+0 2016-07-09 2016-03-02
+1 2016-07-09 2016-03-02
+df = pd.DataFrame([['1.1', 2, 3]] * 2, dtype='O')
+df
+     0  1  2
+0  1.1  2  3
+1  1.1  2  3
+df.apply(pd.to_numeric)
+     0  1  2
+0  1.1  2  3
+1  1.1  2  3
+df = pd.DataFrame([['5us', pd.Timedelta('1day')]] * 2, dtype='O')
+df
+     0                1
+0  5us  1 days 00:00:00
+1  5us  1 days 00:00:00
+df.apply(pd.to_timedelta)
+                0      1
+0 00:00:00.000005 1 days
+1 00:00:00.000005 1 days
+```
+### 各种坑
+对 `integer` 数据执行选择操作时，可以很轻而易举地把数据转换为 `floating` 。`Pandas` 会保存输入数据的数据类型，以防未引入 `nans` 的情况。
+```python
+dfi = df3.astype('int32')
+dfi['E'] = 1
+dfi 
+   A  B    C  E
+0  1  0    0  1
+1  3  1    0  1
+2  0  0  255  1
+3  0  1    0  1
+4 -1 -1    0  1
+5  1  0    0  1
+6  0 -1    1  1
+7  0  0    0  1
+dfi.dtypes
+A    int32
+B    int32
+C    int32
+E    int64
+dtype: object
+casted = dfi[dfi > 0]
+casted
+     A    B      C  E
+0  1.0  NaN    NaN  1
+1  3.0  1.0    NaN  1
+2  NaN  NaN  255.0  1
+3  NaN  1.0    NaN  1
+4  NaN  NaN    NaN  1
+5  1.0  NaN    NaN  1
+6  NaN  NaN    1.0  1
+7  NaN  NaN    NaN  1
+casted.dtypes
+A    float64
+B    float64
+C    float64
+E      int64
+dtype: object
+```
+浮点数类型未改变。
+```python
+dfa = df3.copy()
+dfa['A'] = dfa['A'].astype('float32')
+dfa.dtypes 
+A    float32
+B    float64
+C    float64
+dtype: object
+casted = dfa[df2 > 0]
+casted 
+          A         B      C
+0  1.047606  0.256090    NaN
+1  3.497968  1.426469    NaN
+2       NaN       NaN  255.0
+3       NaN  1.139976    NaN
+4       NaN       NaN    NaN
+5  1.346426  0.096706    NaN
+6       NaN       NaN    1.0
+7       NaN       NaN    NaN
+casted.dtypes 
+A    float32
+B    float64
+C    float64
+dtype: object
 ```
 ## 查看数据
 `head()` 与 `tail()` 用于快速预览 `Series` 与 `DataFrame`，默认显示 `5` 条数据，也可以指定显示数据的数量。
@@ -2128,6 +2602,893 @@ d    7.0
 e    6.0
 dtype: float64
 ```
+## 重置索引与更换标签
+`reindex()` 是 `Pandas`里实现数据对齐的基本方法，该方法执行几乎所有功能都要用到的标签对齐功能。 `reindex` 指的是沿着指定轴，让数据与给定的一组标签进行匹配。该功能完成以下几项操作：
+- 让现有数据匹配一组新标签，并重新排序；
+- 在无数据但有标签的位置插入缺失值（`NA`）标记；
+- 如果指定，则按逻辑填充无标签的数据，该操作多见于时间序列数据。
+示例如下：
+```python
+s = pd.Series(np.random.randn(5), index=['a', 'b', 'c', 'd', 'e'])
+s
+a    1.695148
+b    1.328614
+c    1.234686
+d   -0.385845
+e   -1.326508
+dtype: float64
+s.reindex(['e', 'b', 'f', 'd'])
+e   -1.326508
+b    1.328614
+f         NaN
+d   -0.385845
+dtype: float64
+```
+本例中，原 `Series` 里没有标签 `f`，因此，输出结果里 `f` 对应的值为 `NaN`。
+`DataFrame` 支持同时 `reindex` 索引与列：
+```python
+df
+        one       two     three
+a  1.394981  1.772517       NaN
+b  0.343054  1.912123 -0.050390
+c  0.695246  1.478369  1.227435
+d       NaN  0.279344 -0.613172
+df.reindex(index=['c', 'f', 'b'], columns=['three', 'two', 'one'])
+      three       two       one
+c  1.227435  1.478369  0.695246
+f       NaN       NaN       NaN
+b -0.050390  1.912123  0.343054
+```
+`reindex` 还支持 `axis` 关键字：
+```python
+df.reindex(['c', 'f', 'b'], axis='index')
+        one       two     three
+c  0.695246  1.478369  1.227435
+f       NaN       NaN       NaN
+b  0.343054  1.912123 -0.050390
+```
+不同对象可以共享 `Index` 包含的轴标签。比如，有一个 `Series`，还有一个 `DataFrame`，可以执行下列操作：
+```python
+rs = s.reindex(df.index)
+rs
+a    1.695148
+b    1.328614
+c    1.234686
+d   -0.385845
+dtype: float64
+rs.index is df.index
+True
+```
+这里指的是，重置后，`Series` 的索引与 `DataFrame` 的索引是同一个 `Python` 对象。
+`DataFrame.reindex()` 还支持 “轴样式”调用习语，可以指定单个 `labels` 参数，并指定应用于哪个 `axis`。
+```python
+df.reindex(['c', 'f', 'b'], axis='index')
+        one       two     three
+c  0.695246  1.478369  1.227435
+f       NaN       NaN       NaN
+b  0.343054  1.912123 -0.050390
+df.reindex(['three', 'two', 'one'], axis='columns')
+      three       two       one
+a       NaN  1.772517  1.394981
+b -0.050390  1.912123  0.343054
+c  1.227435  1.478369  0.695246
+d -0.613172  0.279344       NaN
+```
+>注意:多层索引与高级索引介绍了怎样用更简洁的方式重置索引。
+>注意:编写注重性能的代码时，最好花些时间深入理解 `reindex`：预对齐数据后，操作会更快。两个未对齐的 `DataFrame` 相加，后台操作会执行 `reindex`。探索性分析时很难注意到这点有什么不同，这是因为 `reindex` 已经进行了高度优化，但需要注重 `CPU` 周期时，显式调用 `reindex` 还是有一些影响的。
+### 重置索引，并与其它对象对齐
+提取一个对象，并用另一个具有相同标签的对象 `reindex` 该对象的轴。这种操作的语法虽然简单，但未免有些啰嗦。这时，最好用 `reindex_like()` 方法，这是一种既有效，又简单的方式：
+```python
+df2
+        one       two
+a  1.394981  1.772517
+b  0.343054  1.912123
+c  0.695246  1.478369
+df3
+        one       two
+a  0.583888  0.051514
+b -0.468040  0.191120
+c -0.115848 -0.242634
+df.reindex_like(df2)
+        one       two
+a  1.394981  1.772517
+b  0.343054  1.912123
+c  0.695246  1.478369
+```
+### 用 `align` 对齐多个对象
+`align()` 方法是对齐两个对象最快的方式，该方法支持 `join` 参数：
+- `join='outer'`：使用两个对象索引的合集，默认值
+- `join='left'`：使用左侧调用对象的索引
+- `join='right'`：使用右侧传递对象的索引
+- `join='inner'`：使用两个对象索引的交集
+该方法返回重置索引后的两个 `Series` 元组：
+```python
+s = pd.Series(np.random.randn(5), index=['a', 'b', 'c', 'd', 'e'])
+s1 = s[:4]
+s2 = s[1:]
+s1.align(s2)
+(a   -0.186646
+ b   -1.692424
+ c   -0.303893
+ d   -1.425662
+ e         NaN
+ dtype: float64, 
+ a         NaN
+ b   -1.692424
+ c   -0.303893
+ d   -1.425662
+ e    1.114285
+ dtype: float64)
+s1.align(s2, join='inner')
+(b   -1.692424
+ c   -0.303893
+ d   -1.425662
+ dtype: float64, 
+ b   -1.692424
+ c   -0.303893
+ d   -1.425662
+ dtype: float64)
+s1.align(s2, join='left')
+(a   -0.186646
+ b   -1.692424
+ c   -0.303893
+ d   -1.425662
+ dtype: float64, 
+ a         NaN
+ b   -1.692424
+ c   -0.303893
+ d   -1.425662
+ dtype: float64)
+ ```
+默认条件下， `join` 方法既应用于索引，也应用于列：
+```python
+df.align(df2, join='inner')
+(        one       two
+ a  1.394981  1.772517
+ b  0.343054  1.912123
+ c  0.695246  1.478369,         
+         one       two
+ a  1.394981  1.772517
+ b  0.343054  1.912123
+ c  0.695246  1.478369)
+ ```
+`align` 方法还支持 `axis` 选项，用来指定要对齐的轴：
+```python
+df.align(df2, join='inner', axis=0)
+(        one       two     three
+ a  1.394981  1.772517       NaN
+ b  0.343054  1.912123 -0.050390
+ c  0.695246  1.478369  1.227435,         
+         one       two
+ a  1.394981  1.772517
+ b  0.343054  1.912123
+ c  0.695246  1.478369)
+ ```
+如果把 `Series` 传递给 `DataFrame.align()`，可以用 `axis` 参数选择是在 `DataFrame` 的索引，还是列上对齐两个对象：
+```python
+df.align(df2.iloc[0], axis=1)
+(        one     three       two
+ a  1.394981       NaN  1.772517
+ b  0.343054 -0.050390  1.912123
+ c  0.695246  1.227435  1.478369
+ d       NaN -0.613172  0.279344, one      1.394981
+ three         NaN
+ two      1.772517
+ Name: a, dtype: float64)
+ ```
+ ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200403130813.png)
+ 下面用一个简单的 `Series` 展示 `fill` 方法：
+```python
+rng = pd.date_range('1/3/2000', periods=8)
+ts = pd.Series(np.random.randn(8), index=rng)
+ts2 = ts[[0, 3, 6]]
+ts
+2000-01-03    0.183051
+2000-01-04    0.400528
+2000-01-05   -0.015083
+2000-01-06    2.395489
+2000-01-07    1.414806
+2000-01-08    0.118428
+2000-01-09    0.733639
+2000-01-10   -0.936077
+Freq: D, dtype: float64
+ts2
+2000-01-03    0.183051
+2000-01-06    2.395489
+2000-01-09    0.733639
+dtype: float64
+ts2.reindex(ts.index)
+2000-01-03    0.183051
+2000-01-04         NaN
+2000-01-05         NaN
+2000-01-06    2.395489
+2000-01-07         NaN
+2000-01-08         NaN
+2000-01-09    0.733639
+2000-01-10         NaN
+Freq: D, dtype: float64
+ts2.reindex(ts.index, method='ffill')
+Out[225]: 
+2000-01-03    0.183051
+2000-01-04    0.183051
+2000-01-05    0.183051
+2000-01-06    2.395489
+2000-01-07    2.395489
+2000-01-08    2.395489
+2000-01-09    0.733639
+2000-01-10    0.733639
+Freq: D, dtype: float64
+ts2.reindex(ts.index, method='bfill')
+Out[226]: 
+2000-01-03    0.183051
+2000-01-04    2.395489
+2000-01-05    2.395489
+2000-01-06    2.395489
+2000-01-07    0.733639
+2000-01-08    0.733639
+2000-01-09    0.733639
+2000-01-10         NaN
+Freq: D, dtype: float64
+ts2.reindex(ts.index, method='nearest')
+2000-01-03    0.183051
+2000-01-04    0.183051
+2000-01-05    2.395489
+2000-01-06    2.395489
+2000-01-07    2.395489
+2000-01-08    0.733639
+2000-01-09    0.733639
+2000-01-10    0.733639
+Freq: D, dtype: float64
+```
+上述操作要求索引按递增或递减排序。
+
+>注意：除了 `method='nearest'`，用 `fillna` 或 `interpolate` 也能实现同样的效果：
+```python
+ts2.reindex(ts.index).fillna(method='ffill')
+2000-01-03    0.183051
+2000-01-04    0.183051
+2000-01-05    0.183051
+2000-01-06    2.395489
+2000-01-07    2.395489
+2000-01-08    2.395489
+2000-01-09    0.733639
+2000-01-10    0.733639
+Freq: D, dtype: float64
+```
+如果索引不是按递增或递减排序，`reindex()` 会触发 `ValueError` 错误。`fillna()` 与 `interpolate()` 则不检查索引的排序。
+
+### 重置索引填充的限制
+`limit` 与 `tolerance` 参数可以控制 `reindex` 的填充操作。`limit`限定了连续匹配的最大数量：
+```python
+ts2.reindex(ts.index, method='ffill', limit=1)
+2000-01-03    0.183051
+2000-01-04    0.183051
+2000-01-05         NaN
+2000-01-06    2.395489
+2000-01-07    2.395489
+2000-01-08         NaN
+2000-01-09    0.733639
+2000-01-10    0.733639
+Freq: D, dtype: float64
+```
+反之，`tolerance` 限定了索引与索引器值之间的最大距离：
+```python
+ts2.reindex(ts.index, method='ffill', tolerance='1 day')
+2000-01-03    0.183051
+2000-01-04    0.183051
+2000-01-05         NaN
+2000-01-06    2.395489
+2000-01-07    2.395489
+2000-01-08         NaN
+2000-01-09    0.733639
+2000-01-10    0.733639
+Freq: D, dtype: float64
+```
+>注意：索引为 `DatetimeIndex`、`TimedeltaIndex` 或 `PeriodIndex` 时，`tolerance` 会尽可能将这些索引强制转换为 `Timedelta`，这里要求用户用恰当的字符串设定 `tolerance` 参数。
+### 去掉轴上的标签
+`drop()` 函数与 `reindex` 经常配合使用，该函数用于删除轴上的一组标签：
+```python
+df
+        one       two     three
+a  1.394981  1.772517       NaN
+b  0.343054  1.912123 -0.050390
+c  0.695246  1.478369  1.227435
+d       NaN  0.279344 -0.613172
+df.drop(['a', 'd'], axis=0)
+        one       two     three
+b  0.343054  1.912123 -0.050390
+c  0.695246  1.478369  1.227435
+df.drop(['one'], axis=1)
+        two     three
+a  1.772517       NaN
+b  1.912123 -0.050390
+c  1.478369  1.227435
+d  0.279344 -0.613172
+```
+注意：下面的代码可以运行，但不够清晰：
+```python
+df.reindex(df.index.difference(['a', 'd']))
+        one       two     three
+b  0.343054  1.912123 -0.050390
+c  0.695246  1.478369  1.227435
+```
+### 重命名或映射标签
+`rename()` 方法支持按不同的轴基于映射（字典或 `Series`）调整标签。
+```python
+s
+a   -0.186646
+b   -1.692424
+c   -0.303893
+d   -1.425662
+e    1.114285
+dtype: float64
+s.rename(str.upper)
+A   -0.186646
+B   -1.692424
+C   -0.303893
+D   -1.425662
+E    1.114285
+dtype: float64
+```
+如果调用的是函数，该函数在处理标签时，必须返回一个值，而且生成的必须是一组唯一值。此外，`rename()` 还可以调用字典或 `Series`。
+```python
+df.rename(columns={'one': 'foo', 'two': 'bar'},index={'a': 'apple', 'b': 'banana', 'd': 'durian'})
+             foo       bar     three
+apple   1.394981  1.772517       NaN
+banana  0.343054  1.912123 -0.050390
+c       0.695246  1.478369  1.227435
+durian       NaN  0.279344 -0.613172
+```
+`Pandas` 不会重命名标签未包含在映射里的列或索引。注意，映射里多出的标签不会触发错误。
+
+`DataFrame.rename()` 还支持“轴式”习语，用这种方式可以指定单个 `mapper`，及执行映射的 `axis`。
+```python
+df.rename({'one': 'foo', 'two': 'bar'}, axis='columns')
+        foo       bar     three
+a  1.394981  1.772517       NaN
+b  0.343054  1.912123 -0.050390
+c  0.695246  1.478369  1.227435
+d       NaN  0.279344 -0.613172
+df.rename({'a': 'apple', 'b': 'banana', 'd': 'durian'}, axis='index')
+             one       two     three
+apple   1.394981  1.772517       NaN
+banana  0.343054  1.912123 -0.050390
+c       0.695246  1.478369  1.227435
+durian       NaN  0.279344 -0.613172
+```
+`rename()` 方法还提供了 `inplace` 命名参数，默认为 `False`，并会复制底层数据。`inplace=True` 时，会直接在原数据上重命名。
+
+`rename()` 还支持用标量或列表更改 `Series.name` 属性。
+```python
+s.rename("scalar-name")
+a   -0.186646
+b   -1.692424
+c   -0.303893
+d   -1.425662
+e    1.114285
+Name: scalar-name, dtype: float64
+```
+`rename_axis()` 方法支持指定 多层索引 名称，与标签相对应。
+```python
+df = pd.DataFrame({'x': [1, 2, 3, 4, 5, 6],'y': [10, 20, 30, 40, 50, 60]},index=pd.MultiIndex.from_product([['a', 'b', 'c'], [1, 2]],names=['let', 'num']))
+df
+         x   y
+let num       
+a   1    1  10
+    2    2  20
+b   1    3  30
+    2    4  40
+c   1    5  50
+    2    6  60
+
+df.rename_axis(index={'let': 'abc'})
+         x   y
+abc num       
+a   1    1  10
+    2    2  20
+b   1    3  30
+    2    4  40
+c   1    5  50
+    2    6  60
+df.rename_axis(index=str.upper)
+         x   y
+LET NUM       
+a   1    1  10
+    2    2  20
+b   1    3  30
+    2    4  40
+c   1    5  50
+    2    6  60
+```
+## 迭代
+`Pandas` 对象基于类型进行迭代操作。`Series` 迭代时被视为数组，基础迭代生成值。`DataFrame` 则遵循字典式习语，用对象的 `key` 实现迭代操作。
+简言之，基础迭代（`for i in object`）生成：
+
+- `Series` ：值
+- `DataFrame`：列标签
+例如，`DataFrame` 迭代时输出列名：
+```python
+df = pd.DataFrame({'col1': np.random.randn(3),'col2': np.random.randn(3)}, index=['a', 'b', 'c'])
+for col in df:
+   print(col)
+col1
+col2
+```
+`Pandas` 对象还支持字典式的 `items()` 方法，通过键值对迭代。
+用下列方法可以迭代 `DataFrame` 里的行：
+- `iterrows()`：把 `DataFrame` 里的行当作 （`index`， `Series`）对进行迭代。该操作把行转为 `Series`，同时改变数据类型，并对性能有影响。
+- `itertuples()`: 把 `DataFrame` 的行当作值的命名元组进行迭代。该操作比 `iterrows()` 快的多，建议尽量用这种方法迭代 `DataFrame` 的值。
+警告：`Pandas` 对象迭代的速度较慢。大部分情况下，没必要对行执行迭代操作，建议用以下几种替代方式：
+- 矢量化：很多操作可以用内置方法或 `NumPy` 函数，布尔索引……
+- 调用的函数不能在完整的 `DataFrame` / `Series` 上运行时，最好用 `apply()`，不要对值进行迭代操作。
+- 如果必须对值进行迭代，请务必注意代码的性能，建议在 `cython` 或 `numba` 环境下实现内循环。参阅性能优化一节，查看这种操作方法的示例。
+警告
+永远不要修改迭代的内容，这种方式不能确保所有操作都能正常运作。基于数据类型，迭代器返回的是复制（`copy`）的结果，不是视图（`view`），这种写入可能不会生效！
+
+下例中的赋值就不会生效：
+```python
+df = pd.DataFrame({'a': [1, 2, 3], 'b': ['a', 'b', 'c']})
+for index, row in df.iterrows():
+   row['a'] = 10 
+df
+   a  b
+0  1  a
+1  2  b
+2  3  c
+```
+### 项目（`items`）
+与字典型接口类似，`items()` 通过键值对进行迭代：
+- `Series`：（`Index`，标量值）对
+- `DataFrame`：（列，`Series`）对
+```python
+for label, ser in df.items():
+   print(label)
+   print(ser)
+a
+0    1
+1    2
+2    3
+Name: a, dtype: int64
+b
+0    a
+1    b
+2    c
+Name: b, dtype: object
+```
+### `iterrows()`
+`iterrows()` 迭代 `DataFrame` 或 `Series` 里的每一行数据。这个操作返回一个迭代器，生成索引值及包含每行数据的 `Series`：
+```python
+for row_index, row in df.iterrows():
+   print(row_index, row, sep='\n')
+0
+a    1
+b    a
+Name: 0, dtype: object
+1
+a    2
+b    b
+Name: 1, dtype: object
+2
+a    3
+b    c
+Name: 2, dtype: object
+```
+注意：`iterrows()` 返回的是 `Series` 里的每一行数据，该操作不保留每行数据的数据类型，因为数据类型是通过 `DataFrame` 的列界定的。
+示例如下：
+```python
+df_orig = pd.DataFrame([[1, 1.5]], columns=['int', 'float'])
+df_orig.dtypes
+int        int64
+float    float64
+dtype: object
+row = next(df_orig.iterrows())[1]
+row
+int      1.0
+float    1.5
+Name: 0, dtype: float64
+```
+`row` 里的值以 `Series` 形式返回，并被转换为浮点数，原始的整数值则在列 `X`：
+```python
+row['int'].dtype
+dtype('float64')
+df_orig['int'].dtype
+dtype('int64')
+```
+### `itertuples()`
+要想在行迭代时保存数据类型，最好用 `itertuples()`，这个函数返回值的命名元组，总的来说，该操作比 `iterrows()` 速度更快。
+
+下例展示了怎样转置 `DataFrame`：
+```python
+df2 = pd.DataFrame({'x': [1, 2, 3], 'y': [4, 5, 6]})
+print(df2)
+   x  y
+0  1  4
+1  2  5
+2  3  6
+print(df2.T)
+   0  1  2
+x  1  2  3
+y  4  5  6
+df2_t = pd.DataFrame({idx: values for idx, values in df2.iterrows()})
+print(df2_t)
+   0  1  2
+x  1  2  3
+y  4  5  6
+```
+`itertuples()` 方法返回为 `DataFrame` 里每行数据生成命名元组的迭代器。该元组的第一个元素是行的索引值，其余的值则是行的值。
+```python
+for row in df.itertuples():   
+   print(row)
+Pandas(Index=0, a=1, b='a')
+Pandas(Index=1, a=2, b='b')
+Pandas(Index=2, a=3, b='c')
+```
+该方法不会把行转换为 `Series`，只是返回命名元组里的值。`itertuples()` 保存值的数据类型，而且比 `iterrows()` 快。
+
+注意:包含无效 `Python` 识别符的列名、重复的列名及以下划线开头的列名，会被重命名为位置名称。如果列数较大，比如大于 `255` 列，则返回正则元组。
+
+## `.dt` 访问器
+`Series` 提供一个可以简单、快捷地返回 `datetime` 属性值的访问器。这个访问器返回的也是 `Series`，索引与现有的 `Series` 一样。
+```python
+s = pd.Series(pd.date_range('20130101 09:10:12', periods=4))
+s
+0   2013-01-01 09:10:12
+1   2013-01-02 09:10:12
+2   2013-01-03 09:10:12
+3   2013-01-04 09:10:12
+dtype: datetime64[ns]
+s.dt.hour
+0    9
+1    9
+2    9
+3    9
+dtype: int64
+s.dt.second
+0    12
+1    12
+2    12
+3    12
+dtype: int64
+s.dt.day
+0    1
+1    2
+2    3
+3    4
+dtype: int64
+```
+用下列表达式进行筛选非常方便：
+```python
+s[s.dt.day == 2]
+1   2013-01-02 09:10:12
+dtype: datetime64[ns]
+```
+还可以用 `Series.dt.strftime()` 把 `datetime` 的值当成字符串进行格式化，支持与标准 `strftime()` 同样的格式。
+
+### `DatetimeIndex`
+```python
+s = pd.Series(pd.date_range('20130101', periods=4))
+s
+0   2013-01-01
+1   2013-01-02
+2   2013-01-03
+3   2013-01-04
+dtype: datetime64[ns]
+s.dt.strftime('%Y/%m/%d')
+0    2013/01/01
+1    2013/01/02
+2    2013/01/03
+3    2013/01/04
+dtype: object
+```
+### PeriodIndex
+```python
+s = pd.Series(pd.period_range('20130101', periods=4))
+s
+0    2013-01-01
+1    2013-01-02
+2    2013-01-03
+3    2013-01-04
+dtype: period[D]
+s.dt.strftime('%Y/%m/%d')
+0    2013/01/01
+1    2013/01/02
+2    2013/01/03
+3    2013/01/04
+dtype: object
+```
+`.dt` 访问器还支持 `period` 与 `timedelta`。
+
+### `period`
+```python
+s = pd.Series(pd.period_range('20130101', periods=4, freq='D'))
+s
+0    2013-01-01
+1    2013-01-02
+2    2013-01-03
+3    2013-01-04
+dtype: period[D]
+s.dt.year
+0    2013
+1    2013
+2    2013
+3    2013
+dtype: int64
+s.dt.day
+0    1
+1    2
+2    3
+3    4
+dtype: int64
+```
+### `timedelta`
+```python
+s = pd.Series(pd.timedelta_range('1 day 00:00:05', periods=4, freq='s'))
+s
+0   1 days 00:00:05
+1   1 days 00:00:06
+2   1 days 00:00:07
+3   1 days 00:00:08
+dtype: timedelta64[ns]
+s.dt.days
+0    1
+1    1
+2    1
+3    1
+dtype: int64
+s.dt.seconds
+0    5
+1    6
+2    7
+3    8
+dtype: int64
+s.dt.components
+   days  hours  minutes  seconds  milliseconds  microseconds  nanoseconds
+0     1      0        0        5             0             0            0
+1     1      0        0        6             0             0            0
+2     1      0        0        7             0             0            0
+3     1      0        0        8             0             0            0
+```
+注意:用这个访问器处理不是 `datetime` 类型的值时，`Series.dt` 会触发 `TypeError` 错误。
+## 矢量化字符串方法
+`Series` 支持字符串处理方法，可以非常方便地操作数组里的每个元素。这些方法会自动排除缺失值与空值，这也许是其最重要的特性。这些方法通过 `Series` 的 `str` 属性访问，一般情况下，这些操作的名称与内置的字符串方法一致。示例如下：
+```python
+s = pd.Series(['A', 'B', 'C', 'Aaba', 'Baca', np.nan, 'CABA', 'dog', 'cat'])
+s.str.lower()
+0       a
+1       b
+2       c
+3    aaba
+4    baca
+5     NaN
+6    caba
+7     dog
+8     cat
+dtype: object
+```
+这里还提供了强大的模式匹配方法，但工业注意，模式匹配方法默认使用正则表达式
+## 排序
+`Pandas` 支持三种排序方式，按索引标签排序，按列里的值排序，按两种方式混合排序。
+### 按索引排序
+`Series.sort_index()` 与 `DataFrame.sort_index()` 方法用于按索引层级对 `Pandas` 对象排序。
+```python
+df = pd.DataFrame({'one': pd.Series(np.random.randn(3), index=['a', 'b', 'c']),
+                   'two': pd.Series(np.random.randn(4), index=['a', 'b', 'c', 'd']),
+                   'three': pd.Series(np.random.randn(3), index=['b', 'c', 'd'])})
+unsorted_df = df.reindex(index=['a', 'd', 'c', 'b'],columns=['three', 'two', 'one'])
+unsorted_df
+      three       two       one
+a       NaN -1.152244  0.562973
+d -0.252916 -0.109597       NaN
+c  1.273388 -0.167123  0.640382
+b -0.098217  0.009797 -1.299504
+
+unsorted_df.sort_index()
+      three       two       one
+a       NaN -1.152244  0.562973
+b -0.098217  0.009797 -1.299504
+c  1.273388 -0.167123  0.640382
+d -0.252916 -0.109597       NaN
+unsorted_df.sort_index(ascending=False)
+      three       two       one
+d -0.252916 -0.109597       NaN
+c  1.273388 -0.167123  0.640382
+b -0.098217  0.009797 -1.299504
+a       NaN -1.152244  0.562973
+unsorted_df.sort_index(axis=1)
+        one     three       two
+a  0.562973       NaN -1.152244
+d       NaN -0.252916 -0.109597
+c  0.640382  1.273388 -0.167123
+b -1.299504 -0.098217  0.009797
+unsorted_df['three'].sort_index()
+a         NaN
+b   -0.098217
+c    1.273388
+d   -0.252916
+Name: three, dtype: float64
+```
+### 按值排序
+`Series.sort_values()` 方法用于按值对 `Series` 排序。`DataFrame.sort_values()` 方法用于按行列的值对 `DataFrame` 排序。`DataFrame`.`sort_values()` 的可选参数 `by` 用于指定按哪列排序，该参数的值可以是一列或多列数据。
+```python
+df1 = pd.DataFrame({'one': [2, 1, 1, 1],
+                    'two': [1, 3, 2, 4],
+                    'three': [5, 4, 3, 2]})
+df1.sort_values(by='two')
+   one  two  three
+0    2    1      5
+2    1    2      3
+1    1    3      4
+3    1    4      2
+```
+参数 `by` 支持列名列表，示例如下：
+```python
+df1[['one', 'two', 'three']].sort_values(by=['one', 'two'])
+   one  two  three
+2    1    2      3
+1    1    3      4
+3    1    4      2
+0    2    1      5
+```
+这些方法支持用 `na_position` 参数处理空值。
+```python
+s[2] = np.nan
+s.sort_values()
+0       A
+3    Aaba
+1       B
+4    Baca
+6    CABA
+8     cat
+7     dog
+2     NaN
+5     NaN
+dtype: object
+s.sort_values(na_position='first')
+2     NaN
+5     NaN
+0       A
+3    Aaba
+1       B
+4    Baca
+6    CABA
+8     cat
+7     dog
+dtype: object
+```
+### 按索引与值排序
+通过参数 `by` 传递给 `DataFrame.sort_values()` 的字符串可以引用列或索引层名。
+
+#### 创建 `MultiIndex`
+```python
+idx = pd.MultiIndex.from_tuples([('a', 1), ('a', 2), ('a', 2),
+                                 ('b', 2), ('b', 1), ('b', 1)])
+idx.names = ['first', 'second']
+```
+#### 创建 `DataFrame`
+```python
+df_multi = pd.DataFrame({'A': np.arange(6, 0, -1)},index=idx)
+df_multi
+              A
+first second   
+a     1       6
+      2       5
+      2       4
+b     2       3
+      1       2
+      1       1
+```
+按 `second`（索引）与 `A`（列）排序。
+```python
+df_multi.sort_values(by=['second', 'A'])
+              A
+first second   
+b     1       1
+      1       2
+a     1       6
+b     2       3
+a     2       4
+      2       5
+```
+注意：字符串、列名、索引层名重名时，会触发警告提示，并以列名为准。后期版本中，这种情况将会触发模糊错误。
+### 搜索排序
+`Series` 支持 `searchsorted()` 方法，这与`numpy.ndarray.searchsorted()` 的操作方式类似。
+```python
+ser = pd.Series([1, 2, 3])
+ser.searchsorted([0, 3])
+array([0, 2])
+ser.searchsorted([0, 4])
+array([0, 3])
+ser.searchsorted([1, 3], side='right')
+array([1, 3])
+ser.searchsorted([1, 3], side='left')
+array([0, 2])
+ser = pd.Series([3, 1, 2])
+ser.searchsorted([0, 3], sorter=np.argsort(ser))
+array([0, 2])
+```
+### 最大值与最小值
+`Series` 支持 `nsmallest()` 与 `nlargest()` 方法，本方法返回 `N` 个最大或最小的值。对于数据量大的 `Series` 来说，该方法比先为整个 `Series` 排序，再调用 `head(n)` 这种方式的速度要快得多。
+```python
+s = pd.Series(np.random.permutation(10))
+s
+0    2
+1    0
+2    3
+3    7
+4    1
+5    5
+6    9
+7    6
+8    8
+9    4
+dtype: int64
+s.sort_values()
+1    0
+4    1
+0    2
+2    3
+9    4
+5    5
+7    6
+3    7
+8    8
+6    9
+dtype: int64
+s.nsmallest(3)
+1    0
+4    1
+0    2
+dtype: int64
+s.nlargest(3)
+6    9
+8    8
+3    7
+dtype: int64
+```
+`DataFrame` 也支持 `nlargest` 与 `nsmallest` 方法。
+```python
+df = pd.DataFrame({'a': [-2, -1, 1, 10, 8, 11, -1],
+                   'b': list('abdceff'),
+                   'c': [1.0, 2.0, 4.0, 3.2, np.nan, 3.0, 4.0]}) 
+df.nlargest(3, 'a')
+    a  b    c
+5  11  f  3.0
+3  10  c  3.2
+4   8  e  NaN
+df.nlargest(5, ['a', 'c'])
+    a  b    c
+5  11  f  3.0
+3  10  c  3.2
+4   8  e  NaN
+2   1  d  4.0
+6  -1  f  4.0
+df.nsmallest(3, 'a')
+   a  b    c
+0 -2  a  1.0
+1 -1  b  2.0
+6 -1  f  4.0
+df.nsmallest(5, ['a', 'c'])
+   a  b    c
+0 -2  a  1.0
+1 -1  b  2.0
+6 -1  f  4.0
+2  1  d  4.0
+4  8  e  NaN
+```
+### 用多层索引的列排序
+列为多层索引时，可以显式排序，用 `by` 指定所有层级。
+```python
+df1.columns = pd.MultiIndex.from_tuples([('a', 'one'),
+                                         ('a', 'two'),
+                                         ('b', 'three')])
+df1.sort_values(by=('a', 'two'))
+    a         b
+  one two three
+0   2   1     5
+2   1   2     3
+1   1   3     4
+3   1   4     2
+```
 ## 选择
 >提醒:选择、设置标准 `Python` / `Numpy` 的表达式已经非常直观，交互也很方便，但对于生产代码，我们还是推荐优化过的 `Pandas` 数据访问方法：`.at`、`.iat`、`.loc` 和 `.iloc`。
 ### 获取数据
@@ -2203,7 +3564,6 @@ df.at[dates[0], 'A']
 0.46911229990718628
 ```
 ### 按位置选择
-```python
 用整数位置选择：
 ```python
 df.iloc[3]
@@ -2343,6 +3703,120 @@ df2
 2013-01-05 -0.424972 -0.567020 -0.276232 -5 -4.0
 2013-01-06 -0.673690 -0.113648 -1.478427 -5 -5.0
 ```
+### 基于 `dtype` 选择列
+`select_dtypes()` 方法基于 `dtype` 选择列。
+首先，创建一个由多种数据类型组成的 `DataFrame`：
+```python
+df = pd.DataFrame({'string': list('abc'),
+                   'int64': list(range(1, 4)),
+                   'uint8': np.arange(3, 6).astype('u1'),
+                   'float64': np.arange(4.0, 7.0),
+                   'bool1': [True, False, True],
+                   'bool2': [False, True, False],
+                   'dates': pd.date_range('now', periods=3),
+                   'category': pd.Series(list("ABC")).astype('category')})
+df['tdeltas'] = df.dates.diff()
+df['uint64'] = np.arange(3, 6).astype('u8')
+df['other_dates'] = pd.date_range('20130101', periods=3)
+df['tz_aware_dates'] = pd.date_range('20130101', periods=3, tz='US/Eastern')
+df
+  string  int64  uint8  float64  bool1  bool2                      dates category tdeltas  uint64 other_dates        tz_aware_dates
+0      a      1      3      4.0   True  False 2019-08-22 15:49:01.870038        A     NaT       3  2013-01-01 2013-01-01 00:00:00-05:00
+1      b      2      4      5.0  False   True 2019-08-23 15:49:01.870038        B  1 days       4  2013-01-02 2013-01-02 00:00:00-05:00
+2      c      3      5      6.0   True  False 2019-08-24 15:49:01.870038        C  1 days       5  2013-01-03 2013-01-03 00:00:00-05:00
+```
+该 `DataFrame` 的数据类型：
+```python
+df.dtypes
+string                                object
+int64                                  int64
+uint8                                  uint8
+float64                              float64
+bool1                                   bool
+bool2                                   bool
+dates                         datetime64[ns]
+category                            category
+tdeltas                      timedelta64[ns]
+uint64                                uint64
+other_dates                   datetime64[ns]
+tz_aware_dates    datetime64[ns, US/Eastern]
+dtype: object
+```
+`select_dtypes()` 有两个参数，`include` 与 `exclude`，用于实现“提取这些数据类型的列” （`include`）或 “提取不是这些数据类型的列”（`exclude`）。
+
+选择 `bool` 型的列，示例如下：
+```python
+df.select_dtypes(include=[bool])
+   bool1  bool2
+0   True  False
+1  False   True
+2   True  False
+```
+该方法还支持输入 `NumPy` 数据类型的名称：
+```python
+df.select_dtypes(include=['bool'])
+   bool1  bool2
+0   True  False
+1  False   True
+2   True  False
+```
+`select_dtypes()` 还支持通用数据类型。
+比如，选择所有数值型与布尔型的列，同时，排除无符号整数：
+```python
+df.select_dtypes(include=['number', 'bool'], exclude=['unsignedinteger'])
+   int64  float64  bool1  bool2 tdeltas
+0      1      4.0   True  False     NaT
+1      2      5.0  False   True  1 days
+2      3      6.0   True  False  1 days
+```
+选择字符串型的列必须要用 `object`：
+```python
+df.select_dtypes(include=['object'])
+  string
+0      a
+1      b
+2      c
+```
+要查看 `numpy.number` 等通用 `dtype` 的所有子类型，可以定义一个函数，返回子类型树：
+```python
+def subdtypes(dtype):
+   subs = dtype.__subclasses__()
+   if not subs:
+      return dtype
+   return [dtype, [subdtypes(dt) for dt in subs]]
+```
+所有 `NumPy` 数据类型都是 `numpy.generic` 的子类：
+```python
+subdtypes(np.generic)
+[numpy.generic,
+ [[numpy.number,
+   [[numpy.integer,
+     [[numpy.signedinteger,
+       [numpy.int8,
+        numpy.int16,
+        numpy.int32,
+        numpy.int64,
+        numpy.int64,
+        numpy.timedelta64]],
+      [numpy.unsignedinteger,
+       [numpy.uint8,
+        numpy.uint16,
+        numpy.uint32,
+        numpy.uint64,
+        numpy.uint64]]]],
+    [numpy.inexact,
+     [[numpy.floating,
+       [numpy.float16, numpy.float32, numpy.float64, numpy.float128]],
+      [numpy.complexfloating,
+       [numpy.complex64, numpy.complex128, numpy.complex256]]]]]],
+  [numpy.flexible,
+   [[numpy.character, [numpy.bytes_, numpy.str_]],
+    [numpy.void, [numpy.record]]]],
+  numpy.bool_,
+  numpy.datetime64,
+  numpy.object_]]
+```
+注意:`Pandas` 支持 `category` 与 `datetime64[ns, tz]` 类型，但这两种类型未整合到 `NumPy` 架构，因此，上面的函数没有显示。
 ## 缺失值
 `Pandas` 主要用 `np.nan` 表示缺失数据。计算时，默认不包含空值。
 重建索引（`reindex`）可以更改、添加、删除指定轴的索引，并返回数据副本，即不更改原数据。
@@ -2981,4 +4455,502 @@ print("I was true")
 Traceback
 ValueError: The truth value of an array is ambiguous. Use a.empty, a.any() or a.all().
 ```
+## 与`SQL`比较
+按照惯例，我们按如下方式导入 `pandas` 和 `NumPy`：
+```python
+import pandas as pd
+import numpy as np
+```
+大多数示例将使用`tipspandas`测试中找到的数据集。我们将数据读入名为`tips`的`DataFrame`中，并假设我们有一个具有相同名称和结构的数据库表。
+```python
+url = ('https://raw.github.com/pandas-dev/pandas/master/pandas/tests/data/tips.csv')
+tips = pd.read_csv(url)
+tips.head()
+   total_bill   tip     sex smoker  day    time  size
+0       16.99  1.01  Female     No  Sun  Dinner     2
+1       10.34  1.66    Male     No  Sun  Dinner     3
+2       21.01  3.50    Male     No  Sun  Dinner     3
+3       23.68  3.31    Male     No  Sun  Dinner     2
+4       24.59  3.61  Female     No  Sun  Dinner     4
+```
+### `SELECT`
+在`SQL`中，使用您要选择的以逗号分隔的列列表（或`*` 选择所有列）来完成选择：
+```sql
+SELECT total_bill, tip, smoker, time
+FROM tips
+LIMIT 5;
+```
+使用`pandas`，通过将列名列表传递给`DataFrame`来完成列选择：
+```python
+tips[['total_bill', 'tip', 'smoker', 'time']].head(5)
+   total_bill   tip smoker    time
+0       16.99  1.01     No  Dinner
+1       10.34  1.66     No  Dinner
+2       21.01  3.50     No  Dinner
+3       23.68  3.31     No  Dinner
+4       24.59  3.61     No  Dinner
+```
+在没有列名列表的情况下调用`DataFrame`将显示所有列（类似于`SQL*`）。
 
+### `WHERE`
+`SQL`中的过滤是通过`WHERE`子句完成的。
+```sql
+SELECT *
+FROM tips
+WHERE time = 'Dinner'
+LIMIT 5;
+```
+`DataFrame`可以通过多种方式进行过滤; 最直观的是使用 布尔索引。
+```python
+tips[tips['time'] == 'Dinner'].head(5)
+   total_bill   tip     sex smoker  day    time  size
+0       16.99  1.01  Female     No  Sun  Dinner     2
+1       10.34  1.66    Male     No  Sun  Dinner     3
+2       21.01  3.50    Male     No  Sun  Dinner     3
+3       23.68  3.31    Male     No  Sun  Dinner     2
+4       24.59  3.61  Female     No  Sun  Dinner     4
+```
+上面的语句只是将一个 `Series` 的 `True` / `False` 对象传递给 `DataFrame`，返回所有带有`True`的行。
+```python
+is_dinner = tips['time'] == 'Dinner'
+is_dinner.value_counts()
+True     176
+False     68
+Name: time, dtype: int64
+tips[is_dinner].head(5)
+   total_bill   tip     sex smoker  day    time  size
+0       16.99  1.01  Female     No  Sun  Dinner     2
+1       10.34  1.66    Male     No  Sun  Dinner     3
+2       21.01  3.50    Male     No  Sun  Dinner     3
+3       23.68  3.31    Male     No  Sun  Dinner     2
+4       24.59  3.61  Female     No  Sun  Dinner     4
+```
+就像`SQL`的`OR`和`AND`一样，可以使用`|`将多个条件传递给`DataFrame` （`OR`）和`＆`（`AND`）。
+
+-- tips of more than $5.00 at Dinner meals
+```sql
+SELECT *
+FROM tips
+WHERE time = 'Dinner' AND tip > 5.00;
+```
+tips of more than $5.00 at Dinner meals
+```python
+tips[(tips['time'] == 'Dinner') & (tips['tip'] > 5.00)] 
+     total_bill    tip     sex smoker  day    time  size
+23        39.42   7.58    Male     No  Sat  Dinner     4
+44        30.40   5.60    Male     No  Sun  Dinner     4
+47        32.40   6.00    Male     No  Sun  Dinner     4
+52        34.81   5.20  Female     No  Sun  Dinner     4
+59        48.27   6.73    Male     No  Sat  Dinner     4
+116       29.93   5.07    Male     No  Sun  Dinner     4
+155       29.85   5.14  Female     No  Sun  Dinner     5
+170       50.81  10.00    Male    Yes  Sat  Dinner     3
+172        7.25   5.15    Male    Yes  Sun  Dinner     2
+181       23.33   5.65    Male    Yes  Sun  Dinner     2
+183       23.17   6.50    Male    Yes  Sun  Dinner     4
+211       25.89   5.16    Male    Yes  Sat  Dinner     4
+212       48.33   9.00    Male     No  Sat  Dinner     4
+214       28.17   6.50  Female    Yes  Sat  Dinner     3
+239       29.03   5.92    Male     No  Sat  Dinner     3
+```
+-- tips by parties of at least 5 diners OR bill total was more than $45
+```sql
+SELECT *
+FROM tips
+WHERE size >= 5 OR total_bill > 45;
+```
+tips by parties of at least 5 diners OR bill total was more than $45
+```python
+tips[(tips['size'] >= 5) | (tips['total_bill'] > 45)]
+     total_bill    tip     sex smoker   day    time  size
+59        48.27   6.73    Male     No   Sat  Dinner     4
+125       29.80   4.20  Female     No  Thur   Lunch     6
+141       34.30   6.70    Male     No  Thur   Lunch     6
+142       41.19   5.00    Male     No  Thur   Lunch     5
+143       27.05   5.00  Female     No  Thur   Lunch     6
+155       29.85   5.14  Female     No   Sun  Dinner     5
+156       48.17   5.00    Male     No   Sun  Dinner     6
+170       50.81  10.00    Male    Yes   Sat  Dinner     3
+182       45.35   3.50    Male    Yes   Sun  Dinner     3
+185       20.69   5.00    Male     No   Sun  Dinner     5
+187       30.46   2.00    Male    Yes   Sun  Dinner     5
+212       48.33   9.00    Male     No   Sat  Dinner     4
+216       28.15   3.00    Male    Yes   Sat  Dinner     5
+```
+使用`notna()`和`isna()` 方法完成`NULL`检查。
+```python
+frame = pd.DataFrame({'col1': ['A', 'B', np.NaN, 'C', 'D'],
+                      'col2': ['F', np.NaN, 'G', 'H', 'I']}) 
+frame
+  col1 col2
+0    A    F
+1    B  NaN
+2  NaN    G
+3    C    H
+4    D    I
+```
+假设我们有一个与上面的`DataFrame`结构相同的表。我们只能`col2`通过以下查询看到`IS NULL` 的记录：
+```sql
+SELECT *
+FROM frame
+WHERE col2 IS NULL;
+```
+```python
+frame[frame['col2'].isna()]
+  col1 col2
+1    B  NaN
+```
+获取`col1 IS NOT NULL`的项目可以完成`notna()`。
+```sql
+SELECT *
+FROM frame
+WHERE col1 IS NOT NULL;
+```
+```python
+frame[frame['col1'].notna()]
+  col1 col2
+0    A    F
+1    B  NaN
+3    C    H
+4    D    I
+```
+### `GROUP BY`
+在`pandas`中，`SQL`的`GROUP BY`操作使用类似命名的 `groupby()`方法执行。`groupby()`通常是指我们想要将数据集拆分成组，应用某些功能（通常是聚合），然后将这些组合在一起的过程。
+
+常见的`SQL`操作是获取整个数据集中每个组中的记录数。例如，有一个需要向我们提供提示中的性别的数量的查询语句：
+```sql
+SELECT sex, count(*)
+FROM tips
+GROUP BY sex;
+/*
+Female     87
+Male      157
+*/
+```
+在 `pandas` 中可以这样：
+```python
+tips.groupby('sex').size() 
+sex
+Female     87
+Male      157
+dtype: int64
+```
+请注意，在我们使用的`pandas`代码中`size()`，没有 `count()`。这是因为 `count()`将函数应用于每个列，返回每个列中的记录数。
+```python
+tips.groupby('sex').count()
+        total_bill  tip  smoker  day  time  size
+sex                                             
+Female          87   87      87   87    87    87
+Male           157  157     157  157   157   157
+```
+或者，我们可以将该`count()`方法应用于单个列：
+```python
+tips.groupby('sex')['total_bill'].count()
+sex
+Female     87
+Male      157
+Name: total_bill, dtype: int64
+```
+也可以一次应用多个功能。例如，假设我们希望查看提示量与星期几的不同之处 - `agg()`允许您将字典传递给分组的`DataFrame`，指示要应用于特定列的函数。
+```sql
+SELECT day, AVG(tip), COUNT(*)
+FROM tips
+GROUP BY day;
+/*
+Fri   2.734737   19
+Sat   2.993103   87
+Sun   3.255132   76
+Thur  2.771452   62
+*/
+```
+```python
+tips.groupby('day').agg({'tip': np.mean, 'day': np.size})
+           tip  day
+day                
+Fri   2.734737   19
+Sat   2.993103   87
+Sun   3.255132   76
+Thur  2.771452   62
+```
+通过将列列表传递给`groupby()`方法来完成多个列的分组 。
+```sql
+SELECT smoker, day, COUNT(*), AVG(tip)
+FROM tips
+GROUP BY smoker, day;
+/*
+smoker day
+No     Fri      4  2.812500
+       Sat     45  3.102889
+       Sun     57  3.167895
+       Thur    45  2.673778
+Yes    Fri     15  2.714000
+       Sat     42  2.875476
+       Sun     19  3.516842
+       Thur    17  3.030000
+*/
+```
+```python
+tips.groupby(['smoker', 'day']).agg({'tip': [np.size, np.mean]})
+              tip          
+             size      mean
+smoker day                 
+No     Fri    4.0  2.812500
+       Sat   45.0  3.102889
+       Sun   57.0  3.167895
+       Thur  45.0  2.673778
+Yes    Fri   15.0  2.714000
+       Sat   42.0  2.875476
+       Sun   19.0  3.516842
+       Thur  17.0  3.030000
+```
+### `JOIN`
+可以使用`join()`或执行`JOIN merge()`。默认情况下， `join()`将在其索引上加入`DataFrame`。每个方法都有参数，允许您指定要执行的连接类型（`LEFT`，`RIGHT`，`INNER`，`FULL`）或要连接的列（列名称或索引）。
+```python
+df1 = pd.DataFrame({'key': ['A', 'B', 'C', 'D'],
+                    'value': np.random.randn(4)})
+df2 = pd.DataFrame({'key': ['B', 'D', 'D', 'E'],
+                    'value': np.random.randn(4)})
+```
+假设我们有两个与`DataFrames`名称和结构相同的数据库表。
+
+现在让我们来看看各种类型的`JOIN`。
+```sql
+#INNER JOIN
+SELECT *
+FROM df1
+INNER JOIN df2
+  ON df1.key = df2.key;
+```
+```python
+#merge performs an INNER JOIN by default
+pd.merge(df1, df2, on='key')
+  key   value_x   value_y
+0   B -0.282863  1.212112
+1   D -1.135632 -0.173215
+2   D -1.135632  0.119209
+```
+`merge()` 当您想要将`一个DataFrame`列与另一个`DataFrame`索引连接时，还会为这些情况提供参数。
+```python
+indexed_df2 = df2.set_index('key')
+pd.merge(df1, indexed_df2, left_on='key', right_index=True)
+  key   value_x   value_y
+1   B -0.282863  1.212112
+3   D -1.135632 -0.173215
+3   D -1.135632  0.119209
+```
+### `LEFT OUTER JOIN`
+-- show all records from df1
+```sql
+SELECT *
+FROM df1
+LEFT OUTER JOIN df2
+  ON df1.key = df2.key;
+```
+```python
+#show all records from df1
+pd.merge(df1, df2, on='key', how='left')
+  key   value_x   value_y
+0   A  0.469112       NaN
+1   B -0.282863  1.212112
+2   C -1.509059       NaN
+3   D -1.135632 -0.173215
+4   D -1.135632  0.119209
+```
+### `RIGHT JOIN`
+-- show all records from df2
+```sql
+SELECT *
+FROM df1
+RIGHT OUTER JOIN df2
+  ON df1.key = df2.key;
+```
+```python
+# show all records from df2
+pd.merge(df1, df2, on='key', how='right')
+  key   value_x   value_y
+0   B -0.282863  1.212112
+1   D -1.135632 -0.173215
+2   D -1.135632  0.119209
+3   E       NaN -1.044236
+```
+### `FULL JOIN`
+`pandas`还允许显示数据集两侧的`FULL JOIN`，无论连接列是否找到匹配项。在编写时，所有`RDBMS`（`MySQL`）都不支持`FULL JOIN`。
+
+-- show all records from both tables
+```sql
+SELECT *
+FROM df1
+FULL OUTER JOIN df2
+  ON df1.key = df2.key;
+```
+```python
+#show all records from both frames
+pd.merge(df1, df2, on='key', how='outer')
+  key   value_x   value_y
+0   A  0.469112       NaN
+1   B -0.282863  1.212112
+2   C -1.509059       NaN
+3   D -1.135632 -0.173215
+4   D -1.135632  0.119209
+5   E       NaN -1.044236
+```
+### `UNION`
+`UNION ALL`可以使用`concat()`。
+```python
+df1 = pd.DataFrame({'city': ['Chicago', 'San Francisco', 'New York City'],
+                    'rank': range(1, 4)})
+df2 = pd.DataFrame({'city': ['Chicago', 'Boston', 'Los Angeles'],
+                    'rank': [1, 4, 5]})
+```
+```sql
+SELECT city, rank
+FROM df1
+UNION ALL
+SELECT city, rank
+FROM df2;
+/*
+         city  rank
+      Chicago     1
+San Francisco     2
+New York City     3
+      Chicago     1
+       Boston     4
+  Los Angeles     5
+*/
+```
+```python
+pd.concat([df1, df2])
+            city  rank
+0        Chicago     1
+1  San Francisco     2
+2  New York City     3
+0        Chicago     1
+1         Boston     4
+2    Los Angeles     5
+```
+`SQL`的`UNION`类似于`UNION ALL`，但是`UNION`将删除重复的行。
+```sql
+SELECT city, rank
+FROM df1
+UNION
+SELECT city, rank
+FROM df2;
+-- notice that there is only one Chicago record this time
+/*
+         city  rank
+      Chicago     1
+San Francisco     2
+New York City     3
+       Boston     4
+  Los Angeles     5
+*/
+```
+在 `pandas` 中，您可以`concat()`结合使用 `drop_duplicates()`。
+```python
+pd.concat([df1, df2]).drop_duplicates()
+            city  rank
+0        Chicago     1
+1  San Francisco     2
+2  New York City     3
+1         Boston     4
+2    Los Angeles     5
+```
+### `Pandas`等同于某些`SQL`分析和聚合函数
+#### 带有偏移量的前N行
+```sql
+-- MySQL
+SELECT * FROM tips
+ORDER BY tip DESC
+LIMIT 10 OFFSET 5;
+```
+```python
+tips.nlargest(10 + 5, columns='tip').tail(10)
+     total_bill   tip     sex smoker   day    time  size
+183       23.17  6.50    Male    Yes   Sun  Dinner     4
+214       28.17  6.50  Female    Yes   Sat  Dinner     3
+47        32.40  6.00    Male     No   Sun  Dinner     4
+239       29.03  5.92    Male     No   Sat  Dinner     3
+88        24.71  5.85    Male     No  Thur   Lunch     2
+181       23.33  5.65    Male    Yes   Sun  Dinner     2
+44        30.40  5.60    Male     No   Sun  Dinner     4
+52        34.81  5.20  Female     No   Sun  Dinner     4
+85        34.83  5.17  Female     No  Thur   Lunch     4
+211       25.89  5.16    Male    Yes   Sat  Dinner     4
+```
+#### 每组前`N`行
+```sql
+-- Oracle's ROW_NUMBER() analytic function
+SELECT * FROM (
+  SELECT
+    t.*,
+    ROW_NUMBER() OVER(PARTITION BY day ORDER BY total_bill DESC) AS rn
+  FROM tips t
+)
+WHERE rn < 3
+ORDER BY day, rn;
+```
+```python
+(tips.assign(rn=tips.sort_values(['total_bill'], ascending=False).groupby(['day']).cumcount() + 1).query('rn < 3').sort_values(['day', 'rn']))
+     total_bill    tip     sex smoker   day    time  size  rn
+95        40.17   4.73    Male    Yes   Fri  Dinner     4   1
+90        28.97   3.00    Male    Yes   Fri  Dinner     2   2
+170       50.81  10.00    Male    Yes   Sat  Dinner     3   1
+212       48.33   9.00    Male     No   Sat  Dinner     4   2
+156       48.17   5.00    Male     No   Sun  Dinner     6   1
+182       45.35   3.50    Male    Yes   Sun  Dinner     3   2
+197       43.11   5.00  Female    Yes  Thur   Lunch     4   1
+142       41.19   5.00    Male     No  Thur   Lunch     5   2
+```
+同样使用 `rank` (`method ='first'`) 函数
+```python
+(tips.assign(rnk=tips.groupby(['day'])['total_bill'].rank(method='first', ascending=False)).query('rnk < 3').sort_values(['day', 'rnk']))
+     total_bill    tip     sex smoker   day    time  size  rnk
+95        40.17   4.73    Male    Yes   Fri  Dinner     4  1.0
+90        28.97   3.00    Male    Yes   Fri  Dinner     2  2.0
+170       50.81  10.00    Male    Yes   Sat  Dinner     3  1.0
+212       48.33   9.00    Male     No   Sat  Dinner     4  2.0
+156       48.17   5.00    Male     No   Sun  Dinner     6  1.0
+182       45.35   3.50    Male    Yes   Sun  Dinner     3  2.0
+197       43.11   5.00  Female    Yes  Thur   Lunch     4  1.0
+142       41.19   5.00    Male     No  Thur   Lunch     5  2.0
+```
+```sql
+-- Oracle's RANK() analytic function
+SELECT * FROM (
+  SELECT
+    t.*,
+    RANK() OVER(PARTITION BY sex ORDER BY tip) AS rnk
+  FROM tips t
+  WHERE tip < 2
+)
+WHERE rnk < 3
+ORDER BY sex, rnk;
+```
+让我们找到每个性别组（等级<3）的提示（提示<2）。请注意，使用`rank(method='min')`函数时 `rnk_min`对于相同的提示保持不变 （如`Oracle`的`RANK()`函数）
+```python
+(tips[tips['tip'] < 2].assign(rnk_min=tips.groupby(['sex'])['tip'].rank(method='min')).query('rnk_min < 3').sort_values(['sex', 'rnk_min']))
+     total_bill   tip     sex smoker  day    time  size  rnk_min
+67         3.07  1.00  Female    Yes  Sat  Dinner     1      1.0
+92         5.75  1.00  Female    Yes  Fri  Dinner     2      1.0
+111        7.25  1.00  Female     No  Sat  Dinner     1      1.0
+236       12.60  1.00    Male    Yes  Sat  Dinner     2      1.0
+237       32.83  1.17    Male    Yes  Sat  Dinner     2      2.0
+```
+### 更新（`UPDATE`）
+```sql
+UPDATE tips
+SET tip = tip*2
+WHERE tip < 2;
+```
+```python
+tips.loc[tips['tip'] < 2, 'tip'] *= 2
+```
+### 删除（`DELETE`）
+```sql
+DELETE FROM tips
+WHERE tip > 9;
+```
+在`pandas`中，我们选择应保留的行，而不是删除它们
+```python
+tips = tips.loc[tips['tip'] <= 9]
+```
