@@ -30,7 +30,7 @@
       - [按键值排序](#按键值排序)
       - [其他技巧](#其他技巧)
         - [`argmin` 和 `argmax`](#argmin-和-argmax)
-          - [转置二维列表](#转置二维列表)
+        - [转置二维列表](#转置二维列表)
     - [集合](#集合)
     - [列表、集合和字典推导式](#列表集合和字典推导式)
       - [嵌套列表推导式](#嵌套列表推导式)
@@ -825,7 +825,7 @@ print(ret)
 print(d1)
 {'a': 'some value', 'b': [1, 2, 3, 4], 7: 'an integer'}
 ```
-- `popitem():返回并删除字典中的最后一对键和值。
+- `popitem()`:返回并删除字典中的最后一对键和值。
 #### 更新字典
 - 用`update`方法可以将一个字典与另一个融合,`update`方法是原地改变字典，因此任何传递给`update`的键的旧的值都会被舍弃。
 ```Python
@@ -923,7 +923,7 @@ items = [2, 1, 3, 4]
 argmin = min(range(len(items)), key=items.__getitem__)
 ```
 `argmax`同理。
-###### 转置二维列表
+##### 转置二维列表
 ```python
 A = [['a11', 'a12'], ['a21', 'a22'], ['a31', 'a32']]
 A_transpose = list(zip(*A))  # list of tuple
@@ -1078,14 +1078,23 @@ print(d)
 ```
 想一想, 最后的结果为什么还是`{'a': 10, 'b': 20}`?
 首先在全局创建一个空字典,并将`d`贴上:
+
 ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/v2-5d4d7a9c04d8feac54b3350d8c5b1435_1440w.jpg)
+
 将 `d` 传入到函数`func`中,在函数中局部的形参变量也为`d`,它同样贴在空字典对象上
+
 ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200323174500.png)
+
 在函数中前两句,为字典赋值.因为字典是可变的,这一操作对全局的 `d` 也会产生同样的影响.因为此时全局的`d`与函数内部的`d`贴向的是同一个对象
+
 ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200323174540.png)
+
 函数最后一句,本质上是将函数内部的`d`贴向另外一个字典对象,全局的`d`当然还是贴向原来的字典对象.
+
 ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200323174823.png)
+
 函数结束,函数内部的`d`被回收,而且最后打印结果如下所示
+
 ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200323174908.png)
 
 - 函数可以有一些位置参数(`positional`)和一些关键字参数(`keyword`)。关键字参数通常用于指定默认值或可选参数
@@ -1234,12 +1243,12 @@ person('Jack', 24, city=extra['city'], job=extra['job'])
 name: Jack age: 24 other: {'city': 'Beijing', 'job': 'Engineer'}
 ```
 上面复杂的调用可以用简化的写法：
-```
+```python
 extra = {'city': 'Beijing', 'job': 'Engineer'}
 person('Jack', 24, **extra)
 name: Jack age: 24 other: {'city': 'Beijing', 'job': 'Engineer'}
 ```
-`**extra`表示把`extra`这个`dict`的所有`key-value`用关键字参数传入到函数的`**kw`参数，`kw`将获得一个`dict`，注意``kw`获得的`dict`是`extra`的一份拷贝，对`kw`的改动不会影响到函数外的`extra`。
+`**extra`表示把`extra`这个`dict`的所有`key-value`用关键字参数传入到函数的`**kw`参数，`kw`将获得一个`dict`，注意`kw`获得的`dict`是`extra`的一份拷贝，对`kw`的改动不会影响到函数外的`extra`。
 #### 命名关键字参数
 - 对于关键字参数，函数的调用者可以传入任意不受限制的关键字参数。至于到底传入了哪些，就需要在函数内部通过`kw`检查。
 仍以`person()`函数为例，我们希望检查是否有`city`和`job`参数：
@@ -1277,6 +1286,7 @@ Traceback (most recent call last):
 TypeError: person() takes 2 positional arguments but 4 were given
 ```
 - 由于调用时缺少参数名`city`和`job`，`Python`解释器把这4个参数均视为位置参数，但`person()`函数仅接受2个位置参数。
+
 命名关键字参数可以有缺省值，从而简化调用：
 ```Python
 def person(name, age, *, city='Beijing', job):
@@ -1386,13 +1396,13 @@ def f(a,*b):
   print(f'a:{a},b:{b}')
 ```
 查看参数类型：
-
-In [24]: for name,val in signature(f).parameters.items():
-    ...:     print(name,val.kind)
-    ...:
+```python
+for name,val in signature(f).parameters.items():
+    print(name,val.kind)
 a POSITIONAL_OR_KEYWORD
 b VAR_POSITIONAL
-可以看到参数a既可以是位置参数也可是关键字参数。
+```
+可以看到参数`a`既可以是位置参数也可是关键字参数。
 #### 匿名(lambda)函数
 - `lambda` 函数拥有自己的命名空间，且不能访问自己参数列表之外或全局命名空间里的参数。
 - 虽然`lambda`函数看起来只能写一行，却不等同于`C`或`C++`的内联函数，后者的目的是调用小函数时不占用栈内存从而增加运行效率。
