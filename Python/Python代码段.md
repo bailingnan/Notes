@@ -32,6 +32,7 @@ def common_elements(list1, list2):
     return list(common)
 ```
 - 压缩
+
 这个方法可以将布尔型的值去掉，例如`(False，None，0，“”)`，它使用 `filter()` 函数。
 ```Python
 def compact(lst):
@@ -40,6 +41,7 @@ compact([0, 1, False, 2, '', 3, 'a', 's', 34])
 # [ 1, 2, 3, 'a', 's', 34 ]
 ```
 - 解包
+
 如下代码段可以将打包好的成对列表解开成两组不同的元组。
 ```Python
 array = [['a', 'b'], ['c', 'd'], ['e', 'f']]
@@ -48,6 +50,7 @@ print(transposed)
 # [('a', 'c', 'e'), ('b', 'd', 'f')]
 ```
 - 逗号连接
+
 下面的代码可以将列表连接成单个字符串，且每一个元素间的分隔方式设置为了逗号。
 ```Python
 hobbies = ["basketball", "football", "swimming"]
@@ -55,17 +58,9 @@ print("My hobbies are: " + ", ".join(hobbies))
 # My hobbies are: basketball, football, swimming
 ```
 - 展开列表
+
 该方法将通过递归的方式将列表的嵌套展开为单个列表。
 ```Python
-def spread(arg):
-    ret = []
-    for i in arg:
-        if isinstance(i, list):
-            ret.extend(i)
-        else:
-            ret.append(i)
-    return ret
-
 def deep_flatten(lst):
     result = []
     result.extend(
@@ -124,6 +119,7 @@ def flatten(items, ignore_types=(str, bytes)):
 尽管只改了一点点，但是 `yield from` 语句看上去感觉更好，并且也使得代码更简洁清爽。
 之前提到的对于字符串和字节的额外检查是为了防止将它们再展开成单个字符。 如果还有其他你不想展开的类型，修改参数 `ignore_types` 即可。
 - 列表的差
+
 该方法将返回第一个列表的元素，其不在第二个列表内。如果同时要反馈第二个列表独有的元素，还需要加一句 `set_b.difference(set_a)`。
 ```Python
 def difference(a, b):
@@ -134,6 +130,7 @@ def difference(a, b):
 difference([1,2,3], [1,2,4]) # [3]
 ```
 - 通过函数取差
+
 如下方法首先会应用一个给定的函数，然后再返回应用函数后结果有差别的列表元素。
 ```Python
 def difference_by(a, b, fn):
@@ -145,6 +142,7 @@ difference_by([{ 'x': 2 }, { 'x': 1 }], [{ 'x': 1 }], lambda v : v['x'])
 # [ { x: 2 } ]
 ```
 - Given a list of N numbers。
+
 给定一个含有`N`个数字的列表。
 使用单一的列表生成式来产生一个新的列表，该列表只包含满足以下条件的值：
 (a)偶数值
@@ -172,7 +170,7 @@ r = max_length([1, 2, 3], [4, 5, 6, 7], [8, 9])
 print(f'更长的列表是{r}')  # [4, 5, 6, 7]
 ```
 - 求众数
-```
+```Python
 def top1(lst):
     return max(lst, default='列表为空', key=lambda v: lst.count(v))
 lst = [1, 3, 3, 2, 1, 1, 2]
@@ -194,7 +192,8 @@ records = [25,89,31,34]
 bif_by(records, lambda x: x<80) # [[25, 31, 34], [89]]
 ```
 - 解压可迭代对象赋值给多个变量
-Python 的星号表达式可以用来解决这个问题。比如，你在学习一门课程，在学期末的时候， 你想统计下家庭作业的平均成绩，但是排除掉第一个和最后一个分数。如果只有四个分数，你可能就直接去简单的手动赋值， 但如果有 24 个呢？这时候星号表达式就派上用场了：
+
+`Python` 的星号表达式可以用来解决这个问题。比如，你在学习一门课程，在学期末的时候， 你想统计下家庭作业的平均成绩，但是排除掉第一个和最后一个分数。如果只有四个分数，你可能就直接去简单的手动赋值， 但如果有 24 个呢？这时候星号表达式就派上用场了：
 ```Python
 def drop_first_last(grades):
     first, *middle, last = grades
@@ -211,7 +210,7 @@ email
 phone_numbers
 ['773-555-1212', '847-555-1212']
 ```
-值得注意的是上面解压出的 `phone_numbers` 变量永远都是列表类型，不管解压的电话号码数量是多少（包括 0 个）。 所以，任何使用到 `phone_numbers` 变量的代码就不需要做多余的类型检查去确认它是否是列表类型了。
+值得注意的是上面解压出的 `phone_numbers` 变量永远都是列表类型，不管解压的电话号码数量是多少（包括 `0` 个）。 所以，任何使用到 `phone_numbers` 变量的代码就不需要做多余的类型检查去确认它是否是列表类型了。
 星号表达式也能用在列表的开始部分。比如，你有一个公司前 8 个月销售数据的序列， 但是你想看下最近一个月数据和前面 7 个月的平均值的对比。你可以这样做：
 ```Python
 *trailing_qtrs, current_qtr = sales_record
@@ -287,6 +286,7 @@ sum(items)
 ```
 然后，由于语言层面的限制，递归并不是 `Python` 擅长的。 因此，最后那个递归演示仅仅是个好奇的探索罢了，对这个不要太认真了。
 - 删除序列相同元素并保持顺序
+
 如果序列上的值都是 `hashable` 类型，那么可以很简单的利用集合或者生成器来解决这个问题。比如：
 ```python
 def dedupe(items):
@@ -332,11 +332,12 @@ set(a)
 在本节中我们使用了生成器函数让我们的函数更加通用，不仅仅是局限于列表处理。 比如，如果如果你想读取一个文件，消除重复行，你可以很容易像这样做：
 ```python
 with open(somefile,'r') as f:
-for line in dedupe(f):
-    ...
+    for line in dedupe(f):
+        ...
 ```
 上述key函数参数模仿了 `sorted()` , `min()` 和 `max()` 等内置函数的相似功能。 
 - 命名切片
+
 假定你要从一个记录（比如文件或其他类似格式）中的某些固定位置提取字段：
 ```python
 ######    0123456789012345678901234567890123456789012345678901234567890'
@@ -394,6 +395,7 @@ b=sorted(s,key=lambda x:len(x))# 有返回值
 s.sort(key=len)# 原地排序
 ```
 - 排序不支持原生比较的对象
+
 内置的 `sorted()` 函数有一个关键字参数 `key` ，可以传入一个 `callable` 对象给它， 这个 `callable` 对象对每个传入的对象返回一个值，这个值会被 `sorted` 用来排序这些对象。 比如，如果你在应用程序里面有一个 `User` 实例序列，并且你希望通过他们的 `user_id` 属性进行排序， 你可以提供一个以 `User` 实例作为输入并输出对应 `user_id` 值的 `callable` 对象。比如：
 ```python
 class User:
@@ -435,6 +437,7 @@ first,*middle,end = (1,2,3,4,5,6)
 ```
 ## 字符串
 - 字符元素组成判定
+
 检查两个字符串的组成元素是不是一样的。
 ```Python
 from collections import Counter
@@ -443,6 +446,7 @@ def anagram(first, second):
 anagram("abcd3", "3acdb") # True
 ```
 - N 次字符串
+
 该代码块不需要循环语句
 ```Python
 n = 2;
@@ -457,6 +461,7 @@ name_str = '&'.join(name_list) # &为列表元素之间分隔符
 print(type(name_str), name_str)
 ```
 - 映射名称到序列元素
+
 `collections.namedtuple()` 函数通过使用一个普通的元组对象来帮你解决这个问题。 这个函数实际上是一个返回 `Python` 中标准元组类型子类的一个工厂方法。 你需要传递一个类型名和你需要的字段给它，然后它就会返回一个类，你可以初始化这个类，为你定义的字段传递值等。 代码示例：
 ```python
 from collections import namedtuple
@@ -565,6 +570,7 @@ for i in reversed(range(1, 10)):
 ```
 ## 函数
 - 链式函数调用
+
 你可以在一行代码内调用多个函数。
 ```Python
 def add(a, b):
@@ -586,7 +592,7 @@ b = { 'y': 3, 'z': 4}
 print(merge_two_dicts(a, b))
 # {'y': 3, 'x': 1, 'z': 4}
 ```
-在 Python 3.5 或更高版本中，我们也可以用以下方式合并字典：
+在 `Python 3.5` 或更高版本中，我们也可以用以下方式合并字典：
 ```Python
 def merge_dictionaries(a, b)
    return {**a, **b}
@@ -700,6 +706,7 @@ merged['x'] # Notice change to merged dicts
 42
 ```
 - 将两个列表转化为字典
+
 如下方法将会把两个列表转化为单个字典。
 ```Python
 def to_dictionary(keys, values):
@@ -760,6 +767,7 @@ c = {key:a[key] for key in a.keys() - {'z', 'w'}}
 字典的 `items()` 方法返回一个包含 `(键，值)` 对的元素视图对象。 这个对象同样也支持集合操作，并且可以被用来查找两个字典有哪些相同的键值对。
 尽管字典的 `values()` 方法也是类似，但是它并不支持这里介绍的集合操作。 某种程度上是因为值视图不能保证所有的值互不相同，这样会导致某些集合操作会出现问题。 不过，如果你硬要在值上面执行这些集合操作的话，你可以先将值集合转换成`set`，然后再执行集合运算就行了。
 - 字典的运算
+
 考虑下面的股票名和价格映射字典：
 ```python
 prices = {
@@ -820,6 +828,7 @@ max(zip(prices.values(), prices.keys()))
 (45.23, 'ZZZ')
 ```
 - 通过某个关键字排序一个字典列表
+
 通过使用 `operator` 模块的 `itemgetter` 函数，可以非常容易的排序这样的数据结构。 假设你从数据库中检索出来网站会员信息列表，并且以下列的数据结构返回：
 ```python
 rows = [
@@ -877,6 +886,7 @@ max(rows, key=itemgetter('uid'))
 {'fname': 'Big', 'lname': 'Jones', 'uid': 1004}
 ```
 - 字典中提取子集
+
 最简单的方式是使用字典推导。比如：
 ```python
 prices = {
@@ -906,6 +916,7 @@ p2 = { key:prices[key] for key in prices.keys() & tech_names }
 但是，运行时间测试结果显示这种方案大概比第一种方案慢 1.6 倍。 如果对程序运行性能要求比较高的话，需要花点时间去做计时测试。
 ## 集合
 - 元素频率
+
 下面的方法会根据元素频率取列表中最常见的元素。
 ```Python
 def most_frequent(list):
@@ -916,6 +927,7 @@ most_frequent(list)
 ## `collections`
 ### `deque`
 - 保留最后 `N` 个元素
+
 使用 `deque(maxlen=N)` 构造函数会新建一个固定大小的队列。当新的元素加入并且这个队列已满的时候， 最老的元素会自动被移除掉。
 ```Python
 q = deque(maxlen=3)
@@ -953,6 +965,7 @@ q.popleft()
 在队列两端插入或删除元素时间复杂度都是 `O(1)` ，区别于列表，在列表的开头插入或删除元素的时间复杂度为 `O(N)` 。
 ### `Counter`
 - 序列中出现次数最多的元素
+
 `collections.Counter` 类就是专门为这类问题而设计的， 它甚至有一个有用的 `most_common()` 方法直接给了你答案。
 为了演示，先假设你有一个单词列表并且想找出哪个单词出现频率最高。你可以这样做：
 ```python
@@ -1013,6 +1026,7 @@ Counter({'eyes': 7, 'the': 5, 'look': 4, 'into': 3, 'my': 2, 'around': 2,
 毫无疑问， `Counter` 对象在几乎所有需要制表或者计数数据的场合是非常有用的工具。 在解决这类问题的时候你应该优先选择它，而不是手动的利用字典去实现。
 ## `heapq`
 - 查找最大或最小的 `N` 个元素
+
 `heapq` 模块有两个函数：`nlargest()` 和 `nsmallest()` 可以完美解决这个问题。
 ```python
 import heapq
@@ -1054,6 +1068,7 @@ heapq.heappop(heap)
 ```
 当要查找的元素个数相对比较小的时候，函数 `nlargest()` 和 `nsmallest()` 是很合适的。 如果你仅仅想查找唯一的最小或最大（`N=1`）的元素的话，那么使用 `min()` 和 `max()` 函数会更快些。 类似的，如果 `N` 的大小和集合大小接近的时候，通常先排序这个集合然后再使用切片操作会更快点 （ `sorted(items)[:N]` 或者是 `sorted(items)[-N:]` ）。 需要在正确场合使用函数 `nlargest()` 和 `nsmallest()` 才能发挥它们的优势 （如果 `N` 快接近集合大小了，那么使用排序操作会更好些）。
 - 实现优先级队列
+
 下面的类利用 `heapq` 模块实现了一个简单的优先级队列：
 ```python
 import heapq
@@ -1132,6 +1147,7 @@ True
 ## `itertools`
 ### `groupby`
 - 通过某个字段将记录分组
+
 `itertools.groupby()` 函数对于这样的数据分组操作非常实用。 为了演示，假设你已经有了下列的字典列表：
 ```python
 rows = [
@@ -1192,6 +1208,7 @@ for r in rows_by_date['07/01/2012']:
 在上面这个例子中，我们没有必要先将记录排序。因此，如果对内存占用不是很关心， 这种方式会比先排序然后再通过 `groupby()` 函数迭代的方式运行得快一些。
 ## 迭代器与生成器
 - 过滤序列元素
+
 最简单的过滤序列元素的方法就是使用列表推导。比如：
 ```python 
 mylist = [1, 4, -5, 10, -7, 2, 3, -1]
@@ -1269,6 +1286,7 @@ list(compress(addresses, more5))
 这里的关键点在于先创建一个 `Boolean` 序列，指示哪些元素符合条件。 然后 `compress()` 函数根据这个序列去选择输出对应位置为 `True` 的元素。
 和 `filter()` 函数类似， `compress()` 也是返回的一个迭代器。因此，如果你需要得到一个列表， 那么你需要使用 `list()` 来将结果转换为列表类型。
 - 转换并同时计算数据
+
 一个非常优雅的方式去结合数据计算与转换就是使用一个生成器表达式参数。 比如，如果你想计算平方和，可以像下面这样做：
 ```python
 nums = [1, 2, 3, 4, 5]
