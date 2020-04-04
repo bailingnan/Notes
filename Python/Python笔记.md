@@ -83,11 +83,9 @@
     - [获取对象信息](#获取对象信息)
       - [使用`type()`](#使用type)
       - [使用`isinstance()`](#使用isinstance)
-      - [使用dir()](#使用dir)
+      - [使用`dir()`](#使用dir)
       - [实例属性和类属性](#实例属性和类属性)
       - [使用`__slots__`](#使用__slots__)
-- [大类:](#大类)
-- [各种动物:](#各种动物)
         - [实现比较操作](#实现比较操作)
       - [枚举类](#枚举类)
       - [使用元类](#使用元类)
@@ -1747,6 +1745,7 @@ def str2int(s):
 - `Python`内建的`filter()`函数用于过滤序列。
 和`map()`类似，`filter()`也接收一个函数和一个序列。和`map()`不同的是，`filter()`把传入的函数依次作用于每个元素，然后根据返回值是`True`还是`False`决定保留还是丢弃该元素。
 注意到`filter()`函数返回的是一个`Iterator`，也就是一个惰性序列，所以要强迫`filter()`完成计算结果，需要用`list()`函数获得所有结果并返回`list`。
+
 筛法求素数：
 ```python
 def _odd_iter():
@@ -1808,7 +1807,7 @@ f
 f()
 25
 ```
-函数`lazy_sum`中又定义了函数`sum`，并且，内部函数`sum`可以引用外部函数`lazy_sum`的参数和局部变量，当`lazy_sum`返回函数`sum`时，相关参数和变量都保存在返回的函数中，这种称为“闭包(Closure)”的程序结构拥有极大的威力。
+函数`lazy_sum`中又定义了函数`sum`，并且，内部函数`sum`可以引用外部函数`lazy_sum`的参数和局部变量，当`lazy_sum`返回函数`sum`时，相关参数和变量都保存在返回的函数中，这种称为“闭包(`Closure`)”的程序结构拥有极大的威力。
 ###### 闭包
 - 返回的函数在其定义内部引用了局部变量`args`，所以，当一个函数返回了一个函数后，其内部的局部变量还被新函数引用，所以，闭包用起来简单，实现起来可不容易。
 ```Python
@@ -1976,7 +1975,7 @@ def log(func):
     return wrapper
 ```
 或者针对带参数的`decorator`：
-```
+```python
 import functools
 def log(text):
     def decorator(func):
@@ -1987,7 +1986,7 @@ def log(text):
         return wrapper
     return decorator
 ```
-在面向对象(OOP)的设计模式中，`decorator`被称为装饰模式。`OOP`的装饰模式需要通过继承和组合来实现，而`Python`除了能支持`OOP`的`decorator`外，直接从语法层次支持`decorator`。`Python`的`decorator`可以用函数实现，也可以用类实现。
+在面向对象(`OOP`)的设计模式中，`decorator`被称为装饰模式。`OOP`的装饰模式需要通过继承和组合来实现，而`Python`除了能支持`OOP`的`decorator`外，直接从语法层次支持`decorator`。`Python`的`decorator`可以用函数实现，也可以用类实现。
 `decorator`可以增强函数的功能，定义起来虽然有点复杂，但使用起来非常灵活和方便。
 ###### `@property`
 `Python`内置的`@property`装饰器就是负责把一个方法变成属性调用的：
@@ -2384,10 +2383,10 @@ class TestClass:
     def fun(self, x, y):
         return  x + y
 cls = TestClass("felix")
-print "通过实例引用方法"
-print cls.fun(None, 2, 3) # 参数个数必须与定义中的个数保持一致，否则报错
-print "类名直接引用静态方法"
-print TestClass.fun(None, 2, 3) # 参数个数必须与定义中的个数保持一致，否则报错
+print("通过实例引用方法")
+print(cls.fun(None, 2, 3)) # 参数个数必须与定义中的个数保持一致，否则报错
+print("类名直接引用静态方法")
+print(TestClass.fun(None, 2, 3)) # 参数个数必须与定义中的个数保持一致，否则报错
 ```
 ###### `@dataclass`
 ```Python
@@ -2426,11 +2425,11 @@ int2('1000000', base=10)
 int2 = functools.partial(int, base=2)
 ```
 实际上固定了`int()`函数的关键字参数`base`，也就是：
-```
+```python
 int2('10010')
 ```
 相当于：
-```
+```python
 kw = { 'base': 2 }
 int('10010', **kw)
 ```
@@ -2464,6 +2463,7 @@ S ['Steven']
 ```
 - 常用`itertools`函数:
 ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/687474703a2f2f75706c6f61642d696d616765732e6a69616e7368752e696f2f75706c6f61645f696d616765732f373137383639312d313131383233643837363761313034642e706e673f696d6167654d6f6772322f6175746f2d6f7269656e742f7374726970253743696d61676556696577322f322f77.png)
+
 子序列工具:
 ```python
 import itertools
@@ -2553,7 +2553,7 @@ Google 和 Runoob
 print('{1} 和 {0}'.format('Google', 'Runoob'))
 Runoob 和 Google
 ```
-如果在` format()` 中使用了关键字参数, 那么它们的值会指向使用该名字的参数。
+如果在`format()` 中使用了关键字参数, 那么它们的值会指向使用该名字的参数。
 ```Python
 print('{name}网址： {site}'.format(name='菜鸟教程', site='www.runoob.com'))
 菜鸟教程网址： www.runoob.com
@@ -2648,7 +2648,7 @@ f.write(chunk1)
 f.write(chunk2)
 ```
 如果两个字符串很小，那么第一个版本性能会更好些，因为`I/O`系统调用天生就慢。 另外一方面，如果两个字符串很大，那么第二个版本可能会更加高效， 因为它避免了创建一个很大的临时结果并且要复制大量的内存块数据。 还是那句话，有时候是需要根据你的应用程序特点来决定应该使用哪种方案。
-最后谈一下，如果你准备编写构建大量小字符串的输出代码， 你最好考虑下使用生成器函数，利用yield语句产生输出片段。比如：
+最后谈一下，如果你准备编写构建大量小字符串的输出代码， 你最好考虑下使用生成器函数，利用`yield`语句产生输出片段。比如：
 ```python
 def sample():
     yield 'Is'
@@ -3114,7 +3114,7 @@ isinstance((1, 2, 3), (list, tuple))
 True
 ```
 **总是优先使用isinstance()判断类型，可以将指定类型及其子类“一网打尽”。**
-#### 使用dir()
+#### 使用`dir()`
 如果要获得一个对象的所有属性和方法，可以使用`dir()`函数，它返回一个包含字符串的`list`，比如，获得一个`str`对象的所有属性和方法：
 ```Python
 dir('ABC')
@@ -3290,12 +3290,12 @@ g.score = 9999
 ```Python
 class Animal(object):
     pass
-# 大类:
+#大类:
 class Mammal(Animal):
     pass
 class Bird(Animal):
     pass
-# 各种动物:
+#各种动物:
 class Dog(Mammal):
     pass
 class Bat(Mammal):
@@ -4037,7 +4037,7 @@ msg
 'I am from Runoob'
 ``` 
 实例中 `msg` 变量定义在 `if` 语句块中，但外部还是可以访问的。
-如果将 msg 定义在函数中，则它就是局部变量，外部不能访问：
+如果将 `msg` 定义在函数中，则它就是局部变量，外部不能访问：
 ```Python
 def test():
     msg_inner = 'I am from Runoob'
@@ -4501,6 +4501,7 @@ print(dl1) # 输出： deque(['c', 'b', 'a', 555, -1])
 print(dl2) # 输出： deque(['c', 'b', 'a', 555, -1, 0])
 ```
 - 合并字典
+
 这是一般的字典合并写法
 ```Python
 dic1 = {'x': 1, 'y': 2 }
@@ -4558,7 +4559,7 @@ class LastUpdatedOrderedDict(OrderedDict):
 #### `ChainMap`
 `ChainMap`可以把一组`dict`串起来并组成一个逻辑上的`dict`。`ChainMap`本身也是一个`dict`，但是查找的时候，会按照顺序在内部的`dict`依次查找。
 什么时候使用`ChainMap`最合适？举个例子：应用程序往往都需要传入参数，参数可以通过命令行传入，可以通过环境变量传入，还可以有默认参数。我们可以用`ChainMap`实现参数的优先级查找，即先查命令行参数，如果没有传入，再查环境变量，如果没有，就使用默认参数。
-下面的代码演示了如何查找user和color这两个参数：
+下面的代码演示了如何查找`user`和`color`这两个参数：
 ``` Python
 from collections import ChainMap
 import os, argparse
@@ -4732,7 +4733,7 @@ c
 Counter({'r': 2, 'o': 2, 'g': 2, 'm': 2, 'l': 2, 'p': 1, 'a': 1, 'i': 1, 'n': 1, 'h': 1, 'e': 1})
 ```
 `Counter`实际上也是`dict`的一个子类，上面的结果可以看出每个字符出现的次数。
-- `elements()`:返回一个迭代器，其中每个元素将重复出现计数值所指定次。 元素会按首次出现的顺序返回。 如果一个元素的计数值小于一，`elements()` 将会忽略它。
+- `elements()`:返回一个迭代器，其中每个元素将重复出现计数值所指定次。 元素会按首次出现的顺序返回。 如果一个元素的计数值小于`1`，`elements()` 将会忽略它。
 ```Python
 c = Counter(a=4, b=2, c=0, d=-2)
 sorted(c.elements())
@@ -4930,7 +4931,7 @@ expensive = heapq.nlargest(3, portfolio, key=lambda s: s['price'])
 这类似于 `sorted(iterable)`，但与 `sorted()` 不同的是这个实现是不稳定的。
 优先队列 是堆的常用场合，并且它的实现包含了多个挑战：
 1. 排序稳定性：你该如何令相同优先级的两个任务按它们最初被加入时的顺序返回？
-2. 如果优先级相同且任务没有默认比较顺序，则 (priority, task) 对的元组比较将会中断。
+2. 如果优先级相同且任务没有默认比较顺序，则 `(priority, task)` 对的元组比较将会中断。
 针对前两项挑战的一种解决方案是将条目保存为包含优先级、条目计数和任务对象 3 个元素的列表。 条目计数可用来打破平局，这样具有相同优先级的任务将按它们的添加顺序返回。 并且由于没有哪两个条目计数是相同的，元组比较将永远不会直接比较两个任务。
 下面的类利用 `heapq` 模块实现了一个简单的优先级队列：
 ```python
