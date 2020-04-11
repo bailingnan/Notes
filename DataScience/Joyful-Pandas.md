@@ -239,6 +239,101 @@
   - [练习](#练习-5)
     - [练习一](#练习一-5)
     - [练习二](#练习二-5)
+- [文本数据](#文本数据)
+  - [`string`类型的性质](#string类型的性质)
+    - [`string`与`object`的区别](#string与object的区别)
+      - [`string`类型的转换](#string类型的转换)
+  - [拆分与拼接](#拆分与拼接)
+    - [`str.split`方法](#strsplit方法)
+      - [分割符与`str`的位置元素选取](#分割符与str的位置元素选取)
+      - [其他参数](#其他参数)
+    - [`str.cat`方法](#strcat方法)
+      - [不同对象的拼接模式](#不同对象的拼接模式)
+        - [对于单个`Series`而言，就是指所有的元素进行字符合并为一个字符串](#对于单个series而言就是指所有的元素进行字符合并为一个字符串)
+        - [对于两个`Series`合并而言，是对应索引的元素进行合并](#对于两个series合并而言是对应索引的元素进行合并)
+        - [多列拼接可以分为表的拼接和多`Series`拼接](#多列拼接可以分为表的拼接和多series拼接)
+        - [`cat`中的索引对齐](#cat中的索引对齐)
+  - [替换](#替换)
+    - [`str.replace`的常见用法](#strreplace的常见用法)
+    - [子组与函数替换](#子组与函数替换)
+    - [关于`str.replace`的注意事项](#关于strreplace的注意事项)
+      - [`str.replace`赋值参数不得为`pd.NA`](#strreplace赋值参数不得为pdna)
+      - [对于`string`类型`Series`，在使用`replace`函数时不能使用正则表达式替换](#对于string类型series在使用replace函数时不能使用正则表达式替换)
+      - [`string`类型序列如果存在缺失值，不能使用`replace`替换](#string类型序列如果存在缺失值不能使用replace替换)
+  - [子串匹配与提取](#子串匹配与提取)
+    - [`str.extract`方法](#strextract方法)
+      - [常见用法](#常见用法)
+      - [`expand`参数（默认为`True`）](#expand参数默认为true)
+    - [`str.extractall`方法](#strextractall方法)
+    - [`str.contains`和`str.match`](#strcontains和strmatch)
+  - [常用字符串方法](#常用字符串方法)
+    - [过滤型方法](#过滤型方法)
+      - [`str.strip`](#strstrip)
+      - [`str.lower`和`str.upper`](#strlower和strupper)
+      - [`str.swapcase`和`str.capitalize`](#strswapcase和strcapitalize)
+    - [`isnumeric`方法](#isnumeric方法)
+  - [练习](#练习-6)
+    - [练习一](#练习一-6)
+    - [练习二](#练习二-6)
+- [分类数据](#分类数据)
+  - [`category的创建及其性质](#category的创建及其性质)
+    - [分类变量的创建](#分类变量的创建)
+      - [用`Series`创建](#用series创建)
+      - [对`DataFrame`指定类型创建](#对dataframe指定类型创建)
+      - [利用内置`Categorical`类型创建](#利用内置categorical类型创建)
+      - [利用`cut`函数创建](#利用cut函数创建)
+    - [分类变量的结构](#分类变量的结构)
+      - [`describe`方法](#describe方法)
+      - [`categories`和`ordered`属性](#categories和ordered属性)
+    - [类别的修改](#类别的修改)
+      - [利用`set_categories`修改](#利用set_categories修改)
+      - [利用`rename_categories`修改](#利用rename_categories修改)
+      - [利用`add_categories`添加](#利用add_categories添加)
+      - [利用`remove_categories`移除](#利用remove_categories移除)
+      - [删除元素值未出现的分类类型](#删除元素值未出现的分类类型)
+  - [分类变量的排序](#分类变量的排序)
+    - [序的建立](#序的建立)
+      - [一般来说会将一个序列转为有序变量，可以利用`as_ordered`方法](#一般来说会将一个序列转为有序变量可以利用as_ordered方法)
+      - [利用`set_categories`方法中的`order`参数](#利用set_categories方法中的order参数)
+      - [利用`reorder_categories`方法](#利用reorder_categories方法)
+    - [排序](#排序-1)
+  - [分类变量的比较操作](#分类变量的比较操作)
+    - [与标量或等长序列的比较](#与标量或等长序列的比较)
+      - [标量比较](#标量比较)
+      - [等长序列比较](#等长序列比较)
+    - [与另一分类变量的比较](#与另一分类变量的比较)
+      - [等式判别（包含等号和不等号）](#等式判别包含等号和不等号)
+      - [不等式判别（包含`>=`,`<=`,`<`,`>`）](#不等式判别包含)
+  - [练习](#练习-7)
+    - [练习一](#练习一-7)
+- [时序数据](#时序数据)
+  - [时序的创建](#时序的创建)
+    - [四类时间变量](#四类时间变量)
+    - [时间点的创建](#时间点的创建)
+      - [`to_datetime`方法](#to_datetime方法)
+      - [时间精度与范围限制](#时间精度与范围限制)
+      - [`date_range`方法](#date_range方法)
+    - [`DateOffset`对象](#dateoffset对象)
+      - [`DataOffset`与`Timedelta`的区别](#dataoffset与timedelta的区别)
+      - [增减一段时间](#增减一段时间)
+      - [各类常用`offset`对象](#各类常用offset对象)
+      - [序列的`offset`操作](#序列的offset操作)
+  - [时序的索引及属性](#时序的索引及属性)
+    - [索引切片](#索引切片)
+    - [子集索引](#子集索引)
+    - [时间点的属性](#时间点的属性)
+  - [重采样](#重采样)
+    - [`resample`对象的基本操作](#resample对象的基本操作)
+    - [采样聚合](#采样聚合)
+    - [采样组的迭代](#采样组的迭代)
+  - [窗口函数](#窗口函数)
+    - [Rolling](#rolling)
+      - [常用聚合](#常用聚合)
+      - [`rolling`的`apply`聚合](#rolling的apply聚合)
+      - [基于时间的`rolling`](#基于时间的rolling)
+    - [`Expanding`](#expanding)
+      - [`expanding`函数](#expanding函数)
+      - [几个特别的`Expanding`类型函数](#几个特别的expanding类型函数)
 
 <!-- /TOC -->
 # `Pandas`基础
@@ -3487,8 +3582,1310 @@ df_method_1['体重'] = df_method_1['体重'].round(decimals=2)
 df_method_1.head()
 ```
 ![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411045921.png)
+# 文本数据
+```python
+import pandas as pd
+import numpy as np
+```
+## `string`类型的性质
+### `string`与`object`的区别
+`string`类型和`object`不同之处有三：
+1. 字符存取方法（string accessor methods，如str.count）会返回相应数据的`Nullable`类型，而`object`会随缺失值的存在而改变返回类型
+2. 某些`Series`方法不能在`string`上使用，例如： `Series.str.decode()`，因为存储的是字符串而不是字节
+3. `string`类型在缺失值存储或运算时，类型会广播为`pd.NA`，而不是浮点型`np.nan`
+其余全部内容在当前版本下完全一致，但迎合`Pandas`的发展模式，我们仍然全部用`string`来操作字符串
+#### `string`类型的转换
+如果将一个其他类型的容器直接转换`string`类型可能会出错：
+```python
+#pd.Series([1,'1.']).astype('string') #报错
+#pd.Series([1,2]).astype('string') #报错
+#pd.Series([True,False]).astype('string') #报错
+```
+当下正确的方法是分两部转换，先转为`str`型`object`，在转为`string`类型：
+```python
+pd.Series([1,'1.']).astype('str').astype('string')
+0     1
+1    1.
+dtype: string
+pd.Series([1,2]).astype('str').astype('string')
+0    1
+1    2
+dtype: string
+pd.Series([True,False]).astype('str').astype('string')
+0     True
+1    False
+dtype: string
+```
+## 拆分与拼接
+### `str.split`方法
+#### 分割符与`str`的位置元素选取
+```python
+s = pd.Series(['a_b_c', 'c_d_e', np.nan, 'f_g_h'], dtype="string")
+s
+0    a_b_c
+1    c_d_e
+2     <NA>
+3    f_g_h
+dtype: string
+```
+根据某一个元素分割，默认为空格
+```python
+s.str.split('_')
+0    [a, b, c]
+1    [c, d, e]
+2         <NA>
+3    [f, g, h]
+dtype: object
+```
+这里需要注意`split`后的类型是`object`，因为现在`Series`中的元素已经不是`string`，而包含了`list`，且`string`类型只能含有字符串
+对于`str`方法可以进行元素的选择，如果该单元格元素是列表，那么`str[i]`表示取出第i个元素，如果是单个元素，则先把元素转为列表在取出
+```python
+s.str.split('_').str[1]
+0       b
+1       d
+2    <NA>
+3       g
+dtype: object
+pd.Series(['a_b_c', ['a','b','c']], dtype="object").str[1]
+#第一个元素先转为['a','_','b','_','c']
+0    _
+1    b
+dtype: object
+```
+#### 其他参数
+`expand`参数控制了是否将列拆开，`n`参数代表最多分割多少次
+```python
+s.str.split('_',expand=True)
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411141602.png)
+```python
+s.str.split('_',n=1)
+0    [a, b_c]
+1    [c, d_e]
+2        <NA>
+3    [f, g_h]
+dtype: object
+s.str.split('_',expand=True,n=1)
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411141804.png)
+### `str.cat`方法
+#### 不同对象的拼接模式
+`cat`方法对于不同对象的作用结果并不相同，其中的对象包括：单列、双列、多列
+##### 对于单个`Series`而言，就是指所有的元素进行字符合并为一个字符串
+```python
+s = pd.Series(['ab',None,'d'],dtype='string')
+s
+0      ab
+1    <NA>
+2       d
+dtype: string
+s.str.cat()
+'abd'
+```
+其中可选`sep`分隔符参数，和缺失值替代字符`na_rep`参数
+```python
+s.str.cat(sep=',')
+'ab,d'
+s.str.cat(sep=',',na_rep='*')
+'ab,*,d'
+```
+##### 对于两个`Series`合并而言，是对应索引的元素进行合并
+```python
+s2 = pd.Series(['24',None,None],dtype='string')
+s2
+0      24
+1    <NA>
+2    <NA>
+dtype: string
+s.str.cat(s2)
+0    ab24
+1    <NA>
+2    <NA>
+dtype: string
+```
+同样也有相应参数，需要注意的是两个缺失值会被同时替换
+```python
+s.str.cat(s2,sep=',',na_rep='*')
+0    ab,24
+1      *,*
+2      d,*
+dtype: string
+```
+##### 多列拼接可以分为表的拼接和多`Series`拼接
+表的拼接
+```python
+s.str.cat(pd.DataFrame({0:['1','3','5'],1:['5','b',None]},dtype='string'),na_rep='*')
+0    ab15
+1     *3b
+2     d5*
+dtype: string
+```
+多个`Series`拼接
+```python
+s.str.cat([s+'0',s*2])
+0    abab0abab
+1         <NA>
+2        dd0dd
+dtype: string
+```
+##### `cat`中的索引对齐
+当前版本中，如果两边合并的索引不相同且未指定`join`参数，默认为左连接，设置`join='left'`
+```python
+s2 = pd.Series(list('abc'),index=[1,2,3],dtype='string')
+s2
+1    a
+2    b
+3    c
+dtype: string
+s.str.cat(s2,na_rep='*')
+0    ab*
+1     *a
+2     db
+dtype: string
+```
+## 替换
+广义上的替换，就是指`str.replace`函数的应用，`fillna`是针对缺失值的替换
+提到替换，就不可避免地接触到正则表达式，这里默认读者已掌握常见正则表达式知识点，若对其还不了解的，可以通过这份资料来熟悉
+### `str.replace`的常见用法
+```python
+s = pd.Series(['A', 'B', 'C', 'Aaba', 'Baca','', np.nan, 'CABA', 'dog', 'cat'],dtype="string")
+s
+0       A
+1       B
+2       C
+3    Aaba
+4    Baca
+5        
+6    <NA>
+7    CABA
+8     dog
+9     cat
+dtype: string
+```
+第一个值写r开头的正则表达式，后一个写替换的字符串
+```python
+s.str.replace(r'^[AB]','***')
+0       ***
+1       ***
+2         C
+3    ***aba
+4    ***aca
+5          
+6      <NA>
+7      CABA
+8       dog
+9       cat
+dtype: string
+```
+### 子组与函数替换
+通过正整数调用子组（`0`返回字符本身，从`1`开始才是子组）
+```python
+s.str.replace(r'([ABC])(\w+)',lambda x:x.group(2)[1:]+'*')
+0       A
+1       B
+2       C
+3     ba*
+4     ca*
+5        
+6    <NA>
+7     BA*
+8     dog
+9     cat
+dtype: string
+```
+利用?P<....>表达式可以对子组命名调用
+```python
+s.str.replace(r'(?P<one>[ABC])(?P<two>\w+)',lambda x:x.group('two')[1:]+'*')
+0       A
+1       B
+2       C
+3     ba*
+4     ca*
+5        
+6    <NA>
+7     BA*
+8     dog
+9     cat
+dtype: string
+```
+### 关于`str.replace`的注意事项
+首先，要明确`str.replace`和`replace`并不是一个东西：
+`str.replace`针对的是`object`类型或`string`类型，默认是以正则表达式为操作，目前暂时不支持`DataFrame`上使用
+`replace`针对的是任意类型的序列或数据框，如果要以正则表达式替换，需要设置`regex=True`，该方法通过字典可支持多列替换
+但现在由于`string`类型的初步引入，用法上出现了一些问题，这些issue有望在以后的版本中修复
+#### `str.replace`赋值参数不得为`pd.NA`
+这听上去非常不合理，例如对满足某些正则条件的字符串替换为缺失值，直接更改为缺失值在当下版本就会报错
+```python
+#pd.Series(['A','B'],dtype='string').str.replace(r'[A]',pd.NA) #报错
+#pd.Series(['A','B'],dtype='O').str.replace(r'[A]',pd.NA) #报错
+```
+此时，可以先转为`object`类型再转换回来，曲线救国：
+```python
+pd.Series(['A','B'],dtype='string').astype('O').replace(r'[A]',pd.NA,regex=True).astype('string')
+0    <NA>
+1       B
+dtype: string
+```
+至于为什么不用`replace`函数的`regex`替换（但`string`类型`replace`的非正则替换是可以的），原因在下面一条
+#### 对于`string`类型`Series`，在使用`replace`函数时不能使用正则表达式替换
+该bug现在还未修复
+```python
+pd.Series(['A','B'],dtype='string').replace(r'[A]','C',regex=True)
+0    A
+1    B
+dtype: string
+pd.Series(['A','B'],dtype='O').replace(r'[A]','C',regex=True)
+0    C
+1    B
+dtype: object
+```
+#### `string`类型序列如果存在缺失值，不能使用`replace`替换
+```python
+#pd.Series(['A',np.nan],dtype='string').replace('A','B') #报错
+pd.Series(['A',np.nan],dtype='string').str.replace('A','B')
+0       B
+1    <NA>
+dtype: string
+```
+综上，概况的说，除非需要赋值元素为缺失值（转为`object`再转回来），否则请使用`str.replace`方法
+## 子串匹配与提取
+### `str.extract`方法
+#### 常见用法
+```python
+pd.Series(['10-87', '10-88', '10-89'],dtype="string").str.extract(r'([\d]{2})-([\d]{2})')
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411145115.png)
+使用子组名作为列名
+```python
+pd.Series(['10-87', '10-88', '-89'],dtype="string").str.extract(r'(?P<name_1>[\d]{2})-(?P<name_2>[\d]{2})')
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411145145.png)
+利用`?`正则标记选择部分提取
+```python
+pd.Series(['10-87', '10-88', '-89'],dtype="string").str.extract(r'(?P<name_1>[\d]{2})?-(?P<name_2>[\d]{2})')
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411145226.png)
+```python
+pd.Series(['10-87', '10-88', '10-'],dtype="string").str.extract(r'(?P<name_1>[\d]{2})-(?P<name_2>[\d]{2})?')
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411145254.png)
 
+#### `expand`参数（默认为`True`）
+对于一个子组的`Series`，如果`expand`设置为`False`，则返回`Series`，若大于一个子组，则`expand`参数无效，全部返回`DataFrame`
+对于一个子组的`Index`，如果`expand`设置为`False`，则返回提取后的`Index`，若大于一个子组且`expand`为`False`，报错
+```python
+s.index
+Index(['A11', 'B22', 'C33'], dtype='object')
+s.str.extract(r'([\w])')
+        0
+A11	a
+B22	b
+C33	c
+s.str.extract(r'([\w])',expand=False)
+A11    a
+B22    b
+C33    c
+dtype: string
+s.index.str.extract(r'([\w])')
+        0
+0	A
+1	B
+2	C
+s.index.str.extract(r'([\w])',expand=False)
+Index(['A', 'B', 'C'], dtype='object')
+s.index.str.extract(r'([\w])([\d])')
+        0	1
+0	A	1
+1	B	2
+2	C	3
+#s.index.str.extract(r'([\w])([\d])',expand=False) #报错
+```
+### `str.extractall`方法
+与`extract`只匹配第一个符合条件的表达式不同，`extractall`会找出所有符合条件的字符串，并建立多级索引（即使只找到一个）
+```python
+s = pd.Series(["a1a2", "b1", "c1"], index=["A", "B", "C"],dtype="string")
+two_groups = '(?P<letter>[a-z])(?P<digit>[0-9])'
+s.str.extract(two_groups, expand=True)
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411145631.png)
+```python
+s.str.extractall(two_groups)
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411145700.png)
+```python
+s['A']='a1'
+s.str.extractall(two_groups)
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411145728.png)
+如果想查看第`i`层匹配，可使用`xs`方法
+```python
+s = pd.Series(["a1a2", "b1b2", "c1c2"], index=["A", "B", "C"],dtype="string")
+s.str.extractall(two_groups).xs(1,level='match')
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411145805.png)
+### `str.contains`和`str.match`
+前者的作用为检测是否包含某种正则模式
+```python
+pd.Series(['1', None, '3a', '3b', '03c'], dtype="string").str.contains(r'[0-9][a-z]')
+Out[49]:
+0    False
+1     <NA>
+2     True
+3     True
+4     True
+dtype: boolean
+```
+可选参数为`na`
+```python
+pd.Series(['1', None, '3a', '3b', '03c'], dtype="string").str.contains('a', na=False)
+0    False
+1    False
+2     True
+3    False
+4    False
+dtype: boolean
+```
+`str.match`与其区别在于，`match`依赖于`python`的`re.match`，检测内容为是否从头开始包含该正则模式
+```python
+pd.Series(['1', None, '3a_', '3b', '03c'], dtype="string").str.match(r'[0-9][a-z]',na=False)
+0    False
+1    False
+2     True
+3     True
+4    False
+dtype: boolean
+pd.Series(['1', None, '_3a', '3b', '03c'], dtype="string").str.match(r'[0-9][a-z]',na=False)
+0    False
+1    False
+2    False
+3     True
+4    False
+dtype: boolean
+```
+## 常用字符串方法
+### 过滤型方法
+#### `str.strip`
+常用于过滤空格
+```python
+pd.Series(list('abc'),index=[' space1  ','space2  ','  space3'],dtype="string").index.str.strip()
+Index(['space1', 'space2', 'space3'], dtype='object')
+```
+#### `str.lower`和`str.upper`
+```python
+pd.Series('A',dtype="string").str.lower()
+0    a
+dtype: string
+pd.Series('a',dtype="string").str.upper()
+0    A
+dtype: string
+```
+#### `str.swapcase`和`str.capitalize`
+分别表示交换字母大小写和大写首字母
+```python
+pd.Series('abCD',dtype="string").str.swapcase()
+0    ABcd
+dtype: string
+pd.Series('abCD',dtype="string").str.capitalize()
+0    Abcd
+dtype: string
+```
+### `isnumeric`方法
+检查每一位是否都是数字，请问如何判断是否是数值？（问题二）
+```python
+pd.Series(['1.2','1','-0.3','a',np.nan],dtype="string").str.isnumeric()
+0    False
+1     True
+2    False
+3    False
+4     <NA>
+dtype: boolean
+```
+## 练习
+### 练习一
+现有一份关于字符串的数据集，请解决以下问题：
+```python
+pd.read_csv('data/String_data_one.csv',index_col='人员编号').head()
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411152858.png)
+- 现对字符串编码存储人员信息（在编号后添加ID列），使用如下格式：“×××（名字）：×国人，性别×，生于×年×月×日”
+```python
+(df['姓名']+':'+df['国籍']+'国人，性别'
+          +df['性别']+'，生于'
+          +df['出生年']+'年'
+          +df['出生月']+'月'+df['出生日']+'日').to_frame().rename(columns={0:'ID'}).head()
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411153116.png)
+- 将1中的人员生日信息部分修改为用中文表示（如一九七四年十月二十三日），其余返回格式不变。
+```python
+L_year = list('零一二三四五六七八九')
+L_one = [s.strip() for s in list('  二三四五六七八九')]
+L_two = [s.strip() for s in list(' 一二三四五六七八九')]
+df_new = (df['姓名']+':'+df['国籍']+'国人，性别'+df['性别']+'，生于'
+          +df['出生年'].str.replace(r'\d',lambda x:L_year[int(x.group(0))])+'年'
+          +df['出生月'].apply(lambda x:x if len(x)==2 else '0'+x)\
+                      .str.replace(r'(?P<one>[\d])(?P<two>\d?)',lambda x:L_one[int(x.group('one'))]
+                      +bool(int(x.group('one')))*'十'+L_two[int(x.group('two'))])+'月'
+          +df['出生日'].apply(lambda x:x if len(x)==2 else '0'+x)\
+                      .str.replace(r'(?P<one>[\d])(?P<two>\d?)',lambda x:L_one[int(x.group('one'))]
+                      +bool(int(x.group('one')))*'十'+L_two[int(x.group('two'))])+'日')\
+          .to_frame().rename(columns={0:'ID'})
+df_new.head()
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411153155.png)
+- 将2中的ID列结果拆分为原列表相应的5列，并使用equals检验是否一致。
+```python
+dic_year = {i[0]:i[1] for i in zip(list('零一二三四五六七八九'),list('0123456789'))}
+dic_two = {i[0]:i[1] for i in zip(list('十一二三四五六七八九'),list('0123456789'))}
+dic_one = {'十':'1','二十':'2','三十':'3',None:''}
+df_res = df_new['ID'].str.extract(r'(?P<姓名>[a-zA-Z]+):(?P<国籍>[\d])国人，性别(?P<性别>[\w])，生于(?P<出生年>[\w]{4})年(?P<出生月>[\w]+)月(?P<出生日>[\w]+)日')
+df_res['出生年'] = df_res['出生年'].str.replace(r'(\w)+',lambda x:''.join([dic_year[x.group(0)[i]] for i in range(4)]))
+df_res['出生月'] = df_res['出生月'].str.replace(r'(?P<one>\w?十)?(?P<two>[\w])',lambda x:dic_one[x.group('one')]+dic_two[x.group('two')]).str.replace(r'0','10')
+df_res['出生日'] = df_res['出生日'].str.replace(r'(?P<one>\w?十)?(?P<two>[\w])',lambda x:dic_one[x.group('one')]+dic_two[x.group('two')]).str.replace(r'^0','10')
+df_res.head()
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411153230.png)
+```python
+df_res.equals(df)
+```
+### 练习二
+现有一份半虚拟的数据集，第一列包含了新型冠状病毒的一些新闻标题，请解决以下问题：
+```python
+pd.read_csv('data/String_data_two.csv').head()
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411154012.png)
+- 选出所有关于北京市和上海市新闻标题的所在行。
+```python
+df[df['col1'].str.contains(r'[北京]{2}|[上海]{2}')].head()
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411154138.png)
+- 求col2的均值。
+```python
+#df['col2'].mean() #报错
+df['col2'][~(df['col2'].str.replace(r'-?\d+','True')=='True')] #这三行有问题
+309    0-
+396    9`
+485    /7
+Name: col2, dtype: object
+df.loc[[309,396,485],'col2'] = [0,9,7]
+df['col2'].astype('int').mean()
+-0.984
+```
+- 求col3的均值。
+```python
+#df['col3'].mean() #报错
+#df['col3'] #报错
+df.columns
+Index(['col1', 'col2', 'col3  '], dtype='object')
+df.columns = df.columns.str.strip()
+df.columns
+Index(['col1', 'col2', 'col3'], dtype='object')
+df['col3'].head()
+0     363.6923
+1     -152.281
+2     325.6221
+3    -204.9313
+4         4.05
+Name: col3, dtype: object
+#df['col3'].mean() #报错
+df['col3'][~(df['col3'].str.replace(r'-?\d+\.?\d+','True')=='True')]
+28      355`.3567
+37             -5
+73              1
+122    9056.\2253
+332    3534.6554{
+370             7
+Name: col3, dtype: object
+df.loc[[28,122,332],'col3'] = [355.3567,9056.2253, 3534.6554]
+df['col3'].astype('float').mean()
+24.707485
+```
+# 分类数据
+```python
+import pandas as pd
+import numpy as np
+df = pd.read_csv('data/table.csv')
+df.head()
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411154527.png)
+## `category的创建及其性质
+### 分类变量的创建
+#### 用`Series`创建
+```python
+pd.Series(["a", "b", "c", "a"], dtype="category")
+0    a
+1    b
+2    c
+3    a
+dtype: category
+Categories (3, object): [a, b, c]
+```
+#### 对`DataFrame`指定类型创建
+```python
+temp_df = pd.DataFrame({'A':pd.Series(["a", "b", "c", "a"], dtype="category"),'B':list('abcd')})
+temp_df.dtypes
+A    category
+B      object
+dtype: object
+```
+#### 利用内置`Categorical`类型创建
+```python
+cat = pd.Categorical(["a", "b", "c", "a"], categories=['a','b','c'])
+pd.Series(cat)
+0    a
+1    b
+2    c
+3    a
+dtype: category
+Categories (3, object): [a, b, c]
+```
+#### 利用`cut`函数创建
+默认使用区间类型为标签
+```python
+pd.cut(np.random.randint(0,60,5), [0,10,30,60])
+[(10, 30], (0, 10], (10, 30], (30, 60], (30, 60]]
+Categories (3, interval[int64]): [(0, 10] < (10, 30] < (30, 60]]
+```
+可指定字符为标签
+```python
+pd.cut(np.random.randint(0,60,5), [0,10,30,60], right=False, labels=['0-10','10-30','30-60'])
+[10-30, 30-60, 30-60, 10-30, 30-60]
+Categories (3, object): [0-10 < 10-30 < 30-60]
+```
+### 分类变量的结构
+一个分类变量包括三个部分，元素值（`values`）、分类类别（`categories`）、是否有序（`order`）
+从上面可以看出，使用`cut`函数创建的分类变量默认为有序分类变量
+下面介绍如何获取或修改这些属性
+#### `describe`方法
+该方法描述了一个分类序列的情况，包括非缺失值个数、元素值类别数（不是分类类别数）、最多次出现的元素及其频数
+```python
+s = pd.Series(pd.Categorical(["a", "b", "c", "a",np.nan], categories=['a','b','c','d']))
+s.describe()
+count     4
+unique    3
+top       a
+freq      2
+dtype: object
+```
+#### `categories`和`ordered`属性
+查看分类类别和是否排序
+```python
+s.cat.categories
+Index(['a', 'b', 'c', 'd'], dtype='object')
+s.cat.ordered
+False
+```
+### 类别的修改
+#### 利用`set_categories`修改
+修改分类，但本身值不会变化
+```python
+s = pd.Series(pd.Categorical(["a", "b", "c", "a",np.nan], categories=['a','b','c','d']))
+s.cat.set_categories(['new_a','c'])
+0    NaN
+1    NaN
+2      c
+3    NaN
+4    NaN
+dtype: category
+Categories (2, object): [new_a, c]
+```
+#### 利用`rename_categories`修改
+需要注意的是该方法会把值和分类同时修改
+```python
+s = pd.Series(pd.Categorical(["a", "b", "c", "a",np.nan], categories=['a','b','c','d']))
+s.cat.rename_categories(['new_%s'%i for i in s.cat.categories])
+0    new_a
+1    new_b
+2    new_c
+3    new_a
+4      NaN
+dtype: category
+Categories (4, object): [new_a, new_b, new_c, new_d]
+```
+利用字典修改值
+```python
+s.cat.rename_categories({'a':'new_a','b':'new_b'})
+0    new_a
+1    new_b
+2        c
+3    new_a
+4      NaN
+dtype: category
+Categories (4, object): [new_a, new_b, c, d]
+```
+#### 利用`add_categories`添加
+```python
+s = pd.Series(pd.Categorical(["a", "b", "c", "a",np.nan], categories=['a','b','c','d']))
+s.cat.add_categories(['e'])
+0      a
+1      b
+2      c
+3      a
+4    NaN
+dtype: category
+Categories (5, object): [a, b, c, d, e]
+```
+#### 利用`remove_categories`移除
+```python
+s = pd.Series(pd.Categorical(["a", "b", "c", "a",np.nan], categories=['a','b','c','d']))
+s.cat.remove_categories(['d'])
+0      a
+1      b
+2      c
+3      a
+4    NaN
+dtype: category
+Categories (3, object): [a, b, c]
+```
+#### 删除元素值未出现的分类类型
+```python
+s = pd.Series(pd.Categorical(["a", "b", "c", "a",np.nan], categories=['a','b','c','d']))
+s.cat.remove_unused_categories()
+0      a
+1      b
+2      c
+3      a
+4    NaN
+dtype: category
+Categories (3, object): [a, b, c]
+```
+## 分类变量的排序
+前面提到，分类数据类型被分为有序和无序，这非常好理解，例如分数区间的高低是有序变量，考试科目的类别一般看做无序变量
+### 序的建立
+#### 一般来说会将一个序列转为有序变量，可以利用`as_ordered`方法
+```python
+s = pd.Series(["a", "d", "c", "a"]).astype('category').cat.as_ordered()
+s
+0    a
+1    d
+2    c
+3    a
+dtype: category
+Categories (3, object): [a < c < d]
+```
+退化为无序变量，只需要使用`as_unordered`
+```python
+s.cat.as_unordered()
+0    a
+1    d
+2    c
+3    a
+dtype: category
+Categories (3, object): [a, c, d]
+```
+#### 利用`set_categories`方法中的`order`参数
+```python
+pd.Series(["a", "d", "c", "a"]).astype('category').cat.set_categories(['a','c','d'],ordered=True)
+0    a
+1    d
+2    c
+3    a
+dtype: category
+Categories (3, object): [a < c < d]
+```
+#### 利用`reorder_categories`方法
+这个方法的特点在于，新设置的分类必须与原分类为同一集合
+```python
+s = pd.Series(["a", "d", "c", "a"]).astype('category')
+s.cat.reorder_categories(['a','c','d'],ordered=True)
+0    a
+1    d
+2    c
+3    a
+dtype: category
+Categories (3, object): [a < c < d]
+#s.cat.reorder_categories(['a','c'],ordered=True) #报错
+#s.cat.reorder_categories(['a','c','d','e'],ordered=True) #报错
+```
+### 排序
+先前在第1章介绍的值排序和索引排序都是适用的
+```python
+s = pd.Series(np.random.choice(['perfect','good','fair','bad','awful'],50)).astype('category')
+s.cat.set_categories(['perfect','good','fair','bad','awful'][::-1],ordered=True).head()
+0       good
+1       fair
+2        bad
+3    perfect
+4    perfect
+dtype: category
+Categories (5, object): [awful < bad < fair < good < perfect]
+s.sort_values(ascending=False).head()
+29    perfect
+17    perfect
+31    perfect
+3     perfect
+4     perfect
+dtype: category
+Categories (5, object): [awful, bad, fair, good, perfect]
+df_sort = pd.DataFrame({'cat':s.values,'value':np.random.randn(50)}).set_index('cat')
+df_sort.head()
+value
+cat	
+good	-1.746975
+fair	0.836732
+bad	0.094912
+perfect	-0.724338
+perfect	-1.456362
+df_sort.sort_index().head()
+value
+cat	
+awful	0.245782
+awful	0.063991
+awful	1.541862
+awful	-0.062976
+awful	0.472542
+```
+## 分类变量的比较操作
+### 与标量或等长序列的比较
+#### 标量比较
+```python
+s = pd.Series(["a", "d", "c", "a"]).astype('category')
+s == 'a'
+0     True
+1    False
+2    False
+3     True
+dtype: bool
+```
+#### 等长序列比较
+```python
+s == list('abcd')
+0     True
+1    False
+2     True
+3    False
+dtype: bool
+```
+### 与另一分类变量的比较
+#### 等式判别（包含等号和不等号）
+两个分类变量的等式判别需要满足分类完全相同
+```python
+s = pd.Series(["a", "d", "c", "a"]).astype('category')
+s == s
+0    True
+1    True
+2    True
+3    True
+dtype: bool
+s != s
+0    False
+1    False
+2    False
+3    False
+dtype: bool
+s_new = s.cat.set_categories(['a','d','e'])
+#s == s_new #报错
+```
+#### 不等式判别（包含`>=`,`<=`,`<`,`>`）
+两个分类变量的不等式判别需要满足两个条件：
+1. 分类完全相同 
+2. 排序完全相同
+```python
+s = pd.Series(["a", "d", "c", "a"]).astype('category')
+#s >= s #报错
+s = pd.Series(["a", "d", "c", "a"]).astype('category').cat.reorder_categories(['a','c','d'],ordered=True)
+s >= s
+0    True
+1    True
+2    True
+3    True
+dtype: bool
+```
+## 练习
+### 练习一
+现继续使用第四章中的地震数据集，请解决以下问题：
+```python
+pd.read_csv('data/Earthquake.csv').head()
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411160352.png)
+- 现在将深度分为七个等级：[0,5,10,15,20,30,50,np.inf]，请以深度等级Ⅰ,Ⅱ,Ⅲ,Ⅳ,Ⅴ,Ⅵ,Ⅶ为索引并按照由浅到深的顺序进行排序。
+```python
+df_a = df.copy()
+df_a['深度'] = pd.cut(df_a['深度'], [-1e-10,5,10,15,20,30,50,np.inf],labels=['Ⅰ','Ⅱ','Ⅲ','Ⅳ','Ⅴ','Ⅵ','Ⅶ'])
+df_a.set_index('深度').sort_index().head()
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411160546.png)
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411160457.png)
+- 在1的基础上，将烈度分为4个等级：[0,3,4,5,np.inf]，依次对南部地区的深度和烈度等级建立多级索引排序。
+```python
+df_a['烈度'] = pd.cut(df_a['烈度'], [-1e-10,3,4,5,np.inf],labels=['Ⅰ','Ⅱ','Ⅲ','Ⅳ'])
+df_a.set_index(['深度','烈度']).sort_index().head()
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411160615.png)
+# 时序数据
+## 时序的创建
+### 四类时间变量
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411161719.png)
+### 时间点的创建
+#### `to_datetime`方法
+`Pandas`在时间点建立的输入格式规定上给了很大的自由度，下面的语句都能正确建立同一时间点
+```python
+pd.to_datetime('2020.1.1')
+pd.to_datetime('2020 1.1')
+pd.to_datetime('2020 1 1')
+pd.to_datetime('2020 1-1')
+pd.to_datetime('2020-1 1')
+pd.to_datetime('2020-1-1')
+pd.to_datetime('2020/1/1')
+pd.to_datetime('1.1.2020')
+pd.to_datetime('1.1 2020')
+pd.to_datetime('1 1 2020')
+pd.to_datetime('1 1-2020')
+pd.to_datetime('1-1 2020')
+pd.to_datetime('1-1-2020')
+pd.to_datetime('1/1/2020')
+pd.to_datetime('20200101')
+pd.to_datetime('2020.0101')
+Timestamp('2020-01-01 00:00:00')
+```
+下面的语句都会报错
+```python
+#pd.to_datetime('2020\\1\\1')
+#pd.to_datetime('2020`1`1')
+#pd.to_datetime('2020.1 1')
+#pd.to_datetime('1 1.2020')
+```
+此时可利用`format`参数强制匹配
+```python
+pd.to_datetime('2020\\1\\1',format='%Y\\%m\\%d')
+pd.to_datetime('2020`1`1',format='%Y`%m`%d')
+pd.to_datetime('2020.1 1',format='%Y.%m %d')
+pd.to_datetime('1 1.2020',format='%d %m.%Y')
+Timestamp('2020-01-01 00:00:00')
+```
+同时，使用列表可以将其转为时间点索引
+```python
+pd.Series(range(2),index=pd.to_datetime(['2020/1/1','2020/1/2']))
+2020-01-01    0
+2020-01-02    1
+dtype: int64
+type(pd.to_datetime(['2020/1/1','2020/1/2']))
+pandas.core.indexes.datetimes.DatetimeIndex
+```
+对于`DataFrame`而言，如果列已经按照时间顺序排好，则利用`to_datetime`可自动转换
+```python
+df = pd.DataFrame({'year': [2020, 2020],'month': [1, 1], 'day': [1, 2]})
+pd.to_datetime(df)
+0   2020-01-01
+1   2020-01-02
+dtype: datetime64[ns]
+```
+#### 时间精度与范围限制
+事实上，`Timestamp`的精度远远不止`day`，可以最小到纳秒`ns`
+```python
+pd.to_datetime('2020/1/1 00:00:00.123456789')
+Timestamp('2020-01-01 00:00:00.123456789')
+```
+同时，它带来范围的代价就是只有大约584年的时间点是可用的
+```python
+pd.Timestamp.min
+Timestamp('1677-09-21 00:12:43.145225')
+pd.Timestamp.max
+Timestamp('2262-04-11 23:47:16.854775807')
+```
+#### `date_range`方法
+一般来说，`start`/`end`/`periods`（时间点个数）/`freq`（间隔方法）是该方法最重要的参数，给定了其中的3个，剩下的一个就会被确定
+```python
+pd.date_range(start='2020/1/1',end='2020/1/10',periods=3)
+DatetimeIndex(['2020-01-01 00:00:00', '2020-01-05 12:00:00',
+               '2020-01-10 00:00:00'],
+              dtype='datetime64[ns]', freq=None)
+pd.date_range(start='2020/1/1',end='2020/1/10',freq='D')
+DatetimeIndex(['2020-01-01', '2020-01-02', '2020-01-03', '2020-01-04',
+               '2020-01-05', '2020-01-06', '2020-01-07', '2020-01-08',
+               '2020-01-09', '2020-01-10'],
+              dtype='datetime64[ns]', freq='D')
+pd.date_range(start='2020/1/1',periods=3,freq='D')
+DatetimeIndex(['2020-01-01', '2020-01-02', '2020-01-03'], dtype='datetime64[ns]', freq='D')
+pd.date_range(end='2020/1/3',periods=3,freq='D')
+DatetimeIndex(['2020-01-01', '2020-01-02', '2020-01-03'], dtype='datetime64[ns]', freq='D')
+```
+其中`freq`参数有许多选项:
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411162103.png)
+```python
+pd.date_range(start='2020/1/1',periods=3,freq='T')
+DatetimeIndex(['2020-01-01 00:00:00', '2020-01-01 00:01:00',
+               '2020-01-01 00:02:00'],
+              dtype='datetime64[ns]', freq='T')
+pd.date_range(start='2020/1/1',periods=3,freq='M')
+DatetimeIndex(['2020-01-31', '2020-02-29', '2020-03-31'], dtype='datetime64[ns]', freq='M')
+pd.date_range(start='2020/1/1',periods=3,freq='BYS')
+DatetimeIndex(['2020-01-01', '2021-01-01', '2022-01-03'], dtype='datetime64[ns]', freq='BAS-JAN')
+```
+`bdate_range`是一个类似与`date_range`的方法，特点在于可以在自带的工作日间隔设置上，再选择`weekmask`参数和`holidays`参数
+它的`freq`中有一个特殊的`'C'`/`'CBM'`/`'CBMS'`选项，表示定制，需要联合`weekmask`参数和`holidays`参数使用
+例如现在需要将工作日中的周一、周二、周五3天保留，并将部分`holidays`剔除
+```python
+weekmask = 'Mon Tue Fri'
+holidays = [pd.Timestamp('2020/1/%s'%i) for i in range(7,13)]
+#注意holidays
+pd.bdate_range(start='2020-1-1',end='2020-1-15',freq='C',weekmask=weekmask,holidays=holidays)
+DatetimeIndex(['2020-01-03', '2020-01-06', '2020-01-13', '2020-01-14'], dtype='datetime64[ns]', freq='C')
+```
+### `DateOffset`对象
+#### `DataOffset`与`Timedelta`的区别
+`Timedelta`绝对时间差的特点指无论是冬令时还是夏令时，增减`1day`都只计算24小时
+`DataOffset`相对时间差指，无论一天是23\24\25小时，增减`1day`都与当天相同的时间保持一致
+例如，英国当地时间 2020年03月29日，01:00:00 时钟向前调整 1 小时 变为 2020年03月29日，02:00:00，开始夏令时
+```python
+ts = pd.Timestamp('2020-3-29 01:00:00', tz='Europe/Helsinki')
+ts + pd.Timedelta(days=1)
+Timestamp('2020-03-30 02:00:00+0300', tz='Europe/Helsinki')
+ts + pd.DateOffset(days=1)
+Timestamp('2020-03-30 01:00:00+0300', tz='Europe/Helsinki')
+```
+这似乎有些令人头大，但只要把`tz`（time zone）去除就可以不用管它了，两者保持一致，除非要使用到时区变换
+```python
+ts = pd.Timestamp('2020-3-29 01:00:00')
+ts + pd.Timedelta(days=1)
+Timestamp('2020-03-30 01:00:00')
+ts + pd.DateOffset(days=1)
+Timestamp('2020-03-30 01:00:00')
+```
+#### 增减一段时间
+`DateOffset`的可选参数包括`years`/`months`/`weeks`/`days`/`hours`/`minutes`/`seconds`
+```python
+pd.Timestamp('2020-01-01') + pd.DateOffset(minutes=20) - pd.DateOffset(weeks=2)
+Timestamp('2019-12-18 00:20:00')
+```
+#### 各类常用`offset`对象
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411162934.png)
+```python
+pd.Timestamp('2020-01-01') + pd.offsets.Week(2)
+Timestamp('2020-01-15 00:00:00')
+pd.Timestamp('2020-01-01') + pd.offsets.BQuarterBegin(1)
+Timestamp('2020-03-02 00:00:00')
+```
+#### 序列的`offset`操作
+利用`apply`函数
+```python
+pd.Series(pd.offsets.BYearBegin(3).apply(i) for i in pd.date_range('20200101',periods=3,freq='Y'))
+0   2023-01-02
+1   2024-01-01
+2   2025-01-01
+dtype: datetime64[ns]
+```
+直接使用对象加减
+```python
+pd.date_range('20200101',periods=3,freq='Y') + pd.offsets.BYearBegin(3)
+DatetimeIndex(['2023-01-02', '2024-01-01', '2025-01-01'], dtype='datetime64[ns]', freq='A-DEC')
+```
+定制`offset`，可以指定`weekmask`和`holidays`参数（思考为什么三个都是一个值）
+```python
+pd.Series(pd.offsets.CDay(3,weekmask='Wed Fri',holidays='2020010').apply(i)
+                                  for i in pd.date_range('20200105',periods=3,freq='D'))
+0   2020-01-15
+1   2020-01-15
+2   2020-01-15
+dtype: datetime64[ns]
+```
+## 时序的索引及属性
+### 索引切片
+```python
+rng = pd.date_range('2020','2021', freq='W')
+ts = pd.Series(np.random.randn(len(rng)), index=rng)
+ts.head()
+2020-01-05    1.513910
+2020-01-12    0.921820
+2020-01-19   -0.216364
+2020-01-26    0.256636
+2020-02-02   -1.318088
+Freq: W-SUN, dtype: float64
+ts['2020-01-26']
+0.2566361282801419
+```
+合法字符自动转换为时间点
+```python
+ts['2020-01-26':'20200726'].head()
+2020-01-26    0.256636
+2020-02-02   -1.318088
+2020-02-09   -0.668092
+2020-02-16    0.152675
+2020-02-23   -1.163632
+Freq: W-SUN, dtype: float64
+```
+### 子集索引
+```python
+ts['2020-7'].head()
+2020-07-05    0.756521
+2020-07-12    0.170898
+2020-07-19   -0.406184
+2020-07-26    0.980721
+Freq: W-SUN, dtype: float64
+```
+支持混合形态索引
+```python
+ts['2011-1':'20200726'].head()
+2020-01-05    1.513910
+2020-01-12    0.921820
+2020-01-19   -0.216364
+2020-01-26    0.256636
+2020-02-02   -1.318088
+Freq: W-SUN, dtype: float64
+```
+### 时间点的属性
+采用`dt`对象可以轻松获得关于时间的信息
+```python
+pd.Series(ts.index).dt.week.head()
+0    1
+1    2
+2    3
+3    4
+4    5
+dtype: int64
+pd.Series(ts.index).dt.day.head()
+0     5
+1    12
+2    19
+3    26
+4     2
+dtype: int64
+```
+利用`strftime`可重新修改时间格式
+```python
+pd.Series(ts.index).dt.strftime('%Y-间隔1-%m-间隔2-%d').head()
+0    2020-间隔1-01-间隔2-05
+1    2020-间隔1-01-间隔2-12
+2    2020-间隔1-01-间隔2-19
+3    2020-间隔1-01-间隔2-26
+4    2020-间隔1-02-间隔2-02
+dtype: object
+```
+对于`datetime`对象可以直接通过属性获取信息
+```python
+pd.date_range('2020','2021', freq='W').month
+Int64Index([ 1,  1,  1,  1,  2,  2,  2,  2,  3,  3,  3,  3,  3,  4,  4,  4,  4,
+             5,  5,  5,  5,  5,  6,  6,  6,  6,  7,  7,  7,  7,  8,  8,  8,  8,
+             8,  9,  9,  9,  9, 10, 10, 10, 10, 11, 11, 11, 11, 11, 12, 12, 12,
+            12],
+           dtype='int64')
+pd.date_range('2020','2021', freq='W').weekday
+Int64Index([6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+            6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+            6, 6, 6, 6, 6, 6, 6, 6],
+           dtype='int64')
+```
+## 重采样
+所谓重采样，就是指`resample`函数，它可以看做时序版本的`groupby`函数
+### `resample`对象的基本操作
+采样频率一般设置为上面提到的`offset`字符
+```python
+df_r = pd.DataFrame(np.random.randn(1000, 3),index=pd.date_range('1/1/2020', freq='S', periods=1000),
+                  columns=['A', 'B', 'C'])
+r = df_r.resample('3min')
+r
+<pandas.core.resample.DatetimeIndexResampler object at 0x7f0c0f89a7d0>
+r.sum()
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411163548.png)
+```python
+df_r2 = pd.DataFrame(np.random.randn(200, 3),index=pd.date_range('1/1/2020', freq='D', periods=200),
+                  columns=['A', 'B', 'C'])
+r = df_r2.resample('CBMS')
+r.sum()
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411163633.png)
+### 采样聚合
+```python
+r = df_r.resample('3T')
+r['A'].mean()
+2020-01-01 00:00:00    0.050495
+2020-01-01 00:03:00    0.021719
+2020-01-01 00:06:00   -0.044430
+2020-01-01 00:09:00   -0.015729
+2020-01-01 00:12:00   -0.117970
+2020-01-01 00:15:00    0.004193
+Freq: 3T, Name: A, dtype: float64
+r['A'].agg([np.sum, np.mean, np.std])
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411163819.png)
+类似地，可以使用函数/`lambda`表达式
+```python
+r.agg({'A': np.sum,'B': lambda x: max(x)-min(x)})
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411163855.png)
+### 采样组的迭代
+采样组的迭代和`groupby`迭代完全类似，对于每一个组都可以分别做相应操作
+```python
+small = pd.Series(range(6),index=pd.to_datetime(['2020-01-01 00:00:00', '2020-01-01 00:30:00'
+                                                 , '2020-01-01 00:31:00','2020-01-01 01:00:00'
+                                                 ,'2020-01-01 03:00:00','2020-01-01 03:05:00']))
+resampled = small.resample('H')
+for name, group in resampled:
+    print("Group: ", name)
+    print("-" * 27)
+    print(group, end="\n\n")
+Group:  2020-01-01 00:00:00
+---------------------------
+2020-01-01 00:00:00    0
+2020-01-01 00:30:00    1
+2020-01-01 00:31:00    2
+dtype: int64
 
+Group:  2020-01-01 01:00:00
+---------------------------
+2020-01-01 01:00:00    3
+dtype: int64
+
+Group:  2020-01-01 02:00:00
+---------------------------
+Series([], dtype: int64)
+
+Group:  2020-01-01 03:00:00
+---------------------------
+2020-01-01 03:00:00    4
+2020-01-01 03:05:00    5
+dtype: int64
+```
+## 窗口函数
+下面主要介绍`pandas`中两类主要的窗口(`window`)函数:`rolling`/`expanding`
+```python
+s = pd.Series(np.random.randn(1000),index=pd.date_range('1/1/2020', periods=1000))
+s.head()
+2020-01-01    0.659255
+2020-01-02   -2.074411
+2020-01-03   -1.354148
+2020-01-04   -0.774753
+2020-01-05    0.360106
+Freq: D, dtype: float64
+```
+### Rolling
+#### 常用聚合
+所谓`rolling`方法，就是规定一个窗口，它和`groupby`对象一样，本身不会进行操作，需要配合聚合函数才能计算结果
+```python
+s.rolling(window=50)
+Rolling [window=50,center=False,axis=0]
+s.rolling(window=50).mean()
+2020-01-01         NaN
+2020-01-02         NaN
+2020-01-03         NaN
+2020-01-04         NaN
+2020-01-05         NaN
+                ...   
+2022-09-22    0.044807
+2022-09-23    0.071231
+2022-09-24    0.098303
+2022-09-25    0.110776
+2022-09-26    0.085055
+Freq: D, Length: 1000, dtype: float64
+```
+`min_periods`参数是指需要的非缺失数据点数量阀值
+```python
+s.rolling(window=50,min_periods=3).mean().head()
+2020-01-01         NaN
+2020-01-02         NaN
+2020-01-03   -0.923101
+2020-01-04   -0.886014
+2020-01-05   -0.636790
+Freq: D, dtype: float64
+```
+`count`/`sum`/`mean`/`median`/`min`/`max`/`std`/`var`/`skew`/`kurt`/`quantile`/`cov`/`corr`都是常用的聚合函数
+#### `rolling`的`apply`聚合
+使用`apply`聚合时，只需记住传入的是`window`大小的`Series`，输出的必须是标量即可，比如如下计算变异系数
+```python
+s.rolling(window=50,min_periods=3).apply(lambda x:x.std()/x.mean()).head()
+2020-01-01         NaN
+2020-01-02         NaN
+2020-01-03   -1.534925
+2020-01-04   -1.308402
+2020-01-05   -1.803185
+Freq: D, dtype: float64
+```
+#### 基于时间的`rolling`
+```python
+s.rolling('15D').mean().head()
+2020-01-01    0.659255
+2020-01-02   -0.707578
+2020-01-03   -0.923101
+2020-01-04   -0.886014
+2020-01-05   -0.636790
+Freq: D, dtype: float64
+```
+可选`closed='right'`（默认）\`'left'`\`'both'`\`'neither'`参数，决定端点的包含情况
+```python
+s.rolling('15D', closed='right').sum().head()
+2020-01-01    0.659255
+2020-01-02   -1.415156
+2020-01-03   -2.769304
+2020-01-04   -3.544057
+2020-01-05   -3.183952
+Freq: D, dtype: float64
+```
+### `Expanding`
+#### `expanding`函数
+普通的`expanding`函数等价与`rolling(window=len(s),min_periods=1)`，是对序列的累计计算
+```python
+s.rolling(window=len(s),min_periods=1).sum().head()
+2020-01-01    0.659255
+2020-01-02   -1.415156
+2020-01-03   -2.769304
+2020-01-04   -3.544057
+2020-01-05   -3.183952
+Freq: D, dtype: float64
+s.expanding().sum().head()
+2020-01-01    0.659255
+2020-01-02   -1.415156
+2020-01-03   -2.769304
+2020-01-04   -3.544057
+2020-01-05   -3.183952
+Freq: D, dtype: float64
+```
+`apply`方法也是同样可用的
+```python
+s.expanding().apply(lambda x:sum(x)).head()
+2020-01-01    0.659255
+2020-01-02   -1.415156
+2020-01-03   -2.769304
+2020-01-04   -3.544057
+2020-01-05   -3.183952
+Freq: D, dtype: float64
+```
+#### 几个特别的`Expanding`类型函数
+`cumsum`/`cumprod`/`cummax`/`cummin`都是特殊`expanding`累计计算方法
+```python
+s.cumsum().head()
+2020-01-01    0.659255
+2020-01-02   -1.415156
+2020-01-03   -2.769304
+2020-01-04   -3.544057
+2020-01-05   -3.183952
+Freq: D, dtype: float64
+s.cumsum().head()
+Out[59]:
+2020-01-01    0.659255
+2020-01-02   -1.415156
+2020-01-03   -2.769304
+2020-01-04   -3.544057
+2020-01-05   -3.183952
+Freq: D, dtype: float64
+```
+`shift`/`diff`/`pct_change`都是涉及到了元素关系
+1. `shift`是指序列索引不变，但值向后移动
+2. `diff`是指前后元素的差，`period`参数表示间隔，默认为1，并且可以为负
+3. `pct_change`是值前后元素的变化百分比，`period`参数与`diff`类似
+```python
+s.shift(2).head()
+2020-01-01         NaN
+2020-01-02         NaN
+2020-01-03    0.659255
+2020-01-04   -2.074411
+2020-01-05   -1.354148
+Freq: D, dtype: float64
+s.diff(3).head()
+Out[61]:
+2020-01-01         NaN
+2020-01-02         NaN
+2020-01-03         NaN
+2020-01-04   -1.434008
+2020-01-05    2.434516
+Freq: D, dtype: float64
+s.pct_change(3).head()
+2020-01-01         NaN
+2020-01-02         NaN
+2020-01-03         NaN
+2020-01-04   -2.175196
+2020-01-05   -1.173594
+Freq: D, dtype: float64
+```
 
 
 
