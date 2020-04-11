@@ -334,6 +334,92 @@
     - [`Expanding`](#expanding)
       - [`expanding`函数](#expanding函数)
       - [几个特别的`Expanding`类型函数](#几个特别的expanding类型函数)
+- [速查](#速查)
+  - [`Series`和`DataFrame`对象的创建](#series和dataframe对象的创建)
+    - [`Series`](#series-1)
+      - [预览](#预览)
+      - [创建](#创建)
+        - [`data`无索引](#data无索引)
+        - [`data`有索引](#data有索引)
+    - [DataFrame](#dataframe-1)
+      - [预览](#预览-1)
+      - [创建](#创建-1)
+      - [`data`无 行索引，无 列索引](#data无-行索引无-列索引)
+      - [`data`无 行索引，有 列索引](#data无-行索引有-列索引)
+      - [`data`有 行索引，有 列索引](#data有-行索引有-列索引)
+    - [由文件创建](#由文件创建)
+      - [由`.csv`文件创建](#由csv文件创建)
+  - [`Series`和`DataFrame`对象的查、改、增、 删](#series和dataframe对象的查改增-删)
+    - [`Series`](#series-2)
+      - [查](#查)
+        - [`[]`，快捷查看](#快捷查看)
+        - [`.loc[]`，基于索引](#loc基于索引)
+        - [`.iloc[]`，基于位置](#iloc基于位置)
+      - [改](#改)
+        - [改值](#改值)
+        - [改索引](#改索引)
+      - [增](#增)
+        - [直接增一行](#直接增一行)
+        - [函数增多行](#函数增多行)
+      - [删](#删)
+        - [直接删一行](#直接删一行)
+        - [函数删多行](#函数删多行)
+    - [`DataFrame`](#dataframe-2)
+      - [查](#查-1)
+        - [`[]`，快捷查看](#快捷查看-1)
+        - [`.loc[]`，基于索引](#loc基于索引-1)
+        - [`.iloc[]`，基于位置](#iloc基于位置-1)
+      - [改](#改-1)
+        - [改值](#改值-1)
+        - [改索引](#改索引-1)
+      - [增](#增-1)
+        - [直接增一行](#直接增一行-1)
+        - [函数增多行](#函数增多行-1)
+        - [直接增一列](#直接增一列)
+        - [函数增多列](#函数增多列)
+      - [删](#删-1)
+        - [函数删多行](#函数删多行-1)
+        - [直接删一列](#直接删一列)
+        - [函数删多列](#函数删多列)
+  - [`merge`详解](#merge详解)
+    - [`on` 用法](#on-用法)
+    - [`how` 用法](#how-用法)
+  - [`Index`对象的创建,查、改、增、删和使用](#index对象的创建查改增删和使用)
+    - [单层索引](#单层索引)
+      - [创建](#创建-2)
+      - [查](#查-2)
+      - [改索引名](#改索引名)
+        - [直接改](#直接改)
+        - [函数改](#函数改)
+      - [增](#增-2)
+        - [按位置添加一行](#按位置添加一行)
+        - [尾部添加多行](#尾部添加多行)
+      - [并](#并)
+      - [删](#删-2)
+        - [按位置删除一行](#按位置删除一行)
+      - [交](#交)
+    - [多层索引](#多层索引)
+      - [创建](#创建-3)
+      - [查](#查-3)
+      - [改](#改-2)
+        - [改索引名（函数改）](#改索引名函数改)
+        - [改索引层次顺序](#改索引层次顺序)
+    - [多层索引使用方法](#多层索引使用方法)
+      - [对于外层索引](#对于外层索引)
+        - [`[]`](#)
+        - [`.loc[]`](#loc)
+        - [`.iloc[]`](#iloc)
+      - [对于内层索引](#对于内层索引)
+        - [`[ , ]`](#--)
+        - [`.loc[ , ]`](#loc--)
+      - [`xs`直接选取法](#xs直接选取法)
+  - [普通列和行index的相互转化](#普通列和行index的相互转化)
+    - [普通列 转化为 行索引](#普通列-转化为-行索引)
+      - [`DataFrame`中的列](#dataframe中的列)
+      - [任意列](#任意列)
+    - [行索引 转化为 普通列](#行索引-转化为-普通列)
+      - [单层 列索引 情况](#单层-列索引-情况)
+      - [多层 列索引 情况](#多层-列索引-情况)
 
 <!-- /TOC -->
 # `Pandas`基础
@@ -4886,7 +4972,1085 @@ s.pct_change(3).head()
 2020-01-05   -1.173594
 Freq: D, dtype: float64
 ```
+# 速查
+## `Series`和`DataFrame`对象的创建
+### `Series`
+`Series`是`pandas`中暴露给我们使用的基本对象，它是由相同元素类型构成的一维数据结构，同时具有列表和字典的属性，字典的属性由索引赋予。
 
+- `Series`：有序，有索引
+- `list`：  有序，无索引
+- `dict`：  无序，有索引
+#### 预览
+```python
+data = [1,2,3]
+index = ['a','b','c']
+s = pd.Series(data=data, index=index, name = 'sss')
+s
+a    1
+b    2
+c    3
+Name: sss, dtype: int64
+s.index  # 四个属性之一：索引
+Index(['a', 'b', 'c'], dtype='object')
+s.name  # 四个属性之二：名字，
+'sss'
+s.values # 四个属性之三：值
+array([1, 2, 3], dtype=int64)
+s.dtype # 四个属性之四：元素类型
+dtype('int64')
+```
+#### 创建
+`pd.Series(data=None, index=None, name = None)`
+- `data`：多种类型，见下面具体介绍；
+- `index`：索引信息；
+- `name`：对`data`的说明，用的不多，一般在和`DataFrame`、`Index`互相转换时才需要。
+##### `data`无索引
+如果 `data` 为 `ndarray`(1D) 或 `list`(1D)，那么其缺少 `Series` 需要的索引信息；
+如果提供 `index`，则必须和`data`长度相同；
+如果不提供 `index`，那么其将生成默认数值索引 `range(0, data.shape[0])`。
+```python
+# data = [1,2,3]
+data1 = np.array([1,2,3])
+index1 = ['a','b','c']
+s = pd.Series(data = data1, index = index1)
+s
+a    1
+b    2
+c    3
+dtype: int32
+```
+##### `data`有索引
+如果 `data` 为 `Series` 或 `dict` ，那么其已经提供了 `Series` 需要的索引信息，所以 `index` 项是不需要提供的；
+如果额外提供了 `index` 项，那么其将对当前构建的`Series`进行 重索引（增删）（等同于`reindex`操作）。
+```python
+# data = pd.Series([a,b,c], index = ['a','b','c'] )
+data2 = { 'a':1, 'b':2,'c':3 }
+index2 = ['a','b','d']
+s = pd.Series(data = data2, index = index2)
+s
+a    1.0
+b    2.0
+d    NaN
+dtype: float64
+```
+如上，`index`项用于从当前已有索引中匹配出相同的行，如果当前索引缺失给定的索引，则填充`NaN`（`NaN`：not a number为`pandas`缺失值标记）。
+### DataFrame
+`DataFrame`由具有共同索引的`Series`按列排列构成（2D），是使用最多的对象。
+#### 预览
+```python
+data = [[1,2,3],
+       [4,5,6]]
+index = ['a','b']
+columns = ['A','B','C']
+df = pd.DataFrame(data=data, index = index, columns = columns)
+df
+    A	B	C
+a	1	2	3
+b	4	5	6
+df.index  # 行索引
+Index(['a', 'b'], dtype='object')
+df.columns  # 列索引，由Series的name构成
+Index(['A', 'B', 'C'], dtype='object')
+df.values
+array([[1, 2, 3],
+       [4, 5, 6]], dtype=int64)
+df.dtypes  # 这里的dtype带s，查看每列元素类型
+A    int64
+B    int64
+C    int64
+dtype: object
+```
+#### 创建
+`pd.DataFrame(data=None, index=None, columns=None)`
+函数有多个参数，对我们有用的主要是：`data`,`index`和`columns`三项
+#### `data`无 行索引，无 列索引
+如果 `data` 为 `ndarray`(2D) or `list`(2D)，那么其缺少 `DataFrame` 需要的行、列索引信息；
+如果提供 `index` 或 `columns` 项，其必须和`data`的行 或 列长度相同；
+如果不提供 `index` 或 `columns` 项，那么其将默认生成数值索引`range(0, data.shape[0]))` 或 `range(0, data.shape[1])`。
+```python
+# data = [[1,2,3],
+#        [4,5,6]]
+data1 = np.array([[1,2,3],
+                  [4,5,6]] )
+index1 = ['a','b']
+columns1 = ['A','B','C']
+df = pd.DataFrame(data=data1, index = index1, columns = columns1)
+df
+    A	B	C
+a	1	2	3
+b	4	5	6
+```
+#### `data`无 行索引，有 列索引
+如果`data`为 `dict of (ndarray(1D) or list(1D))`，所有`ndarray`或`list`的长度必须相同。`dict`的`key`为`DataFrame`提供了需要的`columns`信息，缺失`index`；
+如果提供 `index` 项，必须和`list`的长度相同；
+如果不提供 `index`，那么其将默认生成数值索引`range(0, data.shape[0]))`；
+如果还额外提供了`columns`项，那么其将对当前构建的`DataFrame`进行 列重索引。
+```python
+data2 = { 'A' : [1,4], 'B': [2,5], 'C':[3,6] }
+index2 = ['a','b']
+columns2 = ['A','B','D']
+df = pd.DataFrame(data=data2, index = index2, columns = columns2)
+df
+    A	B	D
+a	1	2	NaN
+b	4	5	NaN
+```
+#### `data`有 行索引，有 列索引
+如果`data`为 `dict of (Series or dict)`，那么其已经提供了`DataFrame`需要的所有信息；
+如果多个`Series`或`dict`间的索引不一致，那么取并操作（`pandas`不会试图丢掉信息），缺失的数据填充`NaN`；
+如果提供了`index`项或`columns`项，那么其将对当前构建的`DataFrame`进行 重索引（`reindex`，`pandas`内部调用接口）。
+```python
+# data3 = { 'A' : pd.Series([1,4] ,index = ['a','b']), 'B' : pd.Series([2,5] ,index = ['a','b']), 'C' : pd.Series([3,6] ,index = ['a','c']) }
+data3 = { 'A' : { 'a':1, 'b':4}, 'B': {'a':2,'b':5}, 'C':{'a':3, 'c':6} }
+df = pd.DataFrame(data=data3)
+df
+    A	B	C
+a	1.0	2.0	3.0
+b	4.0	5.0	NaN
+c	NaN	NaN	6.0
+```
+### 由文件创建
+#### 由`.csv`文件创建
+`pd.read_csv(filepath_or_buffer, sep=',', header='infer', names=None,index_col=None, encoding=None )`
+`read_csv`的参数很多，但这几个参数就够我们使用了：
+- `filepath_or_buffer`：路径和文件名不要带中文，带中文容易报错。
+- `sep`: `csv`文件数据的分隔符，默认是`','`，根据实际情况修改；
+- `header`：如果有列名，那么这一项不用改；
+- `names`：如果没有列名，那么必须设置`header = None`， `names`为需要传入的列名列表，不设置默认生成数值索引；
+- `index_col`：`list of (int or name)`，传入列名的列表或者列名的位置，选取这几列作为索引；
+- `encoding`：根据你的文档编码来确定，如果有中文读取报错，试试`encoding = 'gbk'`。
+```python
+tips = pd.read_csv( 'tips.csv')
+tips.head()
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200411215921.png)
+```python
+tips.index
+RangeIndex(start=0, stop=244, step=1)
+tips.columns
+Index(['total_bill', 'tip', 'sex', 'smoker', 'day', 'time', 'size'], dtype='object')
+tips.values
+array([[16.99, 1.01, 'Female', ..., 'Sun', 'Dinner', 2],
+       [10.34, 1.66, 'Male', ..., 'Sun', 'Dinner', 3],
+       [21.01, 3.5, 'Male', ..., 'Sun', 'Dinner', 3],
+       ...,
+       [22.67, 2.0, 'Male', ..., 'Sat', 'Dinner', 2],
+       [17.82, 1.75, 'Male', ..., 'Sat', 'Dinner', 2],
+       [18.78, 3.0, 'Female', ..., 'Thur', 'Dinner', 2]], dtype=object)
+```
+## `Series`和`DataFrame`对象的查、改、增、 删
+### `Series`
+#### 查
+```python
+data = [1,2,3]
+index = ['a','b','c']
+s = pd.Series(data=data, index=index)
+s
+a    1
+b    2
+c    3
+dtype: int64
+```
+##### `[]`，快捷查看
+```python
+s[1] # scalar, 返回一个值
+2
+s[0:2] # 范围，左闭右开，返回Series切片
+a    1
+b    2
+dtype: int64
+s[[0,2]] #列表，返回Series切片
+a    1
+c    3
+dtype: int64
+mask = [False,True,False]  #mask，类似于列表，只是长度必须和Series相同，返回Series切片
+s[mask]
+b    2
+dtype: int64
+```
+##### `.loc[]`，基于索引
+`.loc[]`查询方式和`[]`完全一致。
+```python
+s.loc['b'] # 单索引，返回一个值
+2
+s.loc['a':'c'] # 范围，注意：左闭右闭，返回Series切片
+a    1
+b    2
+c    3
+dtype: int64
+s.loc[['a','c']] # 列表，返回Series切片
+a    1
+c    3
+dtype: int64
+mask = [False, True, False] # mask，和iloc[]效果等同，返回Series切片
+s.loc[mask]
+b    2
+dtype: int64
+```
+##### `.iloc[]`，基于位置
+无视索引，只按照位置定位。
+```python
+s.iloc[1] # scalar, 返回一个值
+2
+s.iloc[0:2] # 范围，左闭右开，返回Series切片
+a    1
+b    2
+dtype: int64
+s.iloc[[0,2]] #列表，返回Series切片
+a    1
+c    3
+dtype: int64
+mask = [False,True,False]  #mask，类似于列表，只是长度必须和Series相同，返回Series切片
+s.iloc[mask]
+b    2
+dtype: int64
+```
+#### 改
+##### 改值
+直接在查的基础上赋值，就可以修改
+注意：如果要修改，使用`.loc`可以确保修改成功，其他方式可能会在临时创建的`view`上修改。
+```python
+s1 = s.copy()  
+s1.loc['a'] = 10   #
+s1
+a    10
+b     2
+c     3
+dtype: int64
+s1.loc['a':'c'] = [10,4,5]
+s1
+a    10
+b     4
+c     5
+dtype: int32
+```
+函数修改：`Series.replace(to_replace=None, value=None, inplace=False)`
+- `to_replace`：要修改的值，可以为列表；
+- `value`：改为的值，可以为列表，与`to_repalce`要匹配；
+- `inplace`：是否在原地修改；
+```python
+s1.replace(to_replace = 10, value = 100, inplace=False)
+a    100
+b      4
+c      5
+dtype: int32
+```
+##### 改索引
+直接在`index`上改，`index`类似于`tuple`，只能引用到别处，不能切片修改
+```python
+s1 = s.copy()
+s1.index = ['a','e','f']
+s1
+a    1
+e    2
+f    3
+dtype: int64
+```
+函数修改：`Series.rename(index=None, level = None, inplace = False)`
+- `index`：`list or dict`，`list`类型时必须和已有索引长度相同，`dict`类型可以部分修改；
+- `level`：多重索引时，可以指定修改哪一重，从`0`开始递增；
+- `inplace`：是否原地修改。
+```python
+s1.rename(index = {'e':'b'}, inplace = False)
+a    1
+b    2
+f    3
+dtype: int64
+```
+#### 增
+##### 直接增一行
+```python
+s1 = s.copy()
+s1.loc['d'] = 4 
+s1
+a    1
+b    2
+c    3
+d    4
+dtype: int64
+```
+##### 函数增多行
+`Series.append(to_append, ignore_index=False, verify_integrity=False)`
+- `to_append`: 另一个`series`或多个`Series`构成的列表；
+- `ignore_index`：`False`-保留原有索引，`True`-清除所有索引，生成默认数值索引；
+- `verify_integrity`：`True`的情况下，如果`to_append`索引与当前索引有重复，则报错。
+```python
+s1 = pd.Series([22,33], index = ['a', 'g'])
+s.append(s1, ignore_index=False)
+a     1
+b     2
+c     3
+a    22
+g    33
+dtype: int64
+```
+#### 删
+##### 直接删一行
+```python
+#不建议使用
+s1 = s.copy()
+del s1['c']
+s1
+a    1
+b    2
+dtype: int64
+```
+##### 函数删多行
+`Series.drop(labels, level=None, inplace=False)`
+- `labels`：索引，单索引或索引的列表；
+- `level`：多重索引需要设置；
+- `inplace`：是否本地修改。
+```python
+s1 = s.copy()
+s1.drop(['a','c'])
+b    2
+dtype: int64
+```
+### `DataFrame`
+```python
+data = [[1,2,3],
+        [4,5,6]]
+index = ['a','b']
+columns = ['A','B','C']
+df = pd.DataFrame(data=data, index=index, columns = columns)
+df
+    A	B	C
+a	1	2	3
+b	4	5	6
+```
+#### 查
+##### `[]`，快捷查看
+`[]` 属于快捷查看方式，只包含下面四种，两种列操作、两种行操作。
+```python
+df['A'] # 列操作，单列索引，返回Series
+a    1
+b    4
+Name: A, dtype: int64
+df[['A','C']] # 列操作，列索引列表，返回DataFrame  
+    A	C
+a	1	3
+b	4	6
+# df[0]  # 报错，0不是列名
+df[0:1]  # 行操作，位置范围，返回DataFrame
+    A	B	C
+a	1	2	3
+# df[[0,1]] #报错，不能这样使用
+mask = [False,True] 
+df[mask] # 行操作，mask，必须和行长度一致，返回DataFrame
+    A	B	C
+b	4	5	6
+```
+##### `.loc[]`，基于索引
+`.loc[]`在`DataFrame`中与`[]`不一致。
+`DataFrame` 有两维，每一维都和 `Series` 的 `.loc[]` 用法相同；
+`Series`有四种方式，所以`DataFrame`有16种方式;
+可以缺省后面维度，默认补全为 `':'` 。
+下面都以第一维度为例，第二维可以类比。
+```python
+df.loc['b','B'] # 返回单一值，因为两维都是单索引
+5
+df.loc['a':'b', 'B'] #返回Series，如果只有一维是单索引
+a    2
+b    5
+Name: B, dtype: int64
+df.loc[['a','b'],'B'] #返回Series，如果只有一维是单索引
+a    2
+b    5
+Name: B, dtype: int64
+mask1 = [False, True, False] 
+df.loc[mask1,'B']
+b    5
+Name: B, dtype: int64
+```
+##### `.iloc[]`，基于位置
+无视索引，只按照位置定位。
+
+`DataFrame` 有两维，每一维都和 `Series` 的 `.iloc[]` 用法相同；
+`Series`有四种方式，所以`DataFrame`有16种方式；
+可以缺省后面维度，默认补全为 `':'` 。
+下面都以第一维度为例，第二维可以类比。
+
+```python
+df.iloc[1,1] # 返回单一值，因为两维都是scalar
+5
+df.iloc[0:2,0]  # 返回Series，如果只有一维是scalar
+a    1
+b    4
+Name: A, dtype: int64
+df.iloc[[0,1],[0,2]] # 返回DataFrame
+    A	C
+a	1	3
+b	4	6
+mask1 = [False, True, False]  # 返回DataFrame
+mask2 =[True,False]
+df.iloc[mask1,mask2]
+    A
+b	4
+```
+#### 改
+##### 改值
+在查的基础上赋值进行修改，`.loc[]`方法确保在原地修改。
+```python
+#修改单值
+df1 = df.copy()
+df1.loc['a','A'] = 10
+df1
+    A	B	C
+a	10	2	3
+b	4	5	6
+#修改单列
+df1.loc[:, 'A'] = [100,200]  
+df1
+    A	B	C
+a	100	2	3
+b	200	5	6
+#修改多列
+df1.loc[:, ['A','B']] = [[1,2],[3,4]]  
+df1
+    A	B	C
+a	1	2	3
+b	3	4	6
+#修改行，见下面的增减操作
+```
+函数批量任意修改：
+`DataFrame.replace(to_replace=None, value=None, inplace=False)`
+- `to_replace`：要修改的值，可以为列表;
+- `value`：改为的值，可以为列表，与`to_repalce`要匹配；
+- `inplace`：是否在原地修改；
+```python
+df1.replace(to_replace = 10, value = 100, inplace=False)
+A	B	C
+a	1	2	3
+b	3	4	6
+```
+##### 改索引
+直接在索引上改，索引类似于`tuple`，必须全改，不能切片修改
+```python
+df1 = df.copy()
+df1.index = ['e','f']
+df1.columns = ['E','F','G']
+df1
+    E	F	G
+e	1	2	3
+f	4	5	6
+```
+函数修改：
+`DataFrame.rename(index=None, columns = None,  level = None, inplace = False)`
+- `index`：`list or dict`，`list`类型时必须长度相同，`dict`类型时可以部分修改；
+- `columns`：`list or dict`，`list`时必须长度相同，`dict`时可以部分修改；
+- `level`：多重索引时，可以指定修改哪一重，目前还用不着；
+- `inplace`：是否原地修改。
+```python
+df1.rename( index = {'e':'b'},columns = {'E':'A'}, inplace = False)
+    A	F	G
+b	1	2	3
+f	4	5	6
+```
+#### 增
+##### 直接增一行
+```python
+df1 = df.copy()
+df1.loc['c'] = [7,8,9]
+df1
+    A	B	C
+a	1	2	3
+b	4	5	6
+c	7	8	9
+```
+##### 函数增多行
+`pd.concat(objs, axis=0)`
+确保 列索引 相同，行增加。 （其实这个函数并不要求列索引相同，它可以选择出相同的列。而我写这个教程遵循了python的宣言—明确：做好一件事有一种最好的方法，精确控制每一步，可以少犯错。）
+
+- `objs`: `list of DataFrame`；
+- `axis`: 取`0`，行增加操作。
+```python
+df1 = pd.DataFrame([[22,33,44],[55,66,77]], index = ['c','d'],columns = ['A','B','C'])
+pd.concat([df,df1], axis = 0 )
+    A	B	C
+a	1	2	3
+b	4	5	6
+c	22	33	44
+d	55	66	77
+```
+##### 直接增一列
+```python
+df1 = df.copy()
+df1['H'] = [7,8]
+df1
+    A	B	C	H
+a	1	2	3	7
+b	4	5	6	8
+```
+##### 函数增多列
+`pd.concat(objs, axis=1)`
+确保行索引相同，列增加
+- `objs`: `list of DataFrame`；
+- `axis`: 取`1`，列增加操作。
+```python
+df1 = pd.DataFrame([[22,33],[44,55]], index = ['a','b'],columns = ['D','E'])
+pd.concat([df,df1], axis =1)
+    A	B	C	D	E
+a	1	2	3	22	33
+b	4	5	6	44	55
+```
+#### 删
+##### 函数删多行
+`DataFrame.drop(labels, axis = 0,  level=None, inplace=False)`
+- `labels`：索引，单索引或索引的列表；
+- `axis`：`0`，删行；
+- `level`：多重索引需要指定；
+- `inplace`：是否本地修改。
+```python
+df1 = df.copy()
+df1.drop(['a'],axis =0 )
+    A	B	C
+b	4	5	6
+```
+##### 直接删一列
+```python
+#不建议使用
+df1 = df.copy()
+del df1['A']
+df1
+B	C
+a	2	3
+b	5	6
+```
+##### 函数删多列
+`DataFrame.drop(labels, axis = 1,  level=None, inplace=False)`
+- `labels`：索引，单索引或索引的列表；
+- `axis`：1，删列；
+- `level`：多重索引需要指定；
+- `inplace`：是否本地修改。
+```python
+df1 = df.copy()
+df1.drop(['A','C'],axis =1 )
+    B
+a	2
+b	5
+```
+## `merge`详解
+函数说明
+`pd.merge(left, right, how='inner', on=None, left_on=None, right_on=None, left_index=False, right_index=False, sort = False)`
+`concat`函数本质上是在所有索引上同时进行对齐合并，而如果想在任意列上对齐合并，则需要`merge`函数，其在`sql`应用很多。
+- `left,right`： 两个要对齐合并的`DataFrame`；
+- `how`： 先做笛卡尔积操作，然后按照要求，保留需要的，缺失的数据填充`NaN`；
+   - `left`: 以左`DataFrame`为基准，即左侧`DataFrame`的数据全部保留（不代表完全一致、可能会存在复制），保持原序;
+   - `right`: 以右`DataFrame`为基准，保持原序;
+   - `inner`: 交，保留左右`DataFrame`在`on`上完全一致的行，保持左`DataFrame`顺序;
+   - `outer`: 并，按照字典顺序重新排序;
+- `on`：对应列名或者行索引的名字，如果要在`DataFrame`相同的列索引做对齐，用这个参数；
+- `left_on`, `right_on`, `left_index`, `right_index`：
+  - `on`对应列名或者行索引的名字（所以行索引一般要跟列一样看待，有自己的名字），用这俩参数；
+  - `index`对应要使用的`index`,不建议使用，会搞晕。
+- `sort`: `True` or `False`，是否按字典序重新排序。
+```python
+df1 = pd.DataFrame([[1,2],[3,4]], index = ['a','b'],columns = ['A','B'])
+df2 = pd.DataFrame([[1,3],[4,8]], index = ['b','d'],columns = ['B','C'])
+df1
+    A	B
+a	1	2
+b	3	4
+df2
+    B	C
+b	1	3
+d	4	8
+```
+如果单纯的按照`index`对齐，不如用`concat`方法。
+```python
+pd.merge(left = df1, right = df2, how = 'inner' ,left_index = True, right_index = True)
+    A	B_x	B_y	C
+b	3	4	1	3
+#小区别是concat对重复列没有重命名，但是重名的情况不多，而且重名了说明之前设计就不大合理。
+pd.concat([df1,df2], join = 'inner',axis =1)
+    A	B	B	C
+b	3	4	1	3
+```
+### `on` 用法
+设置 `how = 'inner'`
+```python
+#对于'B'列：df1的'b'行、df2的'd'行，是相同的，其他都不同。 
+pd.merge(left = df1, right = df2, how = 'inner' , on =['B'])
+    A	B	C
+0	3	4	8
+# df1的'A'列'b'行，df2的'C'列'd'行是相同的，其他都不同。
+# 其他列如果同名会进行重命名。
+pd.merge(left = df1, right = df2, how = 'inner',left_on = ['A'] ,right_on = ['C'])
+    A	B_x	B_y	C
+0	3	4	1	3
+```
+### `how` 用法
+```python
+#保持左侧DataFrame不变，用右侧来跟它对齐，对不上的填NaN。
+pd.merge(left = df1, right = df2, how = 'left', on = ['B'] )
+    A	B	C
+0	1	2	NaN
+1	3	4	8.0
+# 保持右侧DataFrame不变，用右侧来跟它对齐，对不上的填NaN。
+pd.merge(left = df1, right = df2, how = 'right', on = ['B'] )
+A	B	C
+0	3.0	4	8
+1	NaN	1	3
+```
+对齐的列存在重复值
+重复的也没关系，操作逻辑是一致的，完全可以假想不存在重复。
+```python
+df1.loc['a','B'] =4  #改成重复
+df1
+    A	B
+a	1	4
+b	3	4
+### 保持右侧的列都在，如果左侧对齐的列存在重复值，那么对齐上后也存在重复。
+pd.merge(left = df1, right = df2, how = 'right', on = ['B'] )
+    A	B	C
+0	1.0	4	8
+1	3.0	4	8
+2	NaN	1	3
+```
+## `Index`对象的创建,查、改、增、删和使用
+
+- 索引类似于元组，其本身是不能赋值修改的；
+- 其在数据进行整体运算时，辅助自动对齐，这是pandas不同于其他数据处理库的一大特征；
+- 多层索引可以帮助改变表的形态，如透视表等。
+### 单层索引
+#### 创建
+`pd.Index(data, dtype = Object, name = None)`
+- `name`：一维列表
+- `dtype`：索引元素的类型，默认为`object`型
+- `name`：索引的名字，类似于列的名字
+```python
+data = ['a','b','c']
+index = pd.Index(data, name = 'name1')
+index
+Index(['a', 'b', 'c'], dtype='object', name='name1')
+```
+从返回值可以看到，`index`由三部分组成，可以分别查看。
+```python
+index.name
+'name1'
+index.values
+array(['a', 'b', 'c'], dtype=object)
+index.dtype
+dtype('O')
+```
+#### 查
+查询方式和一维`ndarray`或`Series`的`.iloc[]`完全一样。
+```python
+index[0] # scalar，返回值
+'a'
+index[0:2] # 范围，返回index
+Index(['a', 'b'], dtype='object', name='name1')
+index[[0,2]] # 列表，返回index
+Index(['a', 'c'], dtype='object', name='name1')
+mask = [True,False,True]  # mask,返回index
+index[mask]
+Index(['a', 'c'], dtype='object', name='name1')
+```
+#### 改索引名
+虽然索引的值是不能修改的，但是名字确是可以修改的。
+##### 直接改
+```python
+index.name = 'new_name' 
+index
+Index(['a', 'b', 'c'], dtype='object', name='new_name')
+```
+##### 函数改
+`Index.set_names(names, inplace=False)`
+- `names`：要设置的名字，可以为名字的列表；
+- `inplace`：是否原地修改。
+```python
+index.set_names('new_name')
+Index(['a', 'b', 'c'], dtype='object', name='new_name')
+```
+#### 增
+##### 按位置添加一行
+`Index.insert(loc, value)`
+- `loc`：位置编号
+- `value`：值
+```python
+index
+Index(['a', 'b', 'c'], dtype='object', name='new_name')
+index.insert(1,'d')
+Index(['a', 'd', 'b', 'c'], dtype='object', name='new_name')
+```
+##### 尾部添加多行
+`Index.append(other)`
+- `other`：其他索引对象
+```python
+index1 = index.copy()
+index1
+Index(['a', 'b', 'c'], dtype='object', name='new_name')
+index1.append( index)
+Index(['a', 'b', 'c', 'a', 'b', 'c'], dtype='object', name='new_name')
+```
+#### 并
+`Index.union(other)`
+```python
+index2 = pd.Index(['b','c','d'])
+index2
+Index(['b', 'c', 'd'], dtype='object')
+index1.union(index2)
+Index(['a', 'b', 'c', 'd'], dtype='object')
+```
+#### 删
+##### 按位置删除一行
+`Index.delete(loc)`
+- `loc`：位置编号
+```python
+index1.delete(1)
+Index(['a', 'c'], dtype='object', name='new_name')
+```
+#### 交
+`Index.intersection(other)`
+```python
+index1.intersection(index2) 
+Index(['b', 'c'], dtype='object')
+```
+### 多层索引
+#### 创建
+`pd.MultiIndex.from_tuples(labels, names = None)`
+- `labels`：元组或列表的列表；
+- `names`：名字的列表。
+```python
+# data = [['a','one'],['a','two'],['b','one']]
+data = [('a','one'),('a','two'),('b','one')]
+index = pd.MultiIndex.from_tuples( data, names = ['name1','name2'])
+index
+MultiIndex(levels=[['a', 'b'], ['one', 'two']],
+           labels=[[0, 0, 1], [0, 1, 0]],
+           names=['name1', 'name2'])
+s = pd.Series([1,2,3], index = index)
+s
+name1  name2
+a      one      1
+       two      2
+b      one      3
+dtype: int64
+```
+#### 查
+查询方法和单层索引完全一致。
+```python
+index[0]  # scalar，返回值
+('a', 'one')
+index[0:2]  # 范围，返回MultiIndex
+MultiIndex(levels=[['a', 'b'], ['one', 'two']],
+           labels=[[0, 0], [0, 1]],
+           names=['name1', 'name2'])
+index[[0,2]] # 列表，返回MultiIndex
+MultiIndex(levels=[['a', 'b'], ['one', 'two']],
+           labels=[[0, 1], [0, 0]],
+           names=['name1', 'name2'])
+mask = [True,False, True] # mask，返回MultiIndex
+index[mask]
+MultiIndex(levels=[['a', 'b'], ['one', 'two']],
+           labels=[[0, 1], [0, 0]],
+           names=['name1', 'name2'])
+```
+获取某一层索引：
+`MultiIndex.get_level_values(level)`
+- `level`：`int`，选中的那一层
+```python
+index.get_level_values(0)
+Index(['a', 'a', 'b'], dtype='object', name='name1')
+index.get_level_values(1)
+Index(['one', 'two', 'one'], dtype='object', name='name2')
+```
+#### 改
+##### 改索引名（函数改）
+`MultiIndex.set_names(names, level=None, inplace=False)`
+- `names`：要设置的名字，可以为名字的列表；
+- `level`：多层索引需要设置修改的索引层次，可以为列表，要与`names`匹配；
+- `inplace`：是否原地修改。
+```python
+index.set_names('new_name_1',level=0)
+MultiIndex(levels=[['a', 'b'], ['one', 'two']],
+           labels=[[0, 0, 1], [0, 1, 0]],
+           names=['new_name_1', 'name2'])
+```
+##### 改索引层次顺序
+`MultiIndex.swaplevel(i=-2, j=-1)`
+改变`level i 和level j的次序
+```python
+index.swaplevel()
+MultiIndex(levels=[['one', 'two'], ['a', 'b']],
+           labels=[[0, 1, 0], [0, 0, 1]],
+           names=['name2', 'name1'])
+```
+`Series.swaplevel(i=-2, j=-1)`
+`DataFrame.swaplevel(i=-2, j=-1, axis = 1)`
+- `axis`：0-行索引，1-列索引。 这两个函数更实用一些。
+```python
+s.swaplevel()
+name2  name1
+one    a        1
+two    a        2
+one    b        3
+dtype: int64
+columns = index.copy()
+columns.set_names( names = ['name3','name4'], level = [0,1], inplace = True) #列索引取和行索引相同，只是改了名字
+df = pd.DataFrame([[1,2,3],[4,5,6],[7,8,9]], index= index, columns = columns)
+df
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200412000038.png)
+```python
+df.swaplevel( axis =1)  # 交换列索引顺序
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200412000104.png)
+### 多层索引使用方法
+对`values`进行查看时，多层索引可以分开使用。
+```python
+df1 = df.copy()
+df1
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200412000038.png)
+索引为空不代表缺失，缺省写法，意思是之前的索引一致。
+#### 对于外层索引
+记住：无论是`Series`还是`DataFrame`，外层索引都是可以直接使用，也就是说可以认为只有这一层索引
+##### `[]`
+```python
+df1['b']  # 列外层
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200412000643.png)
+```python
+df1[['a','b']] # 列外层
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200412000712.png)
+```python
+df1[0:2]  # 行外层
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200412000739.png)
+```python
+mask =[True,False,True]  # 行外层
+df1[mask]
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200412000809.png)
+##### `.loc[]`
+```python
+df1.loc['a','b']  # 单行索引'a' 
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200412000936.png)
+```python
+df1.loc['a':'b','b']   #范围
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200412001007.png)
+```python
+df1.loc[['a','b'],'b'] #列表
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200412001034.png)
+```python
+mask = [True, False, True] # mask
+df1.loc[mask,'b']
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200412001104.png)
+##### `.iloc[]`
+```python
+df1.iloc[0,0:2] 
+name3  name4
+a      one      1
+       two      2
+Name: (a, one), dtype: int64
+df1.iloc[0:2,0:2] 
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200412001236.png)
+```python
+df1.iloc[[0,1],0:2] 
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200412001306.png)
+```python
+mask = [True, False, True]
+df1.iloc[mask,0:2]
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200412001331.png)
+#### 对于内层索引
+内层索引不可直接使用，必须先外层、再内层，直接使用会报错；
+内层只能使用单索引形式，其他形式报错。
+##### `[ , ]`
+```python
+df1
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200412001450.png)
+```python
+df1['a','one']  #取一列，先外层单列索引，再内层单列索引，其他形式都报错
+name1  name2
+a      one      1
+       two      4
+b      one      7
+Name: (a, one), dtype: int64
+```
+##### `.loc[ , ]`
+```python
+df1.loc['a','one'] # 取一行，先外层单行索引，再内层单列索引，其他形式都报错
+name3  name4
+a      one      1
+       two      2
+b      one      3
+Name: (a, one), dtype: int64
+```
+#### `xs`直接选取法
+适合在单层`level`选取，不能行列同时操作。
+`Series.xs(key, level=None, drop_level=True)`
+`DataFrame.xs(key, axis=0, level=None, drop_level=True)`
+- `key`: 要选取的索引值或其列表；
+- `axis`：0-行索引，1-列索引；
+- `level`：索引层次；
+- `drop_level`：`True` or `False`，是否显示用于选取的level索引，默认不显示。
+```python
+df1 = df.copy()
+df1
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200412002106.png)
+```python
+df1.xs( 'one', axis = 0, level = 1 )  # 行索引的level 1, 有两行
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200412002132.png)
+```python
+df1.xs( 'two', axis = 1, level = 1 ) # 列索引的level 1，有一列
+```
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200412002201.png)
+## 普通列和行index的相互转化
+```python
+data = [[1,2,3],[4,5,6]]
+index = ['a','b']
+columns = ['A','B','C']
+df = pd.DataFrame( data = data, index = index, columns = columns)
+df
+	A	B	C
+a	1	2	3
+b	4	5	6
+```
+### 普通列 转化为 行索引
+`DataFrame.set_index(keys, drop=True, append=False, inplace=False)`
+ -`keys`：用于转化的列名称，列名或列名的列表，如果是列表则转化为多重索引；
+- `drop`：`True` or `False`，是否保留原列；
+- `append`：`True` or `False`，是否保留当前索引；
+- `inplace`：`True` or `False`，是否原地修改。
+#### `DataFrame`中的列
+注意：下面的这种用法只能处理单层列索引情况。
+```python
+df.set_index('A', drop = True, append = False) #单列转化为行索引，列名作为索引的名字
+    B	C
+A		
+1	2	3
+4	5	6
+df.set_index(['A','B'], drop = True, append = False) # 列名的列表
+        C
+A	B	
+1	2	3
+4	5	6
+df.set_index(['A','C'], drop = False, append = False) # drop = False, 保留原列
+        A	B	C
+A	C			
+1	3	1	2	3
+4	6	4	5	6
+df.set_index(['A','C'], drop = False, append = True) # append = True, 保留原索引
+            A	B	C
+    A	C			
+a	1	3	1	2	3
+b	4	6	4	5	6
+```
+#### 任意列
+普通列不是必须为`DataFrame`中的列，任何行数匹配的列表或列表的元组都可以；
+此方法可以处理多层列索引情况，方法是先提取需要的列，构建成元组，再来替换索引。
+```python
+li = ['c','d']
+df.set_index(keys = [li], append = False)# 注意是[li]不是li，如果是单层，会当做列名处理
+## append为False，实现了改索引功能
+    A	B	C
+c	1	2	3
+d	4	5	6
+#如果是多层索引情况，append为False，所有索性会被替换
+df1 = df.set_index(keys = [li], append = True)
+df1
+        A	B	C
+a	c	1	2	3
+b	d	4	5	6
+df1.set_index(keys = [['e','f']],append = False)
+    A  	B	C
+e	1	2	3
+f	4	5	6
+# 元祖的列表建立多层索引
+list_tuple = [('e','f'),('g','h')]
+df1.set_index(keys = [list_tuple],append = False)
+        A	B	C
+e	f	1	2	3
+g	h	4	5	6
+```
+### 行索引 转化为 普通列
+`DataFrame.reset_index(level=None, drop=False, inplace=False, col_level=0, col_fill='')`
+- `level`：`int` 或者行索引的名字，可以为列表，默认包含所有行索引。
+- `drop`：`True` or `False`，是否将行索引插入到列中，默认是插入；
+- `inplace`：是否本地修改
+- `col_level`：如果列索引也是多重的，那么新插入的列设置哪一重索引；
+- `col_fill`：如果有多重索引，除了`col_level`已经设置的
+#### 单层 列索引 情况
+```python
+df1 = df.set_index(['A','C'], drop = True, append = True)
+df1
+            B
+    A	C	
+a	1	3	2
+b	4	6	5
+# df1.reset_index(level = 'A', drop = False)
+df1.reset_index(level = 1, drop = False) #单 行索引
+        A	B
+    C		
+a	3	1	2
+b	6	4	5
+df1.reset_index(level = [1,2], drop = False) # 行索引的列表
+    A	C	B
+a	1	3	2
+b	4	6	5
+In [13]:
+#如果所有行索引都恢复为列，那么将生成默认数值索引，如果行索引没有名字，那么生成默认的名字
+df1.reset_index(level = [0,1,2], drop = False)
+level_0	A	C	B
+0	a	1	3	2
+1	b	4	6	5
+df1.index.set_names(names = 'ab', level = 0, inplace = True)
+df1
+            B
+ab	A	C	
+a	1	3	2
+b	4	6	5
+#行索引如果有名字，那么将其设置为列名
+df1.reset_index(level = [0,1,2], drop = False)
+    ab	A	C	B
+0	a	1	3	2
+1	b	4	6	5
+df1.reset_index(level = [1,2], drop = True) # drop = True, 直接丢掉选中的行索引，不插入
+    B
+ab	
+a	2
+b	5
+```
+#### 多层 列索引 情况
+```python
+df1 = df.copy()
+df1.columns = pd.MultiIndex.from_tuples( [('one','A'),('one','B'),('two','C')])
+df1
+     one   two
+    A	B	C
+a	1	2	3
+b	4	5	6
+#多重索引下，如果行索引没有名字，那么变为列之后在列索引的外层生成了默认索引：index。
+df1.reset_index(level = 0)
+index	 one   two
+        A	B	C
+0	a	1	2	3
+1	b	4	5	6
+#多重索引下，如果行索引有名字，那么变为列之后在列索引的外层索引名作为列名。
+df1.index.set_names(['ab'], inplace = True)
+df1
+     one   two
+    A	B	C
+ab			
+a	1	2	3
+b	4	5	6
+df1.reset_index(level = 0)
+    ab	 one   two
+        A	B	C
+0	a	1	2	3
+1	b	4	5	6
 
 
 
