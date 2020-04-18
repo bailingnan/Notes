@@ -369,4 +369,157 @@ $A_{k}=\sigma_{1} u_{1} v_{1}^{\mathrm{T}}+\sigma_{2} u_{2} v_{2}^{\mathrm{T}}+\
 则$A_{k}$的秩为$k$，并且$A_{k}$是秩为$k$的矩阵中在弗罗贝尼乌斯范数意义下$A$的最优近似矩阵。矩阵$A_{k}$就是$A$的截断奇异值分解。
 
 由于通常奇异值$\sigma_{i}$递减很快，所以$k$取很小值时，$A_{k}$也可以对$A$有很好的近似。
+# 主成分分析
+主成分分析（principal component analysis, PCA）是一种常用的无监督学习方法，这一方法利用正交变换把由线性相关变量表示的观测数据转换为少数几个由线性无关变量表示的数据，线性无关的变量称为主成分。主成分的个数通常小于原始变量的个数，所以主成分分析属于降维方法。主成分分析主要用于发现数据中的基本结构，即数据中变量之间的关系，是数据分析的有力工具，也用于其他机器学习方法的前处理。
+
+## 总体主成分分析
+### 基本想法
+统计分析中，数据的变量之间可能存在相关性，以致增加了分析的难度。于是，考虑由少数不相关的变量来代替相关的变量，用来表示数据，并且要求能够保留数据中的大部分信息。
+
+主成分分析中，首先对给定数据进行规范化，使得数据每一变量的平均值为 0, 方差为 1。之后对数据进行正交变换，原来由线性相关变量表示的数据，通过正交变换变成由若千个线性无关的新变量表示的数据。新变量是可能的正交变换中变量的方差的和（信息保存）最大的，方差表示在新变量上信息的大小。将新变量依次称为第一主成分、第二主成分等。这就是主成分分析的基本思想。通过主成分分析，可以利用主成分近似地表示原始数据，这可理解为发现数据的“基本结构”；也可以把数据由少数主成分表示，这可理解为对数据降维。
+
+下面给出主成分分析的直观解释。数据集合中的样本由实数空间（正交坐标系）中的点表示，空间的一个坐标轴表示一个变量，规范化处理后得到的数据分布在原点附近。对原坐标系中的数据进行主成分分析等价于进行坐标系旋转变换，将数据投影到新坐标系的坐标轴上；新坐标系的第一坐标轴、第二坐标轴等分别表示第一主成分、第二主成分等，数据在每- -轴上的坐标值的平方表示相应变量的方差；并且，这个坐标系是在所有可能的新的坐标系中，坐标轴上的方差的和最大的。
+
+例如，数据由两个变量$x_{1}$和$x_{2}$表示，存在于二维空间中，每个点表示一个样本，如下图所示。对数据已做规范化处理，可以看出，这些数据分布在以原点为中心的左下至右上倾斜的椭圆之内。很明显在这个数据中的变量$x_{1}$和$x_{2}$是线性相关的，具体地，当知道其中一个变量$x_{1}$的取值时，对另一个变量$x_{2}$的预测不是完全随机的，反之亦然。
+
+主成分分析对数据进行正交变换，具体地，对原坐标系进行旋转变换，并将数据在新坐标系表示，如图所示。数据在原坐标系由变量$x_{1}$ 和$x_{2}$表示，通过正交变换后，在新坐标系里，由变量$y_{1}$和$y_{2}$表示。主成分分析选择方差最大的方向（第一主成分）作为新坐标系的第一坐标轴，即$y_{1}$ 轴，在这里意味着选择椭圆的长轴作为新坐标系的第一坐标轴；之后选择与第一坐标轴正交，且方差次之的方向（第二主成分）作为新坐标系的第二坐标轴，即 $y_{2}$轴，在这里意味着选择椭圆的短轴作为新坐标系的第二坐标轴。在新坐标系里，数据中的变量$y_{1}$和$y_{2}$ 是线性无关的，当知道其中一个变量 $y_{1}$的取值时，对另一个变量$y_{2}$的预测是完全随机的；反之亦然。如果主成分分析只取第一主成分，即新坐标系的$y_{1}$轴，那么等价于将数据投影在椭圆长轴上，用这个主轴表示数据，将二维空间的数据压缩到一维空间中。
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200418235554.png)
+
+下面再看方差最大的解释。假设有两个变量$x_{1}$和$x_{2}$,三个样本点$A、B、C$,样本分布在由$x_{2}$和$x_{2}$轴组成的坐标系中，如图所示。对坐标系进行旋转变换，得到新的坐标轴$y_{1}$,表示新的变量$y_{1}$, 样本点$A, B, C$在$y_{1}$轴上投影，得到$y_{1}$轴的坐标值,$A^{\prime}, B^{\prime}, C^{\prime}$。坐标值的平方和$O A^{\prime 2}+O B^{\prime 2}+O C^{\prime 2}$表示样本在变量$y_{1}$比的方差和。主成分分析旨在选取正交变换中方差最大的变量，作为第一主成分，也就是旋转变换中坐标值的平方和最大的轴。注意到旋转变换中样本点到原点的距离的平方和$O A^{2}+O B^{2}+O C^{2}$保持不变，根据勾股定理，坐标值的平方和$O A^{\prime 2}+O B^{\prime 2}+O C^{\prime 2}$最大等价于样本点到$y_{1}$轴的距离的平方和$A A^{\prime 2}+B B^{\prime 2}+C C^{\prime 2}$最小，所以，等价地，主成分分析在旋转变换中选取离样本点的距离平方和最小的轴，作为第一主成分。第二主成分等的选取，在保证与已选坐标轴正交的条件下，类似地进行。
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200419001304.png)
+
+在数据总体（population）。上进行的主成分分析称为总体主成分分析，在有限样本进行的主成分分析称为样本主成分分析，前者是后者的基础。以下分别予以介绍。
+### 定义和导出
+假设 $x=\left(x_{1}, x_{2}, \dots, x_{m}\right)^{\mathrm{T}}$是$m$维随机变量，其均值向量是$\mu$:
+
+$\boldsymbol{\mu}=E(\boldsymbol{x})=\left(\mu_{1}, \mu_{2}, \cdots, \mu_{m}\right)^{\mathrm{T}}$
+
+协方差矩阵是$\sum$：
+
+$\Sigma=\operatorname{cov}(\boldsymbol{x}, \boldsymbol{x})=E\left[(\boldsymbol{x}-\boldsymbol{\mu})(\boldsymbol{x}-\boldsymbol{\mu})^{\mathrm{T}}\right]$
+
+考虑由$m$维随机变量$x$到$m$维随机变量$y=\left(y_{1}, y_{2}, \cdots, y_{m}\right)^{\mathrm{T}}$的线性变换：
+
+$y_{i}=\alpha_{i}^{\mathrm{T}} \boldsymbol{x}=\alpha_{1 i} x_{1}+\alpha_{2 i} x_{2}+\cdots+\alpha_{m i} x_{m}$
+
+由随机变量的性质可知，
+
+$E\left(y_{i}\right)=\alpha_{i}^{\mathrm{T}} \mu, \quad i=1,2, \cdots, m$
+$\operatorname{var}\left(y_{i}\right)=\alpha_{i}^{\mathrm{T}} \Sigma \alpha_{i}, \quad i=1,2, \cdots, m$
+$\operatorname{cov}\left(y_{i}, y_{j}\right)=\alpha_{i}^{\mathrm{T}} \Sigma \alpha_{j}, \quad i=1,2, \cdots, m ; \quad j=1,2, \cdots, m$
+
+下面给出总体主成分的定义。
+
+给定一个如式$y_{i}=\alpha_{i}^{\mathrm{T}} \boldsymbol{x}=\alpha_{1 i} x_{1}+\alpha_{2 i} x_{2}+\cdots+\alpha_{m i} x_{m}$所示的线性变换，如果它们满足下列条件：
+
+1. 系数向量$\alpha_{i}^{\mathrm{T}}$是单位向量，即$\alpha_{i}^{\mathrm{T}} \alpha_{i}=1, i=1,2, \cdots, m$
+2. 变量$y_{i}$与$y_{j}$互不相关，即$\operatorname{cov}\left(y_{i}, y_{j}\right)=0(i \neq j)$
+3. 变量$y_{1}$是$x$的所有线性变换中方差最大的；$y_{2}$是与$y_{1}$不相关的$x$的所有线性变换中方差最大的；一般地，$y_{i}$是与$y_{1}, y_{2}, \cdots, y_{i-1}(i=1,2, \cdots, m)$都不相关的$x$的所有线性变换中方差最大的；这时分别称$y_{1}, y_{2}, \cdots, y_{m}$为$x$的第一主成分、第二主成分、。... 第$m$主成分。
+
+定义中的条件(1) 表明线性变换是正交变换，$\alpha_{1}, \alpha_{2}, \cdots, \alpha_{m}$是其一组标准正交基，
+
+$\alpha_{i}^{\mathrm{T}} \alpha_{j}=\left\{\begin{array}{ll}1, & i=j \\ 0, & i \neq j\end{array}\right.$
+
+条件(2)  (3) 给出了一个求主成分的方法：第一步，在$\boldsymbol{x}$的所有线性变换
+
+$\alpha_{1}^{\mathrm{T}} \boldsymbol{x}=\sum_{i=1}^{m} \alpha_{i 1} x_{i}$
+
+中，在$\alpha_{1}^{\mathrm{T}} \alpha_{1}=1$条件下，求方差最大的，得到$\boldsymbol{x}$的第一主成分；第二步，在与$\alpha_{1}^{\mathrm{T}} \boldsymbol{x}$不相关的$x$的所有线性变换
+
+$\alpha_{2}^{\mathrm{T}} \boldsymbol{x}=\sum_{i=1}^{m} \alpha_{i 2} x_{i}$
+
+中，在$\alpha_{2}^{\mathrm{T}} \alpha_{2}=1$条件下，求方差最大的，得到$x$的第二主成分；第$k$步，在与$\alpha_{1}^{\mathrm{T}} \boldsymbol{x}, \alpha_{2}^{\mathrm{T}} \boldsymbol{x}, \cdots, \alpha_{k-1}^{\mathrm{T}} \boldsymbol{x}$不相关的$\boldsymbol{x}$的所有线性变换
+
+$\alpha_{k}^{\mathrm{T}} \boldsymbol{x}=\sum_{i=1}^{m} \alpha_{i k} x_{i}$
+
+中，在$\alpha_{k}^{\mathrm{T}} \alpha_{k}=1$条件下，求方差最大的，得到$\mathcal{L}$的第$k$主成分；如此继续下去，直到得到$x$的第$m$主成分。
+
+### 主要性质
+设$x$是$m$维随机变量，$\sum$是$x$的协方差矩阵，$\sum$的特征值分别是$\lambda_{1} \geqslant \lambda_{2} \geqslant \cdots \geqslant \lambda_{m} \geqslant 0$,特征值对应的单位特征向量分别是$\alpha_{1}, \alpha_{2}, \cdots, \alpha_{m}$，则$x$的第$k$主成分是:
+
+$y_{k}=\alpha_{k}^{\mathrm{T}} \boldsymbol{x}=\alpha_{1 k} x_{1}+\alpha_{2 k} x_{2}+\cdots+\alpha_{m k} x_{m}, \quad k=1,2, \cdots, m$
+
+$x$的第$k$主成分的方差是:
+
+$\operatorname{var}\left(y_{k}\right)=\alpha_{k}^{\mathrm{T}} \Sigma \alpha_{k}=\lambda_{k}, \quad k=1,2, \cdots, m$
+
+即协方差矩阵$\sum$的第$k$个特征值。
+
+若特征值有重根，对应的特征向量组成$m$维空间$\mathbf{R}^{m}$的一个子空间，子空间的维数等于重根数，在子空间任取一-个正交坐标系，这个坐标系的单位向量就可作为特征向量。这时坐标系的取法不唯一。
+
+$m$维随机变量$y=\left(y_{1}, y_{2}, \cdots, y_{m}\right)^{\mathrm{T}}$的分量依次是$\boldsymbol{x}$的第一主成分到第$m$主成分的充要条件是：
+
+1. $\boldsymbol{y}=A^{\mathrm{T}} \boldsymbol{x}$,$A$为正交矩阵
+
+$A=\left[\begin{array}{cccc}\alpha_{11} & \alpha_{12} & \cdots & \alpha_{1 m} \\ \alpha_{21} & \alpha_{22} & \cdots & \alpha_{2 m} \\ \vdots & \vdots & & \vdots \\ \alpha_{m 1} & \alpha_{m 2} & \cdots & \alpha_{m m}\end{array}\right]$
+
+2. $\boldsymbol{y}$的协方差矩阵为对角矩阵
+
+$\operatorname{cov}(\boldsymbol{y})=\operatorname{diag}\left(\lambda_{1}, \lambda_{2}, \cdots, \lambda_{m}\right)$
+$\lambda_{1} \geqslant \lambda_{2} \geqslant \cdots \geqslant \lambda_{m}$
+
+其中$\lambda_{k}$是$\sum$的第$k$个特征值，$\alpha_{k}$是对应的单位特征向量，$k=1,2, \cdots, m$
+
+下面叙述总体主成分的性质：
+
+1. 总体主成分$y$的协方差矩阵是对角矩阵
+
+$\operatorname{cov}(\boldsymbol{y})=\Lambda=\operatorname{diag}\left(\lambda_{1}, \lambda_{2}, \cdots, \lambda_{m}\right)$
+
+2. 总体主成分$\boldsymbol{y}$的方差之和等于随机变量$\boldsymbol{x}$的方差之和，即
+
+$\sum_{i=1}^{m} \lambda_{i}=\sum_{i=1}^{m} \sigma_{i i}$
+
+其中$\sigma_{i i}$是随机变量$\mathcal{L}_{i}$的方差，即协方差矩阵$\sum$的对角元素。
+
+3. 第$k$个主成分$y_{k}$与变量$\boldsymbol{x}_{\boldsymbol{i}}$的相关系数$\rho\left(y_{k}, x_{i}\right)$称为因子负荷量（factor loading），它表示第$k$个主成分$y_{k}$与变量$\mathcal{X} i$的相关关系。计算公式是
+
+$\rho\left(y_{k}, x_{i}\right)=\frac{\sqrt{\lambda_{k}} \alpha_{i k}}{\sqrt{\sigma_{i i}}}, \quad k, i=1,2, \cdots, m$
+
+4. 第$k$个主成分$y_{k}$与$m$个变量的因子负荷量满足
+
+$\sum_{i=1}^{m} \sigma_{i i} \rho^{2}\left(y_{k}, x_{i}\right)=\lambda_{k}$
+
+5. $m$个主成分与第$i$个变量$i$的因子负荷量满足
+
+$\sum_{k=1}^{m} \rho^{2}\left(y_{k}, x_{i}\right)=1$
+
+### 主成分的个数
+主成分分析的主要目的是降维，所以一般选择$k(k \ll m)$个主成分（线性无关变量）来代替$m$个原有变量（线性相关变量），使问题得以简化，并能保留原有变量的大部分信息。这里所说的信息是指原有变量的方差。为此，先给出一个定理，说明选择$k$个主成分是最优选择。
+
+对任意正整数$q$，$1 \leqslant q \leqslant m$，考虑正交线性变换
+
+$\boldsymbol{y}=B^{\mathrm{T}} \boldsymbol{x}$
+
+其中$y$是$q$维向量,$B^{\mathrm{T}}$是$q \times m$矩阵，令$\boldsymbol{y}$的协方差矩阵为:
+
+$\Sigma_{y}=B^{\mathrm{T}} \Sigma B$
+
+则$\Sigma_{y}$的迹$\operatorname{tr}\left(\Sigma_{\boldsymbol{y}}\right)$在$B=A_{q}$时取得最大值，其中矩阵$A_{q}$由正交矩阵$A$的前$q$列组成。
+
+定理表明，当$x$的线性变换$y$在$B=A_{q}$时，其协方差矩阵$\Sigma_{\boldsymbol{y}}$的迹$\operatorname{tr}\left(\Sigma_{y}\right)$取得最大值，这就是说，当取$A$的前$q$列取$x$的前$q$个主成分时，能够最大限度地保留原有变量方差的信息。
+
+考虑正交变换
+
+$\boldsymbol{y}=B^{\mathrm{T}} \boldsymbol{x}$
+
+这里$B^{\mathrm{T}}$是$p \times m$矩阵，$A$和$\Sigma_{y}$的定义与前相同，则$\operatorname{tr}\left(\Sigma_{y}\right)$在$B=A_{p}$时取得最小值，其中矩阵$A_{p}$由$A$的后$p$列组成。
+
+该定理可以理解为，当舍弃$A$的后$p$列，即舍弃变量$x$的后$p$个主成分时，原有变量的方差的信息损失最少。
+
+以上两个定理可以作为选择$k$个主成分的理论依据。具体选择$k$的方法，通常利用方差贡献率。
+
+第$k$主成分$y_{k}$的方差贡献率定义为$y_{k}$的方差与所有方差之和的比，记作$\eta_{k}$:
+
+$\eta_{k}=\frac{\lambda_{k}}{\sum_{i=1}^{m} \lambda_{i}}$
+
+$k$个主成分$y_{1}, y_{2}, \cdots, y_{k}$的累计方差贡献率定义为$k$个方差之和与所有方差之和的比:
+
+$\sum_{i=1}^{k} \eta_{i}=\frac{\sum_{i=1}^{k} \lambda_{i}}{\sum_{i=1}^{m} \lambda_{i}}$
+
+通常取$k$使得累计方差贡献率达到规定的百分比以上，例如 70%~80%以上。累计方差贡献率反映了主成分保留信息的比例，但它不能反映对某个原有变量$\boldsymbol{x}_{i}$保留信息的比例，这时通常利用$k$个主成分$y_{1}, y_{2}, \cdots, y_{k}$对原有变量$\boldsymbol{x}_{i}$的贡献率。
+
+
 
