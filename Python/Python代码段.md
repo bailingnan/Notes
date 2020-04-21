@@ -61,6 +61,7 @@ print("My hobbies are: " + ", ".join(hobbies))
 
 该方法将通过递归的方式将列表的嵌套展开为单个列表。
 ```Python
+#思路:基本单元是[[a,b],c,d]
 def spread(arg):
     ret = []
     for i in arg:
