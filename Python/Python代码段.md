@@ -61,15 +61,6 @@ print("My hobbies are: " + ", ".join(hobbies))
 
 该方法将通过递归的方式将列表的嵌套展开为单个列表。
 ```Python
-def deep_flatten(lst):
-    result = []
-    result.extend(
-        spread(list(map(lambda x: deep_flatten(x) if type(x) == list else x, lst))))
-    return result
-deep_flatten([1, [2], [[3], 4], 5]) # [1,2,3,4,5]
-```
-非递归：
-```Python
 def spread(arg):
     ret = []
     for i in arg:
@@ -78,7 +69,12 @@ def spread(arg):
         else:
             ret.append(i)
     return ret
-spread([1,2,3,[4,5,6],[7],8,9]) # [1,2,3,4,5,6,7,8,9]
+def deep_flatten(lst):
+    result = []
+    result.extend(
+        spread(list(map(lambda x: deep_flatten(x) if type(x) == list else x, lst))))
+    return result
+deep_flatten([1, [2], [[3], 4], 5]) # [1,2,3,4,5]
 ```
 可以写一个包含 `yield from` 语句的递归生成器来轻松解决这个问题。比如：
 ```python
