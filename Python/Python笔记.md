@@ -75,7 +75,7 @@
       - [判断类型](#判断类型)
   - [模块](#模块)
     - [`name`属性](#name属性)
-      - [包](#包)
+    - [包](#包)
   - [OOP](#oop)
     - [`__new__`和`__init__`区别](#__new__和__init__区别)
     - [访问限制](#访问限制)
@@ -104,6 +104,21 @@
     - [`functools`](#functools)
     - [`math`](#math)
     - [`time`](#time)
+    - [`datetime`](#datetime)
+    - [`os`](#os)
+    - [`Path`](#path)
+    - [`queue`](#queue)
+  - [第三方库](#第三方库)
+    - [`h5py`](#h5py)
+      - [创建](#创建)
+      - [读取](#读取)
+      - [创建数据集：](#创建数据集)
+      - [赋值](#赋值)
+      - [综合示例1](#综合示例1)
+      - [创建`group`](#创建group)
+      - [`Pandas`对`h5py`的操作](#pandas对h5py的操作)
+        - [写出](#写出)
+        - [读取](#读取-1)
 
 <!-- /TOC -->
 ## 编码规范
@@ -2830,7 +2845,7 @@ $ Python
 我来自另一模块
 ```
 说明： 每个模块都有一个`__name_`_属性，当其值是`'__main__'`时，表明该模块自身在运行，否则是被引入。
-#### 包
+### 包
 - 如果包定义文件 `__init__.py` 存在一个叫做 `__all__` 的列表变量，那么在使用 `from package import *` 的时候就把这个列表中的所有名字作为包内容导入。
 ```Python
 __all__ = ["echo", "surround", "reverse"]
@@ -3288,14 +3303,14 @@ g.score = 9999
 #### 多重继承
 ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200318023741.png)
 ```Python
-class Animal(object):
+class Animal(object): 
+ #大类:
     pass
-#大类:
 class Mammal(Animal):
     pass
 class Bird(Animal):
     pass
-#各种动物:
+ #各种动物:
 class Dog(Mammal):
     pass
 class Bat(Mammal):
@@ -3357,7 +3372,7 @@ class MyTCPServer(TCPServer, CoroutineMixIn):
 只允许单一继承的语言（如`Java`）不能使用`MixIn`的设计。
 - 若是父类中有相同的方法名，而在子类使用时未指定，`Python`从左至右搜索 即方法在子类中未找到时，从左到右查找父类中是否包含方法。
 ```Python
-#类定义
+ #类定义
 class people:
 '''
     定义基本属性
@@ -5257,6 +5272,7 @@ st = time.strptime(stime,"%Y-%m-%d %H:%M:%S")
 ```Python
 time.time()
 1506391907.020303
+```
 该方法经常用于计算程序运行时间：
 ```Python
 import time
@@ -5307,12 +5323,12 @@ age.days
 
 
 ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200317190745.png)
-## `os`
+### `os`
 - `os.path.exists(path)`:路径存在则返回`True`,路径损坏返回`False`
 - `os.path.join(path1[, path2[, ...]])`:把目录和文件名合成一个路径
 - `os.system('mkdir today')`:命令行命令
 - `os.environ`:`os.environ["CUDA_VISIBLE_DEVICES"] = "7"`
-## `Path`
+### `Path`
 在过去，文件的路径是纯字符串，现在它会是一个`pathlib.Path`对象:
 ```Python
 from pathlib import Path
@@ -5327,10 +5343,12 @@ os.path.join('/', 'home', 'dongwm/code')
 '/home/dongwm/code'
 os.path.join('/home', 'dongwm/code')
 '/home/dongwm/code'
+```
 现在可以用`pathlib.Path`提供的`joinpath`来拼接:
 ```Python
 Path('/').joinpath('home', 'dongwm/code')
 PosixPath('/home/dongwm/code')
+```
 但是更简单和方便的方法是用`/`运算符:
 ```Python
 Path('/') / 'home' / 'dongwm/code'
@@ -5387,7 +5405,25 @@ print(file_to_open.read_text())
 ```
 - 与`os`模块对比
 ![](https://raw.githubusercontent.com/bailingnan/PicGo/master/20200321202526.png)
+
+### `queue`
+模块实现了三种类型的队列，它们的区别仅仅是条目取回的顺序。在 `FIFO` 队列中，先添加的任务先取回。在 `LIFO` 队列中，最近被添加的条目先取回(操作类似一个堆栈)。优先级队列中，条目将保持排序( 使用 `heapq` 模块 ) 并且最小值的条目第一个返回。
+
+`queue` 模块定义了下列类和异常：
+
+- `class queue.Queue(maxsize=0)`
+- `class queue.LifoQueue(maxsize=0)`:`LIFO` 队列构造函数。 `maxsize` 是个整数，用于设置可以放入队列中的项目数的上限。当达到这个大小的时候，插入操作将阻塞至队列中的项目被消费掉。如果 `maxsize` 小于等于零，队列尺寸为无限大。
+- `class queue.PriorityQueue(maxsize=0)`:优先级队列构造函数。 `maxsize` 是个整数，用于设置可以放入队列中的项目数的上限。当达到这个大小的时候，插入操作将阻塞至队列中的项目被消费掉。如果 `maxsize` 小于等于零，队列尺寸为无限大。
+
+队列对象 (`Queue`, `LifoQueue`, 或者 `PriorityQueue`) 提供下列描述的公共方法。
+
+- `Queue.qsize()`:返回队列的大致大小。
+- `Queue.empty()`:如果队列为空，返回 `True` ，否则返回 `False` 。
+- `Queue.full()`:如果队列是满的返回 `True` ，否则返回 `False` 。
+- `Queue.put(item,)`:将 `item` 放入队列
+- `Queue.get()`:从队列中移除并返回一个项目。
 ## 第三方库
+
 ### `h5py`
 h5py文件是存放两类对象的容器，数据集(`dataset`)和组(`group`)，`dataset`类似数组类的数据集合，和`numpy`的数组差不多。`group`是像文件夹一样的容器，它好比`Python`中的字典，有键(`key`)和值(`value`)。`group`中可以存放`dataset`或者其他的`group`。”键”就是组成员的名称，”值”就是组成员对象本身(组或者数据集)
 ```Python
