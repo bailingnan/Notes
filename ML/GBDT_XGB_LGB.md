@@ -6,6 +6,8 @@
 - [深入理解XGBoost:高效机器学习算法与进阶](深入理解XGBoost.md)
 - [集成学习:XGBoost,LightGBM(Vedio)](https://www.bilibili.com/video/BV1Ca4y1t7DS?p=1)
 - [集成学习:XGBoost,LightGBM(PDF)](集成学习：XGBoost,LightGBM.pdf)
+- [知乎Microstrong:深入理解XGBoost](https://zhuanlan.zhihu.com/p/83901304)
+- [知乎:史上最详细的XGBoost实战](https://zhuanlan.zhihu.com/p/31182879)
 # LightGBM
 - [MSRA王太峰(Vedio)](https://www.bilibili.com/video/BV1ub411x7aR)
 - [MSRA王太峰(PDF)](LightGBM.pdf)
