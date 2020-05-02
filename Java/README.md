@@ -1,1 +1,10 @@
-
+# Java
+- [廖雪峰Java教程](https://www.liaoxuefeng.com/wiki/1252599548343744)
+- [菜鸟教程](https://www.runoob.com/java/java-tutorial.html)
+- [Java编程思想](https://github.com/LingCoder/OnJava8)
+- [Effective_Java_3rd_版本1](https://github.com/clxering/Effective-Java-3rd-edition-Chinese-English-bilingual)
+- [Effective_Java_3rd——版本2](https://github.com/tigershinny/effective-java-3rd-cn)
+## 基础
+## 容器
+## 虚拟机
+## 并发
