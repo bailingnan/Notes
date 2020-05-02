@@ -5,11 +5,11 @@
 - [ApacheCN:XGBoost中文文档](https://xgboost.apachecn.org/#/)
 - [深入理解XGBoost:高效机器学习算法与进阶](深入理解XGBoost.md)
 - [集成学习:XGBoost,LightGBM(Vedio)](https://www.bilibili.com/video/BV1Ca4y1t7DS?p=1)
-- [集成学习:XGBoost,LightGBM(PDF)](集成学习：XGBoost,LightGBM.pdf)]
+- [集成学习:XGBoost,LightGBM(PDF)](集成学习：XGBoost,LightGBM.pdf)
 # LightGBM
 - [MSRA王太峰(Vedio)](https://www.bilibili.com/video/BV1ub411x7aR)
 - [MSRA王太峰(PDF)](LightGBM.pdf)
 - [集成学习:XGBoost,LightGBM(Vedio)](https://www.bilibili.com/video/BV1Ca4y1t7DS?p=1)
-- [集成学习:XGBoost,LightGBM(PDF)](集成学习：XGBoost,LightGBM.pdf)]
+- [集成学习:XGBoost,LightGBM(PDF)](集成学习：XGBoost,LightGBM.pdf)
 - [ApacheCN:LightGBM中文文档](https://lightgbm.apachecn.org/#/)
 - [华校专算法工程师手册:LightGBM使用](http://www.huaxiaozhuan.com/%E5%B7%A5%E5%85%B7/lightgbm/chapters/lightgbm_usage.html)
