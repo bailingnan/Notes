@@ -1,5 +1,10 @@
 # 深度学习
 - [AI大纲](AI大纲.md)
-- [PyTorch笔记](PyTorch笔记.md)
+## 数学
 - [数学](数学.md)
+## 理论
+- [邱锡鹏:神经网络与深度学习](https://github.com/nndl/nndl.github.io)
+- [华校专:算法工程师手册](http://www.huaxiaozhuan.com/)
 - [需要会手写和推导的算法](需要会手写和推导的算法.md)
+## `PyTorch`
+- [PyTorch笔记](PyTorch笔记.md)
