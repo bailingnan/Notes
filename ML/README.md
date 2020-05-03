@@ -1,5 +1,7 @@
 # 机器学习
-## [AI大纲](AI大纲.png)
-## [数学基础](https://bailingnan.github.io/post/shu-xue/)
-## [LR/决策树/集成学习/降维](https://bailingnan.github.io/post/mldl/)
-## [GBDT/XGB/LGB](GBDT_XGB_LGB.md)
+[AI大纲](AI大纲.png)
+## [数学基础](Math/README.md)
+## [线性回归/逻辑回归](线性回归-逻辑回归/README.md)
+## [GBDT/XGB/LGB](GBDT-XGB-LGB/README.md)
+## [SVD/PCA/LDA](SVD-PCA-LDA/README.md)
+## [常用评价指标](常用评价指标/README.md)

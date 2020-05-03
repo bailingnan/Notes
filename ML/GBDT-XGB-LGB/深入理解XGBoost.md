@@ -109,6 +109,7 @@
           - [网格搜索调参](#网格搜索调参)
 
 <!-- /TOC -->
+[在GitHub Page上阅读](https://bailingnan.github.io/post/shen-ru-li-jie-xgboost/)
 # 机器学习概述
 ## 何谓机器学习
 ### 机器学习应用开发步骤
