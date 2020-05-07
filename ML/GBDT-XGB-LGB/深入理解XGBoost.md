@@ -79,6 +79,10 @@
     - [快速直方图算法](#快速直方图算法)
     - [加权分位数概要算法](#加权分位数概要算法)
     - [稀疏感知切分点查找算法](#稀疏感知切分点查找算法)
+  - [排序学习](#排序学习)
+    - [RankNet](#ranknet)
+    - [LambdaRank](#lambdarank)
+    - [LambdaMART](#lambdamart)
   - [DART](#dart)
   - [系统优化](#系统优化)
     - [基于列存储数据块的并行学习](#基于列存储数据块的并行学习)
@@ -107,6 +111,24 @@
           - [数据加载和预处理](#数据加载和预处理)
           - [定义交叉验证、模型拟合函数](#定义交叉验证模型拟合函数)
           - [网格搜索调参](#网格搜索调参)
+- [XGBoost应用](#xgboost应用)
+  - [PCA](#pca)
+    - [PCA的实现原理](#pca的实现原理)
+    - [通过PCA对人脸识别数据降维](#通过pca对人脸识别数据降维)
+  - [通过XGBoost实现广告分类器](#通过xgboost实现广告分类器)
+    - [数据分析](#数据分析)
+      - [目标特征](#目标特征)
+      - [连续型特征](#连续型特征)
+      - [训练集、测试集分布比较](#训练集测试集分布比较)
+        - [通过分类模型检验](#通过分类模型检验)
+        - [通过交叉验证检验](#通过交叉验证检验)
+      - [通过PCA降维检验](#通过pca降维检验)
+    - [平衡正负样本](#平衡正负样本)
+    - [训练参数定义](#训练参数定义)
+    - [模型训练](#模型训练)
+    - [特征重要性排名](#特征重要性排名)
+    - [超参数调优](#超参数调优)
+  - [GBDT、LR融合提升广告点击率](#gbdtlr融合提升广告点击率)
 
 <!-- /TOC -->
 [在GitHub Page上阅读](https://bailingnan.github.io/post/shen-ru-li-jie-xgboost/)
@@ -1208,7 +1230,99 @@ CART树的每个节点都会分裂为两个方向，选哪个方向作为默认�
 该算法会遍历所有候选特征的所有候选切分点。对于每个切分点，算法首先将缺失值划分到右子节点，即计算划分到左子节点非缺失值的梯度统计，然后用总的梯度统计减去左子节点的梯度统计（相当于缺失值划到了右子节点中），计算收益，选出收益最大的；将缺失值划分到左子节点，重复上述步骤；最终选出收益最大的节点分裂及默认方向。此算法也适用于近似算法的情况，仅将非缺失值的样本统计划分到桶中即可。相较于不考虑稀疏数据的普通算法而言，稀疏感知切分点查找算法在每棵树的训练速度提高近50倍。
 
 上述算法需要从左到右和从右到左两次扫描来完成缺省值默认方向的学习。XGBoost GPU版本采用了一种替代算法，即先求得缺失值梯度对总和，然后通过一次扫描完成上述操作。
+## 排序学习
+排序学习的常用方法：pointwise、pairwise和listwise。本节将会深入介绍pairwise方法的3种重要实现：RankNet、LambdaRank和LambdaMART。XGBoost的排序学习采用的是LambdaMART方法，而LambdaMART方法是RankNet和LambdaRank这两种方法的延伸与拓展，因此为了便于读者理解，本节首先介绍RankNet和LambdaRank，在此基础上介绍LambdaMART。
+### RankNet
+RankNet是一种pairwise的排序方法，它将排序问题转换为比较$<d_{i}, d_{j}>$对的排序概率问题，即比较$d_{i}$排在$d_{j}$前面的概率。RankNet提出了一种概率损失函数来学习排序模型，并通过排序模型对文档进行排序。这里的排序模型可以是任意对参数可微的模型，如增强树、神经网络等。
 
+在监督学习过程中，每个样本都有一个标签值（用于指导模型的训练过程），模型训练完毕后模型对每个样本给出一个预测值$p$，然后通过计算损失函数来对模型进行调整。RankNet中定义了两个概率来分别表示预测值和标签值，分别是预测相关性概率和真实相关性概率。首先来介绍一下RankNet如何得到预测相关性概率。一般训练数据是按查询划分的，对每个查询内部数据进行排序，RankNet通过评分函数$f(x)$对输入的特征向量进行评分。对于给定的查询，选择具有不同标签的文档$D_{i}$和$D_{j}$，并将其特征向量$x_{i}$和$x_{j}$输入给模型，分别计算得分$v_{i}=f\left(x_{i}\right)$和$V_{j}=f\left(x_{j}\right)$，通过$sigmoid$函数将两得分映射为一个学习概率，即$D_{i}$比$D_{j}$更相关的预测概率为
+
+$P_{i j} \equiv P\left(D_{i} \prec D_{j}\right)=\frac{1}{1+\mathrm{e}^{-\sigma\left(v_{i}-v_{j}\right)}}$
+
+式中，$D_{i} \prec D_{j}$表示$D_{i}$排在$D_{j}$前面；参数$\sigma$确定$sigmoid$函数形状，由此便得到了预测相关性概率。下面看一下如何定义真实相关性概率。对于给定的查询，每个文档对中的文档$D_{i}$和$D_{j}$均包含一个表征与该查询相关性的标签，如$D_{i}$关于该查询的标签为非常相关，$D_{j}$为不相关，很明显$D_{i}$比$D_{j}$更相关。因此，真实相关性概率定义为
+
+$\bar{P}_{i j}=\frac{1}{2}\left(1+V_{i j}\right)$
+
+式中，$V_{i j} \in\{0,\pm 1\}$。如果$D_{i}$比$D_{i}$更相关，则$V_{i j}=1$; 如果$D_{j}$比$D_{i}$更相关，则$V_{i j}=-1$; 若其标签值相等，则$V_{i j}=0$。
+
+至此，我们已经得到RankNet相对关系的预测相关性概率和真实相关性概率。像其他pairwise方法一样，RankNet会评估所有文档对的相对关系，以错误的文档对最少作为优化目标。RankNet引入了概率的思想，优化目标转换为预测相关性概率与真实相关性概率的差距最小。RankNet采用交叉熵作为损失函数，公式如下：
+
+$L=-\bar{P}_{i j} \log P_{i j}-\left(1-\bar{P}_{i j}\right) \log \left(1-P_{i j}\right)$
+
+将预测相关性概率公式和真实相关性概率公式代入损失函数，则有:
+
+$L=\frac{1}{2}\left(1-V_{i j}\right) \sigma\left(v_{i}-v_{j}\right)+\log \left(1+\mathrm{e}^{-\sigma\left(v_{i}-v_{j}\right)}\right)$
+
+当$V_{i j}=1$时，有:
+
+$L=\log \left(1+\mathrm{e}^{-\sigma\left(v_{i}-v_{j}\right)}\right)$
+
+当$V_{i j}=-1$时，有:
+
+$L=\log \left(1+\mathrm{e}^{-\sigma\left(v_{j}-v_{i}\right)}\right)$
+
+当$V_{i j}=0$时，有:
+
+$L=\log 2$
+
+由此可以看出，两个排序不同的文档即使评估分值相同，损失函数也会对其进行惩罚。并且如果分数与实际排名不符，则损失函数为类线性函数；如果相符，则损失函数为0。对$v_{i}$和$v_{j}$分别求导：
+
+$\frac{\partial L}{\partial v_{i}}=\sigma\left(\frac{1}{2}\left(1-V_{i j}\right)-\frac{1}{1+\mathrm{e}^{-\sigma\left(v_{i}-v_{j}\right)}}\right)=-\frac{\partial L}{\partial v_{j}}$
+
+以上梯度可以用于更新模型参数，RankNet采用随机梯度下降对参数$w_{\mathrm{k}} \in \mathrm{R}$进行更新。如下：
+
+$w_{k} \rightarrow w_{k}-\eta \frac{\partial L}{\partial w_{k}}=w_{k}-\eta\left(\frac{\partial L}{\partial v_{i}} \frac{\partial v_{i}}{\partial w_{k}}+\frac{\partial L}{\partial v_{j}} \frac{\partial v_{j}}{\partial w_{k}}\right)$
+
+式中，$\eta$为学习率。另外，可以求得损失函数增量$\triangle L$为
+
+$\Delta L=\sum_{k} \frac{\partial L}{\partial w_{k}} \Delta w_{k}=\sum_{k} \frac{\partial L}{\partial w_{k}}\left(-\eta \frac{\partial L}{\partial w_{k}}\right)=-\eta \sum_{k}\left(\frac{\partial L}{\partial w_{k}}\right)^{2}<0$
+
+$\triangle L<0$,表明当$w_{k}$沿负梯度方向变化时损失函数会越来越小。可针对上述过程进行优化以加速训练。由每个文档对均需要更新一次模型参数，转变为每个文档更新一次，即min-batch学习，极大加速了模型的学习过程。由前述可知，对于输入样本，模型参数$w_{k}$的梯度为:
+
+$\begin{aligned} \frac{\partial L}{\partial w_{k}} &=\sum_{\{i, j\} \in I} \frac{\partial L}{\partial v_{i}} \frac{\partial v_{i}}{\partial w_{k}}+\frac{\partial L}{\partial v_{j}} \frac{\partial v_{j}}{\partial w_{k}} \\ &=\sum_{\{i, j\} \in I} \sigma\left(\frac{1}{2}\left(1-V_{i j}\right)-\frac{1}{1+\mathrm{e}^{-\sigma\left(v_{i}-v_{j}\right)}}\right)\left(\frac{\partial v_{i}}{\partial w_{k}}-\frac{\partial v_{j}}{\partial w_{k}}\right) \end{aligned}$
+
+将$\sigma\left(\frac{1}{2}\left(1-V_{i j}\right)-\frac{1}{1+\mathrm{e}^{-\sigma\left(v_{i}-v_{j}\right)}}\right)$以$\lambda_{i j}$表示可得：
+
+$\frac{\partial L}{\partial w_{k}}=\sum_{\{i, j\} \in I} \lambda_{i j}\left(\frac{\partial v_{i}}{\partial w_{k}}-\frac{\partial v_{j}}{\partial w_{k}}\right)$
+
+其中
+
+$\lambda_{i j} \equiv \frac{\partial C\left(v_{i}-v_{j}\right)}{\partial v_{i}}=\sigma\left(\frac{1}{2}\left(1-V_{i j}\right)-\frac{1}{1+\mathrm{e}^{-\sigma\left(v_{i}-v_{j}\right)}}\right)$
+
+对于一个查询，排序不同的$D_{i}$和$D_{j}$，用$I$表示索引对$\{i, j\}$的集合，每个索引对只包含一个，即$\{i, j\}$和$\{j, i\}$等价。为了方便，假设$I$包含的索引对均满足$D_{i} \prec D_{j}$，即$V_{i j}=1$。因为RankNet从概率分布中学习输出概率，并不需要每个文档都标记标签，只需通过$I$收集文档对的相对顺序关系即可，然后通过相对关系对参数$w_{k}$进行更新，计算$\triangle \mathrm{W}_{\mathrm{k}}$：
+
+$\Delta w_{k}=-\eta \sum_{\{i, j\} \in I} \lambda_{i j}\left(\frac{\partial v_{i}}{\partial w_{k}}-\frac{\partial v_{j}}{\partial w_{k}}\right)=-\eta \sum_{i} \lambda_{i} \frac{\partial v_{i}}{\partial w_{k}}$
+
+此处引入了$\lambda_{i}$，对应文档$U_{i}$，一个文档对应一个$\lambda$。$\lambda_{\mathrm{i}}$是由两个$\lambda$项求和得到的，首先找到所有与$i$组成文档对$\{i, j\} \in I$的$j$和所有与$i$组成文档对$\{\mathrm{k}, \mathrm{i}\} \in \mathrm{I}$的$k$。其中前一项$\lambda_{i j}$和作为$\lambda_{i}$增量，后一项$\lambda_{\mathrm{ki}}$和作为减量。计算公式如下：
+
+$\lambda_{i}=\sum_{j:\{i, j\} \in I} \lambda_{i j}-\sum_{j:\{j, i\} \in I} \lambda_{i j}$
+
+公式的第二项将$k$也用$j$表示，意义是一样的。下面通过一个例子进行说明。假设有3个文档，其真实相关性满足$\mathrm{D}_{1}<\mathrm{D}_{2}<\mathrm{D}_{3}$，集合$I$包含3个索引对\{\{1,2\},\{1,3\},\{2,3\}\}，则
+
+$\lambda_{1}=\lambda_{12}+\lambda_{13}, \quad \lambda_{2}=\lambda_{23}-\lambda_{12}, \quad \lambda_{3}=-\lambda_{13}-\lambda_{23}$
+
+我们可以将$\lambda_{i}$看作文档$D_{i}$在迭代更新中移动的方向和幅度。因为$\lambda_{i}$是通过所有包含$i$的文档对计算得到的，所以可以认为文档$D_{i}$的移动方向和幅度取决于所有与其组成文档对的其他文档。经过$\lambda_{i}$改写后，由之前每个文档对进行一次参数更新转为每个查询所有文档进行一次参数更新，即mini-batch学习，极大加速了模型的学习过程。
+
+### LambdaRank
+由前述内容可知，RankNet主要针对文档对相对顺序关系的错误数量进行优化，而并不区分不同文档在优化时的权重。在重点关注头部排序的场景下，效果并不理想，如以NDCG作为评估指标，此时模型拟合应更关注于排序靠前的文档，但RankNet的优化目标与实际的优化目标是有偏差的，因此不能取得很好的效果，RankNet没办法以NDCG这些指标作为优化目标进行迭代。以图5-11为例，其表示一个给定查询的二分类有序文档集，圆形表示与查询相关的文档，正方形表示与查询不相关的文档。对于RankNet而言，其损失函数cost通过文档对的错误数量来衡量。在图5-11a中，cost为6（通过排序错误对数量计算得到）；在图5-11b（经过一轮优化后）中，将排序最靠前的相关文档下调2个位置，将底部的相关文档上调3个位置，此时cost为5。但是对于像NDCG等更注重头部排序的指标，这并不是其想要的结果。图5-11b中的左边箭头代表RankNet的梯度方向和幅度，右边箭头代表真正需要的梯度方向和幅度，即更关注靠前位置的文档的提升。
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506202354.png)
+
+
+LambdaRank针对上述问题提出了一种经验算法，它不再像RankNet一样通过定义损失函数再求梯度的方式处理排序问题，而是直接定义梯度，即Lambda梯度，这样便可以解决大部分评估指标带来的问题。在训练模型时，我们不需要知道损失函数计算的代价本身，而只需要代价的梯度即可，在前面讨论的$\lambda$即为这样的梯度。可以将$\lambda$形象地看作物理学中的力（一种潜在函数的梯度），假设$\lambda_{1}$为$D_{1}$对应的$\lambda$，则：如果$D_{2}$比$D_{1}$更相关，则$D_{1}$将被推下$\left|\lambda_{1}\right|$个单位，而$D_{2}$则会被方向相反、大小相等的力推上$\left|\lambda_{1}\right|$个单位；如果$D_{1}$比$D_{2}$更相关，则$D_{1}$被推上$\left|\lambda_{1}\right|$个单位，${D}_{2}$被推下$|\lambda 1|$个单位。
+
+LambdaRank在RankNet的基础上引入了评价指标。这里以NDCG为例，假设将$D_{1}, D_{2}$交换位置且其他文档的位置不变，NDCG指标变化大小为$| \triangle N D C G|$，对式$\lambda_{i j} \equiv \frac{\partial C\left(v_{i}-v_{j}\right)}{\partial v_{i}}=\sigma\left(\frac{1}{2}\left(1-V_{i j}\right)-\frac{1}{1+\mathrm{e}^{-\sigma\left(v_{i}-v_{j}\right)}}\right)$进行修改，乘以$| \triangle N D C G|$，如下：
+
+$\lambda_{i j} \equiv \frac{\partial C\left(v_{i}-v_{j}\right)}{\partial v_{i}}=-\frac{\sigma}{1+\mathrm{e}^{-\sigma\left(v_{i}-v_{j}\right)}}|\Delta \mathrm{NDCG}|$
+
+此处假设$I$包含的索引对均满足$D_{i} \prec D_{j}$，即$V_{i j}=1$。损失函数的梯度代表了文档下一次的移动方向和幅度，引入评估指标$|\triangle \mathrm{NDCG}|$之后，可以使其更关注排序靠前的文档，避免下调排序靠前文档的情况。另外，对于其他评估指标如MAP、MRR等也可采用此方法，只需将$|\triangle \mathrm{NDCG}|$替换为相应指标即可。实验表明，LambdaRank引入评估指标的方式对模型的提升效果非常显著。
+### LambdaMART
+有了RankNet和LambdaRank的基础，下面来学习另外一种排序算法——LambdaMART，XGBoost的排序学习框架是基于LambdaMART算法实现的。LambdaMART是一种将LambdaRank和MART结合的排序算法。MART全称为Multiple Additive Regression Trees，即前面介绍过的Gradient Tree Boosting模型，模型输出为一组回归树输出的线性组合。MART定义了一种增强树的框架，针对不同的问题可定义不同的梯度，而LambdaRank便提供了这样的梯度定义方法。因此，可以简单地认为LambdaMART是将LambdaRank定义的梯度应用到了MART的增强树框架中。下面来看LambdaMART算法。假设决策树数量为N，训练样本数为m，每棵树叶子数量为L，学习率为η。LambdaMART算法的计算过程如算法5-6所示。
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506203101.png)
+
+由算法5-6可知，LambdaMART首先通过初始模型对每个样本进行预测，若无初始模型则置0；然后进行模型迭代，在每一轮迭代中，求得每个样本的$\lambda_{i}$和$\lambda_{i}$对上一轮模型预测值的一阶导；接着在数据集$\left\{x_{i}, y_{i}\right\}_{i=1}^{m}$的基础上创建决策树，通过牛顿法计算叶子节点权重；最后将新树加入模型中，进行下一轮迭代。
+
+XGBoost排序学习的实现原理基本和LambdaMART的类似，是LambdaMART的一种变形，区别仅在于XGBoost对目标函数进行了泰勒展开，通过一阶梯度和二阶梯度计算分裂节点的收益和叶子节点的权重。
 ## DART
 由前述内容可知，XGBoost是多棵决策树共同决策，即所有决策树的结果累加起来作为最终结果。这种方式在多种机器学习应用场景中取得了不错的效果，但是也存在一些问题。在这种情况下，首先加入模型的决策树对模型的贡献是非常大的，但是较为靠后的树则只影响少部分样本，而对大部分样本的贡献则微乎其微。这容易导致模型过拟合并且对少数初始生成的树过度敏感。XGBoost采用缩减方法为每棵树设定一个很小的学习率，这在一定程度上缓解了此问题，但问题仍然存在。MART（Multiple Additive Regkession Trees）中亦是如此。2015年，Rasmi等人借鉴深度神经网络中的dropout技术（将神经网络单元按照一定概率暂时从网络中丢弃，从而达到防止过拟合的效果），将其应用到了增强树中，这种技术称为DART。DART在一些场景下取得了不错的效果，因此XGBoost后续也引入了该项技术，作为可选项供用户使用。
 
@@ -1699,3 +1813,279 @@ Tree Booster参数是树模型训练过程中非常重要的一类参数，其�
 
 至此，便完成了一次较完整的调参过程，最终模型结果相比于最开始已经有了比较明显的提升。但是与此同时应该清楚，参数调优只能让模型有小幅提高，而并不能使模型有质的提升，想要模型效果有大幅提高，还需要依赖特征工程、模型融合等手段。
 
+# XGBoost应用
+## PCA
+### PCA的实现原理
+在机器学习过程中，有时我们也需要对数据进行“降维打击”，当然降维的目的不是“消灭”数据，而是将数据最重要的一些特征保留下来，去除噪声和不重要的特征，更好地为数据分析、模型训练服务。另外，降维还有助于实现数据可视化。对二维或三维的数据进行可视化相对容易，但随着数据的生成和维度的不断上升，对数据进行可视化变得越来越困难。因此，可通过降维来实现可视化。降维有助于减少模型计算量和训练时间，另外，一些算法可能不太适用于高维数据，这时即可通过降维提升算法的可用性。
+
+PCA是一种常用的数据降维方法。PCA通过线性变换减少原始数据的维度，将原始数据由原来的坐标系映射为一组新的线性无关的坐标系（称作主成分）。具体做法：首先找出方差最大的第一主成分，然后在与前面成分正交的基础上找到方差次大的成分，依次类推。PCA可以有效提取数据中的主要特征，去除冗余特征和噪声，将原有复杂数据降维，找到隐藏在原始数据中的简单模式。
+
+降维一般会带来信息丢失，那如何在损失最小的情况下实现将高维数据映射到低维空间呢？下面以二维降到一维为例，如图9-1所示。图9-1a中的点是一些存在于二维空间中的样本，分别以图9-1b和图9-1c两种形式进行降维。
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506210027.png)
+
+高维数据的降维过程可以用矩阵的形式来表示，如二维降到一维，假设有（1,1）、（2,2）、（3,3）3个样本，将其降维到（1,1）一维直线上，则可通过如下矩阵运算表示：
+
+$[1,1]\left[\begin{array}{l}1,2,3 \\ 1,2,3\end{array}\right]=[2,4,6]$
+
+可以看到，经过图9-1b的方式降维之后，一些样本映射到一维直线上会与其他样本重合，导致某些样本信息损失。而经过图9-1c的方式，样本信息基本未损失。图9-1c所示降维的特点是让样本投影后的值尽可能分散，在数学上可以用方差来描述这种分散程度。因此，对于上述将二维降到一维的问题，只需要找到降维后方差最大的维度即可。但是对于大于一维的情况，方差便不再适用了。例如，将$N$维降到$K$维（$K>1$），此时首先找到一个方向（其方差最大）作为一个维度，若第二个方向仍旧以方差最大作为选择标准，则可以预想到其应该和前一个方向是基本重合的，因此在确定第二个方向时应当与之前方向正交，即两个方向线性无关，此时便需要引入协方差。协方差可以表示两个变量间的相关性，协方差为0，表示两者之间线性无关。协方差公式如下：
+
+$\operatorname{Cov}(X, Y)=E[(X-E[X]])(Y-E[Y])]$
+
+现有一样本矩阵，大小为$2×n$，每一列表示一个数据样本，样本特征维度为两维，如下：
+
+$\left[\begin{array}{l}v_{11}, v_{12}, \cdots, v_{1 n} \\ v_{21}, v_{22}, \cdots, v_{2 n}\end{array}\right]$
+
+首先对样本矩阵进行中心化处理，使特征均值为0，可以得到：
+
+$\boldsymbol{X}=\left[\begin{array}{l}v_{11}-u_{1}, v_{12}-u_{2}, \cdots, v_{1 n}-u_{n} \\ v_{21}-u_{1}, v_{22}-u_{2}, \cdots, v_{2 n}-u_{n}\end{array}\right]=\left[\begin{array}{l}x_{11}, x_{12}, \cdots, x_{1 n} \\ x_{21}, x_{22}, \cdots, x_{2 n}\end{array}\right]$
+
+将$X$乘以$X$的转置，然后除以样本量$n$，则可得到其协方差矩阵，如下：
+
+$\frac{1}{n} \boldsymbol{X} \boldsymbol{X}^{\mathrm{T}}=\left[\begin{array}{l}\frac{1}{n} \sum_{i=1}^{n} x_{1 n}^{2}, \frac{1}{n} \sum_{i=1}^{n} x_{1 n} x_{2 n} \\ \frac{1}{n} \sum_{i=1}^{n} x_{2 n} x_{1 n}, \frac{1}{n} \sum_{i=1}^{n} x_{2 n}^{2}\end{array}\right]$
+
+可以看到，协方差矩阵的对角线上为特征的方差，而非对角线上为两个特征维度之间的协方差。因此，降维后数据的协方差矩阵应满足除对角线外的其他值为0。假设原始样本矩阵为$X(M \times N)$，$N$个$M$维向量，$P（K×M）$为变换矩阵，$Y（K×N）$为降维后的矩阵，其中$Y=PX$。$C$为$X$的协方差矩阵$（M×M）$，$D$为$Y$的协方差矩阵$（K×K）$。此时的优化目标为降维后的Y每一维的方差足够大，并且维度之间是线性无关的，反映到协方差矩阵$D$上，即对角线上的值足够大，且非对角线的值为0，此时该优化问题转变为了协方差矩阵对角化的问题。熟悉线性代数的读者对矩阵的对角化问题应该并不陌生，此处不再详述，下面介绍一下PCA的具体求解过程。首先求出协方差矩阵$C$的特征值和对应的特征向量，将特征值按从大到小的顺序沿对角线排列，取前$K$个特征值即可得到协方差矩阵$D$，将特征向量按相应的特征值从上到下排列，取前$K$行，即可得到转换矩阵$P$。
+
+总结PCA的求解方法如下：
+
+1. 对原始矩阵进行中心化处理；
+2. 计算原始矩阵的协方差矩阵；
+3. 计算协方差矩阵的特征值和特征向量，将特征值从大到小排列；
+4. 取前$K$个特征值对应的特征向量组成转换矩阵$P$；
+5. 得到降维后的矩阵$Y=PX$。
+
+### 通过PCA对人脸识别数据降维
+scikit-learn可通过接口获取LFW数据集，代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506212249.png)
+
+通过`fetch_lfw_people`函数获取数据集，其中参数`min_faces_per_person`表示提取的图片数据集中仅保留图片数大于等于`min_faces_per_person`的图片，参数`resize`用于调整每张图片的大小。数据集下载完成后，统计数据集中样本数量、特征数及包含类别（label）的数量：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506212352.png)
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506212434.png)
+
+可以看到，该数据集包含1288个样本，特征数为1850，总共有7个类别，即包含了7个人的人脸图像。下面对数据集进行划分，将其划分为训练集和测试集：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506212548.png)
+
+完成上述操作后，下面开始定义PCA模型。scikit-learn中的PCA包含多个参数，如`n_components`、`svd_solver`等。本例主要用到参数`n_components`，它表示需保留的成分数量，即降维后的维度数，此处设为200，其他参数均采用默认值。定义PCA模型，并对训练集进行拟合，代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506212635.png)
+
+模型拟合完毕后，用拟合好的PCA模型对训练集和测试集进行降维：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506212730.png)
+
+下面用XGBoost分别对降维前和降维后的训练集进行训练，并对测试集进行预测，观察降维前后训练时长及模型精度的变化。定义XGBoost模型训练参数如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506212749.png)
+
+因为此问题是一个多分类问题，因此将参数`objective`设为`'multi:softmax'`，类别数`num_class`设为7。另外为了方便比较，降维前后采用相同的参数进行训练，训练轮数均为1500轮。首先对降维前的数据集进行训练和预测：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506212843.png)
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506212914.png)
+
+可以看到，降维前数据集的训练总时长为646.3s，平均准确率、召回率及F1-Score分别为0.79、0.78、0.77。
+
+下面对降维后的数据集进行训练及预测：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506212939.png)
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506213013.png)
+
+可以看到，降维后数据集的训练时长相比降维前由646.3s缩短为94.5s，而模型评估指标相比降维前略有下降，平均准确率、召回率及F1-Score分别为0.77、0.75、0.74，表明PCA在降维的过程中也带来了一些信息损失。
+
+## 通过XGBoost实现广告分类器
+该数据集是由UCI发布的一个互联网广告数据集，总共包含3279张图片，其中2820张为正常网页内容，459张为广告。每个样本包含1558个特征，其中包含3个连续特征，分别为height、width和ratio，其他均为二值特征。另外，样本还有一个字段用于标明该样本是否为广告（ad.—广告，nonad.—非广告）。
+
+### 数据分析
+本节会通过一些常用的数据分析方法对数据集进行分析。首先读取数据集，因为数据文件并不包含表头，因此将`header`置为`None`，此处通过设置参数`error_bad_lines`忽略无效数据。代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506214826.png)
+
+数据加载完毕后，可通过`data.shape`查看数据集的大小。可以看到，数据集包含3279个样本，共1559个字段，和数据集描述是一致的。另外，可以通过`head()`函数输出部分数据来查看数据格式，如图9-6所示。
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506214914.png)
+
+可以看到，因为数据不包含表头，因此默认以数字索引作为列名。为了后续处理方便，我们将数据集中的0～2、1558列分别用`height`、`width`、`ratio`（`width`/`height`）和`label`作为列名，另外，数据集中缺失值以“?”表示，此处将其替换为`np.nan`。处理代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506215301.png)
+
+数据值缺失是数据分析中经常遇到的问题之一。当缺失比例很小时，可直接对缺失记录进行舍弃或手工处理。当缺失数据占有一定比例时，可以采取如特殊值填充、平均值填充等方法进行填充。因为XGBoost本身实现了对缺失值的处理算法，此处缺省值不再进行填充处理。因为某些包含“?”的列的字段类型为object（可通过`dtypes`查看），为方便处理，将其转化为float，转化代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506215600.png)
+
+目前数据集`label`字段取值为`ad.`和`nonad.`，分别表示样本为广告和非广告，将其转化为1和0表示，代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506215730.png)
+
+将数据集划分为训练集和测试集，此处采用4:1的划分比例：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506215747.png)
+
+为了更准确地理解数据，我们通过`train.describe()`对特征进行简单的统计计算。
+
+describe方法可计算数值特征的计数、平均值、标准差、最小值、最大值及25、50、75的百分位数。describe输出如图9-7所示（数据输出较多，此处为部分数据）。
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506215842.png)
+
+#### 目标特征
+下面看一下`label`特征的取值分布，因为该问题为二分类问题，因此`label`取值只有两种。通过`plot`绘制不同`label`样本数量柱状图，代码如下
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506221629.png)
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506221647.png)
+
+可以看到，训练数据中的正样本与负样本的比例大概是1:7，正负样本并不均衡，后续处理应考虑平衡正负样本。
+
+#### 连续型特征
+分析完目标特征后，下面对数据集的其他特征进行分析。此数据集包含3个连续型特征：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506221727.png)
+
+绘制数据分布直方图，方便直观地分析每个特征的分布情况：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506221746.png)
+
+可以看到，分布图中有些特征并未遵循任何可解释的概率分布函数，读者可以尝试转化一些特征使其更接近于高斯分布，但这种方法并非一定奏效。另外，还可以对连续特征在正负样本的不同分布上进行对比，这里通过seaborn库中的violinplot绘制小提琴图来达到上述效果。小提琴图可以可视化一个或者多个组的数字变量的分布，此处以`width`这个特征为例，代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506221911.png)
+
+其中，参数data为dataframe或者数组格式的数据；x和y分别为绘制的x轴和y轴的特征。输出结果如图9-10所示。
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506222000.png)
+
+其中，横坐标为`label`，有两个取值，即0和1；纵坐标为`width`，图9-10中小提琴图两边是对称的，可以看出样本在特征`width`上的分布。可以看到，特征`width`在正负样本上的分布的差别还是很大的，因此可以推测该特征可能是一个对模型较为有用的特征。同理，可以绘制出特征`height`和特征`ratio`在正负样本上的分布，如图9-11和图9-12所示。
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506222056.png)
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506222107.png)
+
+下面看一下这些连续型特征彼此之间是否具有相关性，此处通过皮尔逊（Pearson）系数来度量两个特征之间的相关性。皮尔逊相关系数为两个变量之间的协方差和标准差的商，取值范围为（-1～+1）。估算样本的协方差和标准差，可得到皮尔逊相关系数，公式如下：
+
+$r=\frac{\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)\left(y_{i}-\bar{y}\right)}{\sqrt{\sum_{i=1}^{n}\left(x_{i}-\bar{x}\right)^{2}} \sqrt{\sum_{i=1}^{n}\left(y_{i}-\bar{y}\right)^{2}}}$
+
+式中，$n$是样本数量；$x_{i}$和$y_{i}$表示第$i$个样本的不同变量；$x$和$y$表示两个变量的均值。pandas提供的$corr$方法可以方便地计算列之间的皮尔逊相关系数，pandas也提供了kendall和spearman相关系数的计算，读者可根据需要进行选择。另外，这里通过seaborn库中的heatmap来绘制皮尔逊相关系数的热点图，代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506222326.png)
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506222345.png)
+
+因为本例中的连续特征较少，因此相关系数的表现并不是很明显。在某些应用中，通过相关系数可以清楚地看到某些特征之间具有高度相关性，这有可能是基于数据的多重共线性导致的。回归模型中多个特征具有高度相关性，会导致很多问题，因此对数据集应用线性回归模型时要十分注意。
+#### 训练集、测试集分布比较
+在一些情况下，训练集和测试集并不完全相似，此时通过训练集选择的验证集并不能很好地代表测试集。为了使测试集预测得更准确，需要对训练集和测试集进行分布比较，确保它们的数据分布相同。如果确定训练集和测试集分布是相同的，那么便可以在训练集上实施交叉验证。
+
+此处我们采用机器学习算法来检验训练集和测试集是否有明显区别。理想情况下，对于来自相同分布的训练集和测试集，训练的分类器区分情况应与随机差不多，即AUC应为0.5左右。
+
+首先，将训练集和测试集样本进行混合。将训练集和测试集的原`label`字段丢弃，新增一列字段作为训练集和测试集的`label`特征。`label`字段为1表示训练集，为0表示测试集。代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506223321.png)
+
+处理完毕后，将所有数据的顺序随机打乱，重新创建新的训练集和测试集，此处训练集样本数设定为总样本数的1/2。代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506223345.png)
+
+##### 通过分类模型检验
+生成新的训练集和测试集后，即可拟合分类模型了，此处选取逻辑回归和决策树这两种模型作为分类器，分别拟合新生成的训练集，对新测试集进行预测，最后计算预测结果的AUC。代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506223626.png)
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506223841.png)
+
+可以看到，通过逻辑回归和决策树拟合后的模型对新测试集进行预测，得到的预测结果AUC均接近于0.5，说明原始训练集和测试集的分布是基本相同的。
+
+##### 通过交叉验证检验
+除了上述方法之外，我们也可以对整个数据集进行交叉验证，即通过交叉验证来划分训练集和测试集（而非人工随机划分）来进行测试，此处以简单的2折交叉验证为例。代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506223928.png)
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506223940.png)
+
+可以看到，AUC均值也在0.5附近，并且标准差为0，也可以验证上述得到的结论。
+
+#### 通过PCA降维检验
+除了采用分类模型、交叉验证检验训练集和测试集的分布外，我们还可通过PCA对训练集和测试集的集合数据进行降维（降到二维或三维），然后对降维后的数据进行可视化，观察训练集和测试集数据分布是否具有明显差别。下面将上述合并数据集特征映射到二维平面上，并将其可视化。代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506224140.png)
+
+在图9-16中，圆形表示训练集，三角形表示测试集。两种形状以相似的方式分散在整个空间中，我们从中未能发现任何规律能够将两者很好地分开。因此，从这一角度也可以印证训练集和测试集分布是基本相同的。
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506224211.png)
+
+### 平衡正负样本
+该数据集中的正负样本十分不均衡，需要平衡正负样本的权重和。由前述内容可知，XGBoost可通过设置参数`scale_pos_weight`平衡正负样本的权重。若训练数据集样本之间无权重高低之分，则直接可以以负样本数/正样本数作为参数`scale_pos_weight`值。统计正负样本的代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506224949.png)
+
+因此，`scale_pos_weight`值设置为`neg_num/pos_num`。
+
+### 训练参数定义
+我们先按照经验为模型指定一个初始版本的参数，以此训练一个基准模型。本例为一个二分类任务，因此`objective`采用`binary:logistic`，评估函数采用`auc`。学习率`eta`设置为0.1，`max_depth`设置为6，模型迭代轮数为50轮，`scale_pos_weight`采用上述统计的`neg_num/pos_num`。代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506225111.png)
+
+### 模型训练
+首先通过数据集构造满足XGBoost输入的DMatrix，然后通过上述定义的模型参数训练模型，设置模型训练过程中的监控列表watchlist，监控训练集和测试集在训练过程中的AUC指标。代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506225152.png)
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506225206.png)
+
+训练完成后，保存模型：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506225231.png)
+
+下面通过训练得到的模型对测试集进行预测，并计算预测结果的AUC得分：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506225246.png)
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506225300.png)
+
+可以看到，模型对测试集预测结果的AUC约为0.95，是一个还不错的结果。此结果作为我们的基准指标，为后续模型调优提供参考依据。
+### 特征重要性排名
+模型训练完毕后，可以通过`plot_importance`来得到可视化的特征重要性排名，此处选择排名前20的特征。代码如下：
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506225354.png)
+
+可以看到，3个连续型特征排名最高，其中`height`作为分裂特征达122次。
+
+### 超参数调优
+通过自定义模型参数，我们已经得到了一个基准模型。因为上述模型的参数均是根据经验人工设定的，因此该模型显然并非最优模型。下面我们就通过超参数调优来优化上述模型，本例采用的优化方法为贝叶斯优化法。
+
+BayesianOptimization包是基于函数优化的，因此首先定义优化函数。代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506225541.png)
+
+优化函数中的`learning_rate`、`cosample_bytree`、`subsample`、`gamma`、`alpha`为浮点型的连续值，`min_child_weight`、`max_depth`为整型的离散值，`objective`为固定值`binary:logistic`。优化函数完成定义后，即可指定贝叶斯优化的参数范围。代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506225640.png)
+
+下面实例化BayesianOptimization对象，开始贝叶斯优化过程。代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506225703.png)
+
+此处设置初始阶段随机探索步骤数为5，贝叶斯优化迭代次数为30。当然读者也可尝试其他值，迭代次数越大，越可能探索到最优值，当然花费的时间代价会相应增大。贝叶斯优化初始随机探索阶段输出如图9-20所示。
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506225719.png)
+
+贝叶斯优化迭代阶段部分输出如图9-21所示。
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506225732.png)
+
+根据输出结果，我们可以得到，最优轮为第23轮，最优交叉验证值为0.97671。下面用贝叶斯优化的参数训练XGBoost模型，并对测试集进行预测。代码如下：
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506225752.png)
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506225809.png)
+
+可以看到，通过贝叶斯优化调参之后，测试集AUC相比基准模型有明显提升，由之前的0.95提升到了0.97，证明贝叶斯优化对模型结果的影响是正向的。
+
+## GBDT、LR融合提升广告点击率
+互联网广告有一个重要的衡量指标——点击通过率（Click-Through Rate，CTR），它是广告点击次数与广告展示次数的比值，可以用来衡量一个广告的热门程度。因为选择正确的广告和显示次序可以极大地影响用户查看和点击广告，进而影响广告产生的收入，因此准确预估CTR就显得至关重要了。Facebook针对本身在线广告CTR的预测场景，提出了一种决策树（GBDT）与逻辑回归（LR）相结合的模型。
+
+GBDT基于boosting思想实现多棵决策树的集成学习，其中每棵树拟合的是当前模型的残差。GBDT具有比较强大的特征表达能力，可以有效地发现具有区分性的特征和特征组合，得到非线性映射的高阶特征。因此，可以将GBDT作为一个天然的特征处理器。LR模型实现简单，容易迭代和并行化，非常适用于类似广告这种具有海量样本的应用场景，因此LR是CTR预估最常用的模型。然而也正是因为LR实现简单，学习能力比较有限，需要强大的特征工程提供支持，才能保证模型效果，而大量的特征工程又十分依赖于人工经验，从而需要巨大的人力成本，由此Facebook提出一种GBDT与LR融合的方法，以GBDT作为特征处理器，将得到的新特征作为特征输入训练LR模型。GBDT+LR模型结构如图10-1所示。
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200506233412.png)
+
+如图所示，$x$为样本的原始特征，其先经过GBDT模型，此处GBDT模型包含两棵树，即tree0和tree1，其中tree0有3个叶子节点，tree1有2个叶子节点，每个叶子节点对应LR的一维特征。每个样本均会落到这两棵树的某个叶子节点上。假设某样本落到了第一棵树的第三个叶子节点和第二棵树的第一个叶子节点上，则可用一个特征向量表示为[0,0,1,1,0]。然后将得到的特征向量作为特征输入对LR模型进行训练。可以看出，该方法采用的是stacking模型融合的思想，通过模型融合提升模型精度。Facebook将此方法应用到其在线广告CTR预估，取得了不错的效果。另外，2014年，在Kaggle的Display Advertising Challenge比赛中，冠军方案也采用了类似的方法，不过该方案用FM（Factorization Machine）模型（确切地说是FFM）代替了LR。传统线性模型（如LR等）的各个特征之间都是相互独立的，若需要考虑特征与特征之间的相互作用，则需要人工提取交叉特征，而FM模型通过交叉向量的方式挖掘特征之间的相关性，解决了高维稀疏数据下的特征组合问题。
