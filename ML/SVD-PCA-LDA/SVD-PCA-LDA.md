@@ -625,7 +625,7 @@ $X^{\prime}=U \Sigma V^{\mathrm{T}}$
 $Y=V^{\mathrm{T}} X$
 
 # 主成分分析(《机器学习》)
-主成分分析（Principal Component Analysis，简称 PCA）是最常用的一种降维方法。在介绍 PCA 之前，不妨先考虑这样-一个问题：对于正交属性空间中的样本点，如何用一个超平面（直线的高维推广）对所有样本进行恰当的表达？
+主成分分析（Principal Component Analysis，简称 PCA）是最常用的一种降维方法。在介绍 PCA 之前，不妨先考虑这样一个问题：对于正交属性空间中的样本点，如何用一个超平面（直线的高维推广）对所有样本进行恰当的表达？
 
 容易想到，若存在这样的超平面，那么它大概应具有这样的性质：
 1. 最近重构性：样本点到这个超平面的距离都足够近；
@@ -642,7 +642,7 @@ $\propto-\operatorname{tr}\left(\mathbf{W}^{\mathrm{T}}\left(\sum_{i=1}^{m} \bol
 
 根据最近重构性，上式应被最小化，考虑到$\boldsymbol{w}_{j}$是标准正交基，$\sum_{i} \boldsymbol{x}_{i} \boldsymbol{x}_{i}^{\mathrm{T}}$是协方差矩阵，有
 
-$\min _{\mathbf{W}}-\operatorname{tr}\left(\mathbf{W}^{T} \mathbf{X} \mathbf{X}^{T} \mathbf{W}\right)$
+$\min _{\mathbf{w}}-\operatorname{tr}\left(\mathbf{W}^{\mathrm{T}} \mathbf{X} \mathbf{X}^{\mathrm{T}} \mathbf{W}\right)$
 s.t. $\mathbf{W}^{\mathrm{T}} \mathbf{W}=\mathbf{I}$
 
 这就是主成分分析的优化目标。
