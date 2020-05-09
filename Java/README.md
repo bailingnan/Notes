@@ -8,7 +8,7 @@
 - [Java核心技术卷I基础知识(原书第11版)](https://item.jd.com/12759308.html)
 ## 进阶
 - [Effective_Java_3rd-版本1](https://github.com/clxering/Effective-Java-3rd-edition-Chinese-English-bilingual)
-- [Effective_Java_3rd—版本2](https://github.com/tigershinny/effective-java-3rd-cn)
+- [Effective_Java_3rd-版本2](https://github.com/tigershinny/effective-java-3rd-cn)
 ## 容器
 ## 虚拟机
 - [深入理解Java虚拟机_3rd](https://item.jd.com/12607299.html)
