@@ -1,11 +1,15 @@
 # Java
 - [Java大纲](Java大纲.md)
+- [阿里Java开发手册泰山版](docs/阿里Java开发手册泰山版.pdf)
+## 基础
 - [廖雪峰Java教程](https://www.liaoxuefeng.com/wiki/1252599548343744)
 - [菜鸟教程](https://www.runoob.com/java/java-tutorial.html)
 - [Java编程思想](https://github.com/LingCoder/OnJava8)
+- [Java核心技术卷I基础知识(原书第11版)](https://item.jd.com/12759308.html)
+## 进阶
 - [Effective_Java_3rd-版本1](https://github.com/clxering/Effective-Java-3rd-edition-Chinese-English-bilingual)
 - [Effective_Java_3rd—版本2](https://github.com/tigershinny/effective-java-3rd-cn)
-## 基础
 ## 容器
 ## 虚拟机
+- [深入理解Java虚拟机_3rd](https://item.jd.com/12607299.html)
 ## 并发
