@@ -89,7 +89,12 @@
         - [实现比较操作](#实现比较操作)
       - [枚举类](#枚举类)
       - [使用元类](#使用元类)
+    - [调试](#调试)
+  - [文件和操作系统](#文件和操作系统)
+    - [操作文件和目录](#操作文件和目录)
     - [序列化](#序列化)
+  - [对象引用、可变性和垃圾回收](#对象引用可变性和垃圾回收)
+    - [垃圾回收](#垃圾回收)
   - [标准库](#标准库)
     - [`collections`](#collections)
       - [`namedtuple`](#namedtuple)
@@ -4165,6 +4170,7 @@ except ValueError as e:
     print('ValueError')
 except UnicodeError as e:
     print('UnicodeError')
+```
 第二个`except`永远也捕获不到`UnicodeError`，因为`UnicodeError`是`ValueError`的子类，如果有，也被第一个`except`给捕获了。
 ```
 使用`try...except`捕获错误还有一个巨大的好处，就是可以跨越多层调用，比如函数`main()`调用`foo()`，`foo()`调用`bar()`，结果`bar()`出错了，这时，只要`main()`捕获到了，就可以处理：
@@ -4323,8 +4329,9 @@ with open('/Users/michael/test.txt', 'w') as f:
 ```Python
 os.path.abspath('.')
 '/Users/michael'
+```
 - 在某个目录下创建一个新目录，首先把新目录的完整路径表示出来:
-````Python
+```Python
 os.path.join('/Users/michael', 'testdir')
 '/Users/michael/testdir'
 ```
@@ -4333,7 +4340,9 @@ os.path.join('/Users/michael', 'testdir')
 os.mkdir('/Users/michael/testdir')
 ```
 - 删掉一个目录:
->>> os.rmdir('/Users/michael/testdir')
+```python
+os.rmdir('/Users/michael/testdir')
+```
 把两个路径合成一个时，不要直接拼字符串，而要通过`os.path.join()`函数，这样可以正确处理不同操作系统的路径分隔符.
 同样的道理，要拆分路径时，也不要直接去拆字符串，而要通过`os.path.split()`函数，这样可以把一个路径拆分为两部分，后一部分总是最后级别的目录或文件名：
 ```Python
@@ -4349,7 +4358,7 @@ os.path.splitext('/path/to/file.txt')
 这些合并、拆分路径的函数并不要求目录和文件要真实存在，它们只对字符串进行操作。
 文件操作使用下面的函数。假定当前目录下有一个`test.txt`文件：
 - 对文件重命名:
-```
+```python
 os.rename('test.txt', 'test.py')
 ```
 - 删掉文件:
@@ -4383,7 +4392,7 @@ json.dumps(d)
 要把`JSON`反序列化为`Python`对象，用`loads()`或者对应的`load()`方法，前者把`JSON`的字符串反序列化，后者从`file-like Object`中读取字符串并反序列化：
 ```Python
  json_str = '{"age": 20, "score": 88, "name": "Bob"}'
->>> json.loads(json_str)
+json.loads(json_str)
 {'age': 20, 'score': 88, 'name': 'Bob'}
 ```
 `Python`的`dict`对象可以直接序列化为`JSON`的`{}`，不过，很多时候，我们更喜欢用`class`表示对象，比如定义`Student`类，然后序列化：
@@ -4436,6 +4445,69 @@ print(json.loads(json_str, object_hook=dict2student))
 <__main__.Student object at 0x10cd3c190>
 ```
 打印出的是反序列化的`Student`实例对象。
+
+## 对象引用、可变性和垃圾回收
+**元组与多数 Python 集合（列表、字典、集，等等）一样，保存的是对象的引用。而 `str、Bytes` 和 `array. Array` 等单-类型序列是扁平的，它们保存的不是引用，而是在连续的内存中保存数据本身（字符、字节和数字）。**如果引用的元素是可变的，即便元组本身不可变，元素依然可变。也就是说，元组的不可变性其实是指 `tuple` 数据结构的物理内容（即保存的引用）不可变，与引用的对象无关。
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200510063337.png)
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200510063401.png)
+
+每个变量都有标识、类型和值。对象一旦创建，它的标识绝不会变；你可以把标识理解为对象在内存中的地址。is 运算符比较两个对象的标识；`id()` 函数返回对象标识的整数表示。ID 一定是唯一的数值标注，而且在对象的生命周期中绝不会变。
+
+元组的值会随着引用的可变对象的变化而变。元组中不可变的是元素的标识。
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200510063623.png)
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200510063632.png)
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200510064108.png)
+
+对列表和其他可变序列来说，还能使用简洁的 `l2 = l1[:]` 语句创建副本。
+
+然而，构造方法或 `[:]` 做的是**浅复制（即复制了最外层容器，副本中的元素是源容器中元素的引用）**。如果所有元素都是不可变的，那么这样没有问题，还能节省内存。但是，如果有可变的元素，可能就会导致意想不到的问题。
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200510064312.png)
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200510064435.png)
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200510064448.png)
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200510064501.png)
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200510065341.png)
+接下来，在示例 8-9 中的交互式控制台中，我们将创建一个 Bus 实例（bus1）和两个副本，一个是浅复制副本（bus2），另一个是深复制副本（bus3），看看在 bus1 有学生下车后会发生什么。
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200510065419.png)
+
+我们应该避免使用可变的对象作为参数的默认值。
+
+下面在示例 8-12 中说明这个问题。我们以示例 8-8 中的 `Bus` 类为基础定义一个新类，`HauntedBus`，然后修改 `__init__` 方法。这一次，passengers 的默认值不是 `None`，而是 `[]`，
+这样就不用像之前那样使用 `if` 判断了。这个“聪明的举动”会让我们陷入麻烦。
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200510065953.png)
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200510070053.png)
+
+问题在于，没有指定初始乘客的 `HauntedBus` 实例会共享同一个乘客列表。
+
+这种问题很难发现。如示例 8-13 所示，实例化 `HauntedBus` 时，如果传入乘客，会按预期运作。但是不为 `HauntedBus` 指定乘客的话，奇怪的事就发生了，这是因为 `self.passengers` 变成了 `passengers` 参数默认值的别名。出现这个问题的根源是，默认值在定义函数时计算（通常在加载模块时），因此默认值变成了函数对象的属性。因此，如果默认值是可变对象，而且修改了它的值，那么后续的函数调用都会受到影响。
+
+如果定义的函数接收可变参数，应该谨慎考虑调用方是否期望修改传入的参数。例如，如果函数接收一个字典，而且在处理的过程中要修改它，那么这个副作用要不要体现到函数外部？具体情况具体分析。这其实需要函数的编写者和调用方达成共识。在本章最后一个校车示例中，`TwilightBus` 实例与客户共享乘客列表，这会产生意料之外的结果。在分析实现之前，我们先从客户的角度看看 `TwilightBus` 类是如何工作的。
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200510070648.png)
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200510070704.png)
+
+这里的问题是，校车为传给构造方法的列表创建了别名。正确的做法是，校车自己维护乘客列表。修正的方法很简单：在 `__init__` 中，传入 `passengers` 参数时，应该把参数值的
+副本赋值给 `self.passengers`，像示例 8-8 中那样做（8.3 节）。
+
+![](https://picgp.oss-cn-beijing.aliyuncs.com/img/20200510070817.png)
+
+在内部像这样处理乘客列表，就不会影响初始化校车时传入的参数了。此外，这种处理方式还更灵活：现在，传给 `passengers` 参数的值可以是元组或任何其他可迭代对象，例如`set` 对象，甚至数据库查询结果，因为 `list` 构造方法接受任何可迭代对象。自己创建并管理列表可以确保支持所需的 `.remove()` 和 `.append()` 操作，这样 `.pick()` 和 `.drop()` 方法才能正常运作。
+
+### 垃圾回收
+`del` 语句删除名称，而不是对象。`del` 命令可能会导致对象被当作垃圾回收，但是仅当删除的变量保存的是对象的最后一个引用，或者无法得到对象时。重新绑定也可能会导致对象
+的引用数量归零，导致对象被销毁。
+
+
 ## 标准库
 ### `collections`
 #### `namedtuple`
