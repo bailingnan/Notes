@@ -17,6 +17,7 @@
 - [LightGBM示例](LightGBMEaample/README.md)
 - [MSRA王太峰(Vedio)](https://www.bilibili.com/video/BV1ub411x7aR)
 - [MSRA王太峰(PDF)](LightGBM.pdf)
+- [Lightgbm模型](LightGBM.pdf)
 - [集成学习:XGBoost,LightGBM(Vedio)](https://www.bilibili.com/video/BV1Ca4y1t7DS?p=1)
 - [集成学习:XGBoost,LightGBM(PDF)](集成学习：XGBoost,LightGBM.pdf)
 - [ApacheCN:LightGBM中文文档](https://lightgbm.apachecn.org/#/)
