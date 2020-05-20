@@ -1,15 +1,27 @@
 # Java
 - [Java大纲](Java大纲.md)
 - [阿里Java开发手册泰山版](docs/阿里Java开发手册泰山版.pdf)
-## 基础
 - [廖雪峰Java教程](https://www.liaoxuefeng.com/wiki/1252599548343744)
 - [菜鸟教程](https://www.runoob.com/java/java-tutorial.html)
 - [Java编程思想](https://github.com/LingCoder/OnJava8)
+- [JavaGuide:[Java学习+面试指南]一份涵盖大部分Java程序员所需要掌握的核心知识](https://github.com/Snailclimb/JavaGuide#%E5%9F%BA%E7%A1%80)
+- [toBeTopJavaer:To-Be-Top-Javaer-Java工程师成神之路](https://github.com/hollischuang/toBeTopJavaer)
+- [JavaFamily:互联网一线大厂面试+学习指南](https://github.com/AobingJava/JavaFamily)
+- [3y:从Java基础、JavaWeb基础到常用的框架再到面试题都有完整的教程，几乎涵盖了Java后端必备的知识点](https://github.com/ZhongFuCheng3y/3y)
+- [Java-Interview:Java面试必会直通BAT](https://github.com/gzc426/Java-Interview)
+- [Java-Tutorial:Java工程师面试复习指南](https://github.com/h2pl/Java-Tutorial)
+- [java-core-learning-example:关于Java核心技术学习积累的例子，是初学者及核心技术巩固的最佳实践。](https://github.com/JeffLi1993/java-core-learning-example)
+- [CS-Notes:技术面试必备基础知识](https://github.com/CyC2018/CS-Notes)
+- [interviewGuide:Java后端面试题精选](https://github.com/NotFound9/interviewGuide)
+- [awesome-java:Github上非常棒的Java开源项目集合](https://github.com/Snailclimb/awesome-java)
+- [awesome-java-books:Java 技术书籍大全](https://github.com/sorenduan/awesome-java-books/blob/master/README.md#%E9%98%BF%E9%87%8C%E5%B7%B4%E5%B7%B4%E6%8A%80%E6%9C%AF%E4%B8%9B%E4%B9%A6)
 - [Java核心技术卷I基础知识(原书第11版)](https://item.jd.com/12759308.html)
 ## 进阶
 - [Effective_Java_3rd-版本1](https://github.com/clxering/Effective-Java-3rd-edition-Chinese-English-bilingual)
 - [Effective_Java_3rd-版本2](https://github.com/tigershinny/effective-java-3rd-cn)
-## 容器
 ## 虚拟机
-- [深入理解Java虚拟机_3rd](https://item.jd.com/12607299.html)
-## 并发
+- [深入理解Java虚拟机_3rd](docs/深入理解Java虚拟机：JVM高级特性与最佳实践（第3版）)
+- [jvm:JVM底层原理知识总结](https://github.com/doocs/jvm)
+- [jvm_book:《深入理解Java虚拟机（第3版）》样例代码&勘误](https://github.com/fenixsoft/jvm_book)
+- [UnderstandingTheJVM:《深入理解Java虚拟机-Jvm高级特性与最佳实践（第三版）》阅读笔记](https://github.com/starjuly/UnderstandingTheJVM)
+
