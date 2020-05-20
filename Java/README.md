@@ -20,7 +20,7 @@
 - [Effective_Java_3rd-版本1](https://github.com/clxering/Effective-Java-3rd-edition-Chinese-English-bilingual)
 - [Effective_Java_3rd-版本2](https://github.com/tigershinny/effective-java-3rd-cn)
 ## 虚拟机
-- [深入理解Java虚拟机_3rd](docs/深入理解Java虚拟机：JVM高级特性与最佳实践（第3版）)
+- [深入理解Java虚拟机_3rd](docs/深入理解Java虚拟机：JVM高级特性与最佳实践（第3版）.pdf)
 - [jvm:JVM底层原理知识总结](https://github.com/doocs/jvm)
 - [jvm_book:《深入理解Java虚拟机（第3版）》样例代码&勘误](https://github.com/fenixsoft/jvm_book)
 - [UnderstandingTheJVM:《深入理解Java虚拟机-Jvm高级特性与最佳实践（第三版）》阅读笔记](https://github.com/starjuly/UnderstandingTheJVM)
