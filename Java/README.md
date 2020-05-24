@@ -13,6 +13,7 @@
 - [java-core-learning-example:关于Java核心技术学习积累的例子，是初学者及核心技术巩固的最佳实践。](https://github.com/JeffLi1993/java-core-learning-example)
 - [CS-Notes:技术面试必备基础知识](https://github.com/CyC2018/CS-Notes)
 - [interviewGuide:Java后端面试题精选](https://github.com/NotFound9/interviewGuide)
+- [Full-Stack-Notes:全栈工程师手册](https://github.com/heibaiying/Full-Stack-Notes)
 - [awesome-java:Github上非常棒的Java开源项目集合](https://github.com/Snailclimb/awesome-java)
 - [awesome-java-books:Java 技术书籍大全](https://github.com/sorenduan/awesome-java-books/blob/master/README.md#%E9%98%BF%E9%87%8C%E5%B7%B4%E5%B7%B4%E6%8A%80%E6%9C%AF%E4%B8%9B%E4%B9%A6)
 - [Java核心技术卷I基础知识(原书第11版)](https://item.jd.com/12759308.html)
