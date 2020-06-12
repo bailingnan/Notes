@@ -1,5 +1,6 @@
 # 大数据
 - [大数据大纲](大数据大纲.png)
+- [备战面试路线](docs/大数据开发备战面试路线.pdf)
 - [BigData-Notes:大数据入门指南](https://github.com/heibaiying/BigData-Notes)
 - [God-Of-BigData:大数据面试题，大数据成神之路开启...Flink/Spark/Hadoop/Hbase/Hive...](https://github.com/wangzhiwubigdata/God-Of-BigData)
 - [BigDataGuide:大数据学习，从零开始学习大数据，包含大数据学习各阶段学习视频、面试资料](https://github.com/Dr11ft/BigDataGuide)
