@@ -134,7 +134,7 @@ import pandas as pd
 ## `Pandas`加速方案
    - `modin`:`import modin.pandas as mdpd`,用`mdpd`代替`pd`即可，加速`pandas`,加载数据和查询数据更快,统计方法`pandas`更快
    - `swifter`:`df.apply()`→`df.swifter.apply()`，加速`pandas`
-   - `cupy`:加速`pandas`,1000万以上数据更快
+   - `cupy`:加速`numpy`,1000万以上数据更快
    - `numexpr`/`bottleneck`:`Pandas` 可以加速特定类型的二进制数值与布尔操作。处理大型数据集时，这两个支持库特别有用，加速效果也非常明显。 `numexpr` 使用智能分块、缓存与多核技术。`bottleneck` 是一组专属 `cython` 例程，处理含 `nans` 值的数组时，特别快.
 这两个支持库默认为启用状态，可用以下选项设置：
 ```python
