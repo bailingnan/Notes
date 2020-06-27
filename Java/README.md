@@ -18,6 +18,7 @@
 ## Github
 - [CS-Notes:技术面试必备基础知识](https://github.com/CyC2018/CS-Notes)
 - [JavaGuide:[Java学习+面试指南]一份涵盖大部分Java程序员所需要掌握的核心知识](https://github.com/Snailclimb/JavaGuide#%E5%9F%BA%E7%A1%80)
+- [JCSprout:处于萌芽阶段的Java核心知识库](https://github.com/crossoverJie/JCSprout)
 - [toBeTopJavaer:To-Be-Top-Javaer-Java工程师成神之路](https://github.com/hollischuang/toBeTopJavaer)
 - [JavaFamily:互联网一线大厂面试+学习指南](https://github.com/AobingJava/JavaFamily)
 - [3y:从Java基础、JavaWeb基础到常用的框架再到面试题都有完整的教程，几乎涵盖了Java后端必备的知识点](https://github.com/ZhongFuCheng3y/3y)
