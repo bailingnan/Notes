@@ -12,6 +12,7 @@
 ## 总览
 - [Java大纲](Java大纲.md)
 - [阿里Java开发手册泰山版](docs/阿里Java开发手册泰山版.pdf)
+- [Java开发手册泰山版灵魂13问](docs/Java开发手册泰山版灵魂13问.pdf)
 - [廖雪峰Java教程](https://www.liaoxuefeng.com/wiki/1252599548343744)
 - [菜鸟教程](https://www.runoob.com/java/java-tutorial.html)
 - [Java编程思想](https://github.com/LingCoder/OnJava8)
