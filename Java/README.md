@@ -11,11 +11,13 @@
 # Java
 ## 总览
 - [Java大纲](Java大纲.md)
+- [Java基础](Java基础.md)
 - [阿里Java开发手册泰山版](docs/阿里Java开发手册泰山版.pdf)
 - [Java开发手册泰山版灵魂13问](docs/Java开发手册泰山版灵魂13问.pdf)
 - [廖雪峰Java教程](https://www.liaoxuefeng.com/wiki/1252599548343744)
 - [菜鸟教程](https://www.runoob.com/java/java-tutorial.html)
 - [Java编程思想](https://github.com/LingCoder/OnJava8)
+- [码海文章合集](docs/码海文章合集.epub)
 ## Github
 - [CS-Notes:技术面试必备基础知识](https://github.com/CyC2018/CS-Notes)
 - [JavaGuide:[Java学习+面试指南]一份涵盖大部分Java程序员所需要掌握的核心知识](https://github.com/Snailclimb/JavaGuide#%E5%9F%BA%E7%A1%80)
