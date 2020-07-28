@@ -14,7 +14,7 @@
 - [XGBoostGPU版本官方指南](https://xgboost.readthedocs.io/en/latest/gpu/index.html)
 - [华校专XGBoostGPU版本指南](http://www.huaxiaozhuan.com/%E5%B7%A5%E5%85%B7/xgboost/chapters/xgboost_usage.html)
 # LightGBM
-- [LightGBM示例](LightGBMEaample/README.md)
+- [LightGBM示例](LightGBMExample/README.md)
 - [MSRA王太峰(Vedio)](https://www.bilibili.com/video/BV1ub411x7aR)
 - [MSRA王太峰(PDF)](LightGBM.pdf)
 - [Lightgbm模型](LightGBM.pdf)
