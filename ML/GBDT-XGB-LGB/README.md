@@ -26,7 +26,7 @@
 - [知乎Microstrong:深入理解LightGBM](https://zhuanlan.zhihu.com/p/99069186)
 - [从XGB到LGB：美团外卖树模型的迭代之路](https://t.cj.sina.com.cn/articles/view/5901272611/15fbe462301900n684)
 - [知乎:30分钟学会LightGBM](https://zhuanlan.zhihu.com/p/91167170)
-- [知乎:机器学习】决策树（下）——XGBoost、LightGBM（非常详细）](https://zhuanlan.zhihu.com/p/87885678)
+- [知乎:机器学习决策树（下）——XGBoost、LightGBM（非常详细）](https://zhuanlan.zhihu.com/p/87885678)
 - [知乎:gbdt、xgb、lgb、cat面经整理——from牛客](https://zhuanlan.zhihu.com/p/82521899)
 - [知乎:GBDT、XGBoost、LightGBM 的使用及参数调优](https://zhuanlan.zhihu.com/p/33700459)
 - [知乎:LightGBM调参指南(带贝叶斯优化代码)](https://zhuanlan.zhihu.com/p/27916208)
